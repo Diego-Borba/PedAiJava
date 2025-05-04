@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Pedidos - PedAi</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        body {
+            background-color: #f8f9fa;
+            color: #343a40;
+            font-family: 'Arial', sans-serif;
+        }
+
+        .navbar {
+            background-color: #ff5722;
+        }
+
+        .navbar-brand {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .produto-card {
+            border: none;
+            border-radius: 15px;
+            overflow: hidden;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .produto-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .produto-card img {
+            height: 200px;
+            object-fit: cover;
+            border-bottom: 2px solid #ff5722;
+        }
+
+        .produto-card .card-body {
+            background-color: #ffffff;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .produto-card .card-title {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: #ff5722;
+        }
+
+        .produto-card .card-text {
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+
+        .produto-card .btn {
+            background-color: #ff5722;
+            color: #ffffff;
+            border: none;
+            transition: background-color 0.2s;
+        }
+
+        .produto-card .btn:hover {
+            background-color: #e64a19;
+        }
+
+        .category-buttons {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .category-buttons button {
+            margin: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navbar com Carrinho -->
+    <nav class="navbar navbar-expand-lg navbar-dark shadow-sm">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">PedAi</a>
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
+                        id="cartDropdown">
+                        🛒 Carrinho <span class="badge bg-success" id="cartCount">0</span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end carrinho-dropdown" id="cartItems">
+                        <li class="dropdown-item text-muted">Carrinho vazio</li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <h2 class="mb-4 text-center text-uppercase" style="color: #ff5722;">Cardápio Digital</h2>
+
+        <!-- Botões de Categorias -->
+        <div class="category-buttons">
+            <button class="btn btn-outline-primary" onclick="filtrarProdutos('todos')">Todos</button>
+            <button class="btn btn-outline-primary" onclick="filtrarProdutos('bebidas')">Bebidas</button>
+            <button class="btn btn-outline-primary" onclick="filtrarProdutos('lanches')">Lanches</button>
+            <button class="btn btn-outline-primary" onclick="filtrarProdutos('sobremesas')">Sobremesas</button>
+        </div>
+
+        <div class="row" id="produtosContainer">
+            <!-- Produtos serão carregados aqui -->
+        </div>
+    </div>
+
+    <script>
+        let produtos = [];
+        let cart = {};
+
+        function atualizarCarrinho() {
+            const cartItems = document.getElementById('cartItems');
+            const cartCount = document.getElementById('cartCount');
+            cartItems.innerHTML = '';
+            const keys = Object.keys(cart);
+
+            if (keys.length === 0) {
+                cartItems.innerHTML = '<li class="dropdown-item text-muted">Carrinho vazio</li>';
+                cartCount.innerText = '0';
+                return;
+            }
+
+            let totalItens = 0;
+            keys.forEach(id => {
+                const item = cart[id];
+                totalItens += item.qtde;
+                const li = document.createElement('li');
+                li.className = 'dropdown-item';
+                li.innerHTML = `
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>${item.nome}</strong><br>
+                            <div class="input-group input-group-sm">
+                                <input type="number" min="1" max="${item.qtdeMax}" class="form-control qty-input" value="${item.qtde}" onchange="alterarQuantidade(${id}, this.value)">
+                                <span class="input-group-text">x R$${item.preco.toFixed(2)}</span>
+                            </div>
+                        </div>
+                        <button class="btn btn-sm btn-danger" onclick="removerDoCarrinho(${id})">✖️</button>
+                    </div>`;
+                cartItems.appendChild(li);
+            });
+
+            const finalizar = document.createElement('li');
+            finalizar.className = 'dropdown-item text-center';
+            finalizar.innerHTML = '<button class="btn btn-success w-100" onclick="fecharPedido()">Finalizar Pedido</button>';
+            cartItems.appendChild(finalizar);
+
+            cartCount.innerText = totalItens;
+        }
+
+        function adicionarAoCarrinho(produto) {
+            if (cart[produto.id]) {
+                if (cart[produto.id].qtde < produto.qtdeMax) {
+                    cart[produto.id].qtde++;
+                } else {
+                    alert('Quantidade máxima atingida.');
+                    return;
+                }
+            } else {
+                cart[produto.id] = { ...produto, qtde: 1 };
+            }
+            atualizarCarrinho();
+        }
+
+        function alterarQuantidade(id, novaQtde) {
+            const item = cart[id];
+            novaQtde = parseInt(novaQtde);
+            if (isNaN(novaQtde) || novaQtde < 1) {
+                alert('Quantidade inválida.');
+                return;
+            }
+            if (novaQtde > item.qtdeMax) {
+                alert(`A quantidade máxima permitida é ${item.qtdeMax}`);
+                return;
+            }
+            item.qtde = novaQtde;
+            atualizarCarrinho();
+        }
+
+        function removerDoCarrinho(id) {
+            delete cart[id];
+            atualizarCarrinho();
+        }
+
+        function fecharPedido() {
+            const pedido = {
+                itens: Object.values(cart).map(item => ({
+                    produtoId: item.id,
+                    quantidade: item.qtde,
+                    precoUnitario: item.preco
+                }))
+            };
+
+            fetch('/api/pedidos', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(pedido)
+            })
+                .then(res => {
+                    if (!res.ok) throw new Error('Erro ao finalizar pedido');
+                    return res.json();
+                })
+                .then(data => {
+                    alert('Pedido realizado com sucesso! Nº ' + data.id);
+                    cart = {};
+                    atualizarCarrinho();
+                })
+                .catch(err => alert(err.message));
+        }
+
+        function carregarProdutos() {
+            axios.get('/api/produtos')
+                .then(response => {
+                    produtos = response.data;
+                    exibirProdutos(produtos); // Exibe todos os produtos inicialmente
+                })
+                .catch(err => {
+                    console.error(err);
+                    alert('Erro ao carregar produtos.');
+                });
+        }
+
+        function exibirProdutos(lista) {
+            const container = document.getElementById('produtosContainer');
+            container.innerHTML = '';
+            lista.forEach(produto => {
+                const card = document.createElement('div');
+                card.className = 'col-12 col-sm-6 col-md-4 mb-4';
+                card.innerHTML = `
+                <div class="card produto-card">
+                    <img src="${produto.imagem}" class="card-img-top" alt="${produto.nome}">
+                    <div class="card-body">
+                        <h5 class="card-title">${produto.nome}</h5>
+                        <p class="card-text">${produto.descricao || ''}</p>
+                        <p class="card-text"><strong>Categoria:</strong> ${produto.categoria}</p>
+                        <p class="card-text fw-bold">R$ ${produto.preco.toFixed(2)}</p>
+                        <button class="btn btn-outline-light mt-auto" onclick='adicionarAoCarrinho(${JSON.stringify(produto)})'>+ Adicionar</button>
+                    </div>
+                </div>`;
+                container.appendChild(card);
+            });
+        }
+
+        function filtrarProdutos(categoria) {
+            if (categoria === 'todos') {
+                exibirProdutos(produtos); // Exibe todos os produtos
+            } else {
+                const filtrados = produtos.filter(produto => produto.categoria.toLowerCase() === categoria.toLowerCase());
+                exibirProdutos(filtrados); // Exibe apenas os produtos da categoria selecionada
+            }
+        }
+
+        window.onload = carregarProdutos;
+    </script>
+
+    <div id="alerta"
+        class="alert alert-success text-center position-fixed top-0 start-50 translate-middle-x w-75 mt-3 d-none"
+        role="alert">
+        Item adicionado ao carrinho!
+    </div>
+</body>
+
+</html>
