@@ -24,13 +24,12 @@ public class ItemPedido {
     @Column(nullable = false)
     private BigDecimal precoUnitario;
 
-    // Campo calculado, não será salvo no banco
+    
     @Transient
     public BigDecimal getSubtotal() {
         return precoUnitario.multiply(BigDecimal.valueOf(quantidade));
     }
-
-    // Getters e Setters
+    
     public Long getId() {
         return id;
     }

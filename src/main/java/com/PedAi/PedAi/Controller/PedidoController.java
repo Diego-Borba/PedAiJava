@@ -65,8 +65,7 @@ public class PedidoController {
             return ResponseEntity.notFound().build();
 
         Pedido pedido = optPedido.get();
-
-        // Utilizando uma lista de mapas mais compatível
+        
         List<Map<String, Object>> itens = new ArrayList<>();
         for (ItemPedido item : pedido.getItens()) {
             Map<String, Object> itemMap = new HashMap<>();

@@ -103,12 +103,9 @@
     <div class="container mt-4">
         <h2 class="mb-4 text-center text-uppercase" style="color: #ff5722;">Cardápio Digital</h2>
 
-        <!-- Botões de Categorias -->
-        <div class="category-buttons">
-            <button class="btn btn-outline-primary" onclick="filtrarProdutos('todos')">Todos</button>
-            <button class="btn btn-outline-primary" onclick="filtrarProdutos('bebidas')">Bebidas</button>
-            <button class="btn btn-outline-primary" onclick="filtrarProdutos('lanches')">Lanches</button>
-            <button class="btn btn-outline-primary" onclick="filtrarProdutos('sobremesas')">Sobremesas</button>
+
+        <div class="category-buttons" id="categoryButtons">
+
         </div>
 
         <div class="row" id="produtosContainer">
@@ -220,6 +217,33 @@
                 .catch(err => alert(err.message));
         }
 
+        function carregarCategorias() {
+            axios.get('/api/produtos/categorias')
+                .then(response => {
+                    const categorias = response.data;
+                    const container = document.getElementById('categoryButtons');
+                    container.innerHTML = '';
+
+                    const todosBtn = document.createElement('button');
+                    todosBtn.className = 'btn btn-outline-primary m-1';
+                    todosBtn.textContent = 'Todos';
+                    todosBtn.onclick = () => filtrarProdutos('todos');
+                    container.appendChild(todosBtn);
+
+                    categorias.forEach(cat => {
+                        const btn = document.createElement('button');
+                        btn.className = 'btn btn-outline-primary m-1';
+                        btn.textContent = cat;
+                        btn.onclick = () => filtrarProdutos(cat);
+                        container.appendChild(btn);
+                    });
+                })
+                .catch(err => {
+                    console.error(err);
+                    alert('Erro ao carregar categorias.');
+                });
+        }
+
         function carregarProdutos() {
             axios.get('/api/produtos')
                 .then(response => {
@@ -261,8 +285,11 @@
                 exibirProdutos(filtrados); // Exibe apenas os produtos da categoria selecionada
             }
         }
+        window.onload = () => {
+            carregarProdutos();
+            carregarCategorias();
+        };
 
-        window.onload = carregarProdutos;
     </script>
 
     <div id="alerta"

@@ -2,6 +2,7 @@ package com.PedAi.PedAi.Controller;
 
 import com.PedAi.PedAi.Model.Produto;
 import com.PedAi.PedAi.repository.ProdutoRepository;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -31,9 +32,9 @@ public class ProdutoController {
     public ResponseEntity<Produto> create(@RequestBody Produto produto) {
         try {
             Produto savedProduto = repository.save(produto);
-            return ResponseEntity.status(201).body(savedProduto);  // Retorna o produto salvo com status 201
+            return ResponseEntity.status(201).body(savedProduto);
         } catch (Exception e) {
-            return ResponseEntity.status(500).build();  // Caso ocorra algum erro, retorna status 500
+            return ResponseEntity.status(500).build();
         }
     }
 
@@ -50,4 +51,10 @@ public class ProdutoController {
         repository.deleteById(id);
         return ResponseEntity.noContent().build();
     }
+    @GetMapping("/categorias")
+    public ResponseEntity<List<String>> getCategorias() {
+        List<String> categorias = repository.findDistinctCategorias();
+        return ResponseEntity.ok(categorias);
+    }
+
 }
