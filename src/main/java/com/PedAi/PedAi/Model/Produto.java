@@ -15,7 +15,20 @@ public class Produto {
     private Integer qtdeMax;
     private String descricao;
     private String imagem;
-
+    private Integer codPdv;
+    private Integer ordemVisualizacao;
+    public Integer getCodPdv() {
+        return codPdv;
+    }
+    public void setCodPdv(Integer codPdv) {
+        this.codPdv = codPdv;
+    }
+    public Integer getOrdemVisualizacao() {
+        return ordemVisualizacao;
+    }
+    public void setOrdemVisualizacao(Integer ordemVisualizacao) {
+        this.ordemVisualizacao = ordemVisualizacao;
+    }
     public Long getId() {
         return id;
     }

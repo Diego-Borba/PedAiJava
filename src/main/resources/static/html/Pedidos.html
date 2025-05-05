@@ -279,10 +279,10 @@
 
         function filtrarProdutos(categoria) {
             if (categoria === 'todos') {
-                exibirProdutos(produtos); // Exibe todos os produtos
+                exibirProdutos(produtos);
             } else {
                 const filtrados = produtos.filter(produto => produto.categoria.toLowerCase() === categoria.toLowerCase());
-                exibirProdutos(filtrados); // Exibe apenas os produtos da categoria selecionada
+                exibirProdutos(filtrados);
             }
         }
         window.onload = () => {
