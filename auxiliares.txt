@@ -1,0 +1,27 @@
+#EMPACOTAR O PROJETO CRIANDO O ARQUIVO .JAR 
+
+mvn clean package -DskipTests
+
+#CONSTROI A IMAGEM DO DOCKER
+
+docker build -t southamerica-east1-docker.pkg.dev/pedai-459012/pedai-repo/pedai-app:latest .
+
+#PEGA O ARQUIVO DOCKER E ENCAMINHA PRO REPOSITORIO DO GOOGLE CLOUD
+
+docker push southamerica-east1-docker.pkg.dev/pedai-459012/pedai-repo/pedai-app:latest
+
+#INDICA A REGIÃO A SER USADA NO PROJETO
+gcloud auth configure-docker southamerica-east1-docker.pkg.dev
+
+
+#COMANDO PARA DEPLOY
+gcloud run deploy pedai-service \
+    --image southamerica-east1-docker.pkg.dev/pedai-459012/pedai-repo/pedai-app:v4 \
+    --platform managed \
+    --region southamerica-east1 \
+    --allow-unauthenticated \
+    --add-cloudsql-instances "pedai-459012:southamerica-east1:pedai-postgres-instance" \
+    --set-env-vars SPRING_DATASOURCE_URL="jdbc:postgresql://google/pedai-db?cloudSqlInstance=pedai-459012:southamerica-east1:pedai-postgres-instance&socketFactory=com.google.cloud.sql.postgres.SocketFactory" \
+    --set-env-vars SPRING_DATASOURCE_USERNAME="postgres" \
+    --set-env-vars SPRING_DATASOURCE_PASSWORD="borba1506" \
+    --set-env-vars SPRING_JPA_HIBERNATE_DDL_AUTO="update"
