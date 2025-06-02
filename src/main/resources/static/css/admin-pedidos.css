@@ -1,0 +1,100 @@
+/* static/css/admin-pedidos.css */
+body {
+    background-color: #212529;
+    color: #f8f9fa;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.header {
+    background-color: #343a40;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.header h2 {
+    margin: 0;
+    color: #0d6efd;
+    /* Azul */
+    font-weight: bold;
+}
+
+.column {
+    min-height: 500px;
+    max-height: 600px;
+    overflow-y: auto;
+    padding: 15px;
+    border: 1px solid #495057;
+    border-radius: 10px;
+    background-color: #343a40;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s ease;
+}
+
+.column h4 {
+    text-align: center;
+    margin-bottom: 15px;
+    color: #0d6efd;
+    /* Azul */
+}
+
+.column.drag-over {
+    background-color: #495057 !important;
+}
+
+.card { /* Estilo geral do card, pode precisar de ajustes se conflitar com global-admin */
+    cursor: grab;
+    border: none;
+    border-radius: 10px;
+    background-color: #495057; /* Cor específica para cards no KDS */
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    color: #f8f9fa; /* Garante texto claro nos cards */
+}
+
+.card:hover {
+    transform: scale(1.02);
+    box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+}
+
+.card-header {
+    background-color: #343a40; /* Cor específica para header no KDS */
+    border-bottom: 1px solid #6c757d;
+    color: #0d6efd;
+    /* Azul */
+    font-weight: bold;
+}
+
+.card-footer {
+    background-color: #343a40; /* Cor específica para footer no KDS */
+    border-top: 1px solid #6c757d;
+}
+
+.list-group-item.bg-dark { /* Ajuste para itens da lista dentro do card KDS */
+    background-color: #495057 !important; /* Sobrescreve se necessário */
+    border-color: #6c757d !important;
+}
+
+
+.btn-primary {
+    background-color: #0d6efd;
+    /* Azul */
+    border: none;
+    color: #ffffff;
+}
+
+.btn-primary:hover {
+    background-color: #0b5ed7;
+    /* Azul mais escuro */
+}
+
+.btn-success {
+    background-color: #28a745;
+    border: none;
+}
+
+.btn-success:hover {
+    background-color: #218838;
+}

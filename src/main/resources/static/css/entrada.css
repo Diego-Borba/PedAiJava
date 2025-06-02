@@ -1,0 +1,5 @@
+/* static/css/entrada.css */
+/* Estilos específicos para a página de entrada de nota, se houver. */
+.item-bloco {
+    align-items: flex-end; /* Alinha o botão remover com a base dos inputs */
+}

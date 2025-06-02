@@ -1,0 +1,176 @@
+/* static/css/pedidos.css */
+body {
+    background-color: #f8f9fa; /* Um cinza claro para o fundo geral */
+    color: #343a40;
+    font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+.navbar {
+    background-color: #ff5722; /* Cor laranja principal */
+    padding-top: 0.8rem;
+    padding-bottom: 0.8rem;
+}
+
+.navbar-brand {
+    font-size: 1.6rem;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+    color: #ffffff !important; /* Garante que o texto da marca seja branco */
+}
+.navbar-brand i {
+    margin-right: 8px;
+}
+
+.nav-link {
+    font-size: 0.95rem;
+    color: #ffffff !important; /* Cor do link da navbar */
+}
+.nav-link i {
+    margin-right: 5px;
+}
+.nav-link:hover, .nav-link:focus {
+    color: #f0f0f0 !important; /* Cor do link da navbar no hover */
+}
+
+
+#cartCountNavbar { /* ID atualizado para o contador na navbar */
+    font-size: 0.7rem;
+    padding: 0.3em 0.6em;
+    vertical-align: super;
+    background-color: #ffffff; /* Fundo branco para o badge */
+    color: #ff5722; /* Texto laranja no badge */
+    font-weight: bold;
+}
+
+
+.page-title {
+    color: #ff5722; /* Título da página em laranja */
+    font-weight: 700;
+    font-size: 2.2rem;
+}
+.page-title i {
+    color: #ffc107; /* Cor para o ícone de estrelas, se mantido */
+}
+
+
+.category-buttons {
+    text-align: center;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.category-buttons .btn {
+    margin: 5px 8px;
+    border-radius: 50rem; /* Botões pill */
+    font-weight: 500;
+    padding: 0.5rem 1.2rem;
+    transition: all 0.3s ease;
+    border: 2px solid #ffc9ac; /* Borda laranja claro */
+    color: #ff5722; /* Texto laranja */
+    background-color: #fff;
+}
+
+.category-buttons .btn.active,
+.category-buttons .btn:hover {
+    background-color: #ff5722; /* Cor laranja no hover/active */
+    color: white;
+    border-color: #ff5722;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 87, 34, 0.3); /* Sombra laranja */
+}
+.category-buttons .btn:not(.active):hover {
+     background-color: #fff5f0; /* Fundo muito leve no hover para botões não ativos */
+     color: #ff5722;
+}
+
+
+.produto-card {
+    border: 1px solid #ffe0cc; /* Borda laranja bem clara */
+    border-radius: 15px;
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    background-color: #ffffff;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    display: flex;
+    flex-direction: column;
+}
+
+.produto-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(255, 87, 34, 0.15); /* Sombra laranja no hover */
+}
+
+.produto-card .card-img-top-wrapper {
+    height: 200px;
+    overflow: hidden;
+    border-bottom: 3px solid #ff5722; /* Borda inferior da imagem em laranja */
+}
+.produto-card .card-img-top-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+
+.produto-card .card-body {
+    padding: 1.25rem;
+    text-align: left;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.produto-card .card-title {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #333; /* Título do produto mais escuro para legibilidade */
+    margin-bottom: 0.5rem;
+}
+
+.produto-card .card-text.descricao {
+    font-size: 0.85rem;
+    color: #6c757d;
+    margin-bottom: 0.75rem;
+    min-height: 40px;
+}
+
+.produto-card .card-text.categoria {
+    font-size: 0.8rem;
+    color: #888;
+    margin-bottom: 1rem;
+}
+
+
+.produto-card .preco {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #ff5722; /* Preço em laranja */
+    margin-bottom: 1rem;
+}
+
+.produto-card .btn-add-carrinho {
+    background-color: #ff7043; /* Botão "Adicionar" em um tom de laranja */
+    color: white;
+    border: none;
+    font-weight: 600;
+    padding: 0.6rem 1rem;
+    border-radius: 8px;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+    margin-top: auto;
+}
+
+.produto-card .btn-add-carrinho:hover {
+    background-color: #f4511e; /* Laranja mais escuro no hover */
+    color: white;
+    transform: scale(1.03);
+}
+.produto-card .btn-add-carrinho i {
+    margin-right: 8px;
+}
+
+#loadingIndicator {
+    padding: 3rem 0;
+}
+.spinner-border {
+    color: #ff5722; /* Spinner em laranja */
+}

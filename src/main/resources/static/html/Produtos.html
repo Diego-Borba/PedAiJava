@@ -1,174 +1,74 @@
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
     <meta charset="UTF-8">
     <title>Produtos - PedAi</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <!-- CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
-
-    <!-- JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
-    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-    <style>
-        body, html {
-            height: 100%;
-            margin: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f8f9fa;
-        }
-        .wrapper {
-            display: flex;
-            min-height: 100vh;
-            flex-direction: column;
-        }
-        .main {
-            flex: 1;
-            display: flex;
-        }
-        .sidebar {
-            width: 250px;
-            background-color: #212529;
-            padding-top: 60px;
-            transition: width 0.3s;
-            position: fixed;
-            top: 0;
-            left: 0;
-            height: 100%;
-            overflow-x: hidden;
-            z-index: 1000;
-        }
-        .sidebar.collapsed {
-            width: 80px;
-        }
-        .sidebar a {
-            display: flex;
-            align-items: center;
-            padding: 12px 20px;
-            color: #adb5bd;
-            text-decoration: none;
-            white-space: nowrap;
-            overflow: hidden;
-            transition: 0.3s;
-        }
-        .sidebar a .menu-text {
-            margin-left: 10px;
-        }
-        .sidebar.collapsed a .menu-text {
-            display: none;
-        }
-        .sidebar a:hover,
-        .sidebar a.active {
-            background-color: #343a40;
-            color: #ffffff;
-        }
-        .sidebar .toggle-btn {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            background: none;
-            border: none;
-            color: #adb5bd;
-            font-size: 1.5rem;
-        }
-        .content {
-            margin-left: 250px;
-            padding: 30px;
-            width: 100%;
-            transition: margin-left 0.3s;
-        }
-        .content.collapsed {
-            margin-left: 80px;
-        }
-        footer {
-            background-color: #212529;
-            color: #adb5bd;
-            text-align: center;
-            padding: 10px 0;
-            font-size: 0.9rem;
-        }
-        .table thead th {
-            background-color: #212529;
-            color: #ffffff;
-        }
-        @media (max-width: 768px) {
-            .sidebar {
-                width: 100%;
-                height: auto;
-                position: relative;
-            }
-            .sidebar.collapsed {
-                width: 100%;
-            }
-            .content {
-                margin-left: 0;
-            }
-            .content.collapsed {
-                margin-left: 0;
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="../css/global-admin.css">
+    <link rel="stylesheet" href="../css/produtos.css">
 </head>
+
 <body>
     <div class="wrapper">
         <div class="main">
             <div class="sidebar" id="sidebar">
-                <button class="toggle-btn" onclick="toggleSidebar()"><i class="bi bi-list"></i></button>
-        
+                <button class="toggle-btn" onclick="toggleSidebar()" aria-label="Abrir menu de navegação">
+                    <i class="bi bi-list"></i>
+                </button>
                 <div class="dropdown">
-                  <a class="dropdown-toggle d-flex align-items-center text-decoration-none px-3 py-2 text-light" href="#" role="button" id="cadastroMenu" data-bs-toggle="dropdown" aria-expanded="false">
-                    <i class="bi bi-plus-circle"></i><span class="menu-text ms-2">Cadastro</span>
-                  </a>
-                  <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="cadastroMenu">
-                    <li><a class="dropdown-item" href="Produtos.html">Produtos</a></li>
-                    <li><a class="dropdown-item" href="fornecedor.html">Fornecedores</a></li>
-                    <li><a class="dropdown-item" href="Clientes.html">Clientes</a></li>
-                  </ul>
+                    <a class="dropdown-toggle text-decoration-none" href="#" role="button" id="cadastroMenu"
+                        data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-plus-circle"></i><span class="menu-text">Cadastro</span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="cadastroMenu">
+                        <li><a class="dropdown-item" href="cadastro.html">Produtos</a></li>
+                        <li><a class="dropdown-item" href="fornecedor.html">Fornecedores</a></li>
+                    </ul>
                 </div>
-        
-                <a href="Pedidos.html"><i class="bi bi-cart4"></i><span class="menu-text ms-2">Pedidos</span></a>
-                <a href="Entrada.html"><i class="bi bi-box-arrow-in-down"></i><span class="menu-text ms-2">Entradas</span></a>
-                <a href="admin-pedidos.html"><i class="bi bi-speedometer2"></i><span class="menu-text ms-2">Painel Pedidos</span></a>
-                <a href="#"><i class="bi bi-bar-chart-line"></i><span class="menu-text ms-2">Relatórios</span></a>
-                <a href="#"><i class="bi bi-gear"></i><span class="menu-text ms-2">Configurações</span></a>
-              </div>
+
+                <a href="Pedidos.html"><i class="bi bi-cart4"></i><span class="menu-text">Pedidos</span></a>
+                <a href="entrada.html"><i class="bi bi-box-arrow-in-down"></i><span
+                        class="menu-text">Entradas</span></a>
+                <a href="admin-pedidos.html"><i class="bi bi-speedometer2"></i><span class="menu-text">Painel
+                        Pedidos</span></a>
+                <a href="Produtos.html" class="active"><i class="bi bi-box-seam"></i><span class="menu-text">Listar
+                        Produtos</span></a>
+            </div>
 
             <div class="content" id="content">
                 <h2 class="mb-4">Lista de Produtos</h2>
 
-                <!-- Botão de cadastro -->
                 <div class="d-flex justify-content-end mb-3">
                     <a href="cadastro.html" class="btn btn-success">
-                        <i class="bi bi-plus-circle"></i> Cadastrar Produto
+                        <i class="bi bi-plus-circle"></i> Cadastrar Novo Produto
                     </a>
                 </div>
 
-                <table id="tabela-produtos" class="table table-striped table-hover">
-                    <thead>
-                        <tr>
-                            <th>Nome</th>
-                            <th>Preço</th>
-                            <th>Categoria</th>
-                            <th>Estoque Máx</th>
-                            <th>Ordem Visualização</th>
-                            <th>Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody id="produtos"></tbody>
-                </table>
+                <div class="table-responsive">
+                    <table id="tabela-produtos" class="table table-striped table-hover w-100">
+                        <thead>
+                            <tr>
+                                <th>Nome</th>
+                                <th>Preço</th>
+                                <th>Categoria</th>
+                                <th>Estoque Máx</th>
+                                <th>Cód. PDV / Ordem</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="produtos"></tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
-        <!-- Modal de Edição -->
         <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
-            <div class="modal-dialog">
+            <div class="modal-dialog modal-lg">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title" id="editModalLabel">Editar Produto</h5>
@@ -177,144 +77,66 @@
                     <div class="modal-body">
                         <form id="formEditProduto">
                             <input type="hidden" id="edit-id">
-                            <div class="mb-3">
-                                <label for="edit-nome" class="form-label">Nome</label>
-                                <input type="text" class="form-control" id="edit-nome">
+                            <div class="row">
+                                <div class="col-md-8 mb-3">
+                                    <label for="edit-nome" class="form-label">Nome</label>
+                                    <input type="text" class="form-control" id="edit-nome" required>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="edit-preco" class="form-label">Preço</label>
+                                    <input type="number" step="0.01" class="form-control" id="edit-preco" required>
+                                </div>
                             </div>
-                            <div class="mb-3">
-                                <label for="edit-preco" class="form-label">Preço</label>
-                                <input type="text" class="form-control" id="edit-preco">
-                            </div>
-                            <div class="mb-3">
-                                <label for="edit-categoria" class="form-label">Categoria</label>
-                                <input type="text" class="form-control" id="edit-categoria">
-                            </div>
-                            <div class="mb-3">
-                                <label for="edit-qtdeMax" class="form-label">Estoque Máx</label>
-                                <input type="number" class="form-control" id="edit-qtdeMax">
-                            </div>
-                            <div class="mb-3">
-                                <label for="edit-codigoPdv" class="form-label">Código PDV</label>
-                                <input type="text" class="form-control" id="edit-codigoPdv">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="edit-categoria" class="form-label">Categoria</label>
+                                    <input type="text" class="form-control" id="edit-categoria">
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <label for="edit-qtdeMax" class="form-label">Estoque Máx (Pedido)</label>
+                                    <input type="number" class="form-control" id="edit-qtdeMax" required>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <label for="edit-codigoPdv" class="form-label">Cód. PDV</label>
+                                    <input type="text" class="form-control" id="edit-codigoPdv">
+                                </div>
                             </div>
                             <div class="mb-3">
                                 <label for="edit-descricao" class="form-label">Descrição</label>
-                                <input type="text" class="form-control" id="edit-descricao">
+                                <textarea class="form-control" id="edit-descricao" rows="2"></textarea>
                             </div>
-                            <div class="mb-3">
-                                <label for="edit-imagem" class="form-label">Imagem</label>
-                                <input type="text" class="form-control" id="edit-imagem">
+                            <div class="row">
+                                <div class="col-md-9 mb-3">
+                                    <label for="edit-imagem" class="form-label">URL da Imagem</label>
+                                    <input type="text" class="form-control" id="edit-imagem">
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <label for="edit-ordemVisualizacao" class="form-label">Ordem Cardápio</label>
+                                    <input type="number" class="form-control" id="edit-ordemVisualizacao">
+                                </div>
                             </div>
-                            <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+                            <div class="d-flex justify-content-end">
+                                <button type="button" class="btn btn-secondary me-2"
+                                    data-bs-dismiss="modal">Cancelar</button>
+                                <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+                            </div>
                         </form>
                     </div>
                 </div>
             </div>
         </div>
-
-        <footer>
+        <footer class="mt-auto">
             &copy; 2025 PedAi | Todos os direitos reservados
         </footer>
     </div>
 
-    <script>
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const content = document.getElementById('content');
-            sidebar.classList.toggle('collapsed');
-            content.classList.toggle('collapsed');
-        }
-
-        document.addEventListener('DOMContentLoaded', function () {
-            let tabela;
-
-            function carregarProdutos() {
-                fetch('/api/produtos')
-                    .then(res => res.json())
-                    .then(data => {
-                        const tbody = document.getElementById('produtos');
-                        tbody.innerHTML = '';
-
-                        data.forEach(p => {
-                            tbody.innerHTML += `
-                            <tr data-id="${p.id}">
-                                <td>${p.nome}</td>
-                                <td>R$ ${p.preco.toFixed(2)}</td>
-                                <td>${p.categoria}</td>
-                                <td>${p.qtdeMax}</td>
-                                <td>${p.codigoPdv}</td>
-                                <td>
-                                    <button class="btn btn-sm btn-warning btn-editar"><i class="bi bi-pencil"></i></button>
-                                    <button class="btn btn-sm btn-danger btn-excluir"><i class="bi bi-trash"></i></button>
-                                </td>
-                            </tr>`;
-                        });
-
-                        if (!$.fn.DataTable.isDataTable('#tabela-produtos')) {
-                            tabela = $('#tabela-produtos').DataTable();
-                        } else {
-                            $('#tabela-produtos').DataTable().clear().destroy();
-                            tabela = $('#tabela-produtos').DataTable();
-                        }
-                    });
-            }
-
-            document.addEventListener('click', function (e) {
-                if (e.target.closest('.btn-editar')) {
-                    const row = e.target.closest('tr');
-                    const id = row.getAttribute('data-id');
-
-                    fetch(`/api/produtos/${id}`)
-                        .then(res => res.json())
-                        .then(p => {
-                            document.getElementById('edit-id').value = p.id;
-                            document.getElementById('edit-nome').value = p.nome;
-                            document.getElementById('edit-preco').value = p.preco;
-                            document.getElementById('edit-categoria').value = p.categoria;
-                            document.getElementById('edit-qtdeMax').value = p.qtdeMax;
-                            document.getElementById('edit-codigoPdv').value = p.codigoPdv;
-                            document.getElementById('edit-descricao').value = p.descricao;
-                            document.getElementById('edit-imagem').value = p.imagem;
-
-                            const editModal = new bootstrap.Modal(document.getElementById('editModal'));
-                            editModal.show();
-                        });
-                }
-            });
-
-            document.getElementById('formEditProduto').addEventListener('submit', function (e) {
-                e.preventDefault();
-                const produto = {
-                    id: document.getElementById('edit-id').value,
-                    nome: document.getElementById('edit-nome').value,
-                    preco: parseFloat(document.getElementById('edit-preco').value),
-                    categoria: document.getElementById('edit-categoria').value,
-                    qtdeMax: document.getElementById('edit-qtdeMax').value,
-                    codigoPdv: document.getElementById('edit-codigoPdv').value,
-                    descricao: document.getElementById('edit-descricao').value,
-                    imagem: document.getElementById('edit-imagem').value
-                };
-
-                fetch(`/api/produtos/${produto.id}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(produto)
-                }).then(res => {
-                    if (res.ok) {
-                        Swal.fire('Sucesso!', 'Produto atualizado com sucesso!', 'success');
-                        carregarProdutos();
-                        const editModal = bootstrap.Modal.getInstance(document.getElementById('editModal'));
-                        editModal.hide();
-                    } else {
-                        Swal.fire('Erro!', 'Não foi possível atualizar o produto.', 'error');
-                    }
-                });
-            });
-
-            carregarProdutos();
-        });
-    </script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="../js/global-admin.js"></script>
+    <script src="../js/produtos.js"></script>
 </body>
+
 </html>

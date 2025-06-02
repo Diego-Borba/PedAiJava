@@ -1,0 +1,74 @@
+/* static/css/carrinho.css */
+body {
+    padding-bottom: 80px; /* Para compensar o footer fixo */
+}
+
+.cart-item-row {
+    border: 1px solid #eee;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    background-color: #fff;
+}
+
+.cart-item-img {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 0.375rem;
+    margin-right: 1rem;
+}
+
+.cart-item-details h5 {
+    margin-bottom: 0.25rem;
+    font-size: 1.1rem;
+    color: #333;
+}
+.cart-item-details .text-muted {
+    font-size: 0.85rem;
+}
+
+.cart-item-actions .form-control {
+    width: 60px;
+    text-align: center;
+}
+.cart-item-actions .btn {
+    min-width: 38px; /* Para botões de +/- terem tamanho consistente */
+}
+
+.cart-item-price, .cart-item-subtotal {
+    font-weight: 500;
+    font-size: 1rem;
+    color: #222;
+}
+.cart-item-subtotal {
+    font-weight: bold;
+    color: #ff5722; /* Subtotal em laranja */
+}
+
+#cartSummary .list-group-item {
+    border-left: none;
+    border-right: none;
+    padding-left: 0;
+    padding-right: 0;
+}
+#cartSummary .list-group-item strong.total-value {
+    color: #ff5722; /* Valor total em laranja */
+    font-size: 1.3rem;
+}
+
+#customerInfoSection .alert {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#finalizeOrderButton:disabled {
+    background-color: #ccc !important;
+    border-color: #ccc !important;
+    cursor: not-allowed;
+}
+
+.footer.fixed-bottom {
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+}

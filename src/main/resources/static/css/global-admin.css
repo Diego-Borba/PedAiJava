@@ -1,0 +1,132 @@
+/* static/css/global-admin.css */
+body,
+html {
+    height: 100%;
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f8f9fa;
+}
+
+.wrapper {
+    display: flex;
+    min-height: 100vh;
+    flex-direction: column;
+}
+
+.main {
+    flex: 1;
+    display: flex;
+}
+
+.sidebar {
+    width: 250px;
+    background-color: #212529;
+    padding-top: 60px;
+    transition: width 0.3s;
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100%;
+    overflow-x: hidden;
+    z-index: 1000;
+}
+
+.sidebar.collapsed {
+    width: 80px;
+}
+
+.sidebar a,
+.sidebar .dropdown-toggle {
+    display: flex;
+    align-items: center;
+    padding: 12px 20px;
+    color: #adb5bd;
+    text-decoration: none;
+    white-space: nowrap;
+    overflow: hidden;
+    transition: 0.3s;
+}
+
+.sidebar .dropdown-toggle::after {
+    margin-left: auto;
+}
+
+.sidebar a .menu-text,
+.sidebar .dropdown-toggle .menu-text {
+    margin-left: 10px; /* Adaptado para funcionar com e sem dropdown */
+}
+
+
+.sidebar.collapsed a .menu-text,
+.sidebar.collapsed .dropdown-toggle .menu-text {
+    display: none;
+}
+
+.sidebar a:hover,
+.sidebar a.active,
+.sidebar .dropdown-toggle:hover, /* Adicionado para dropdown */
+.sidebar .dropdown-menu a:hover { /* Adicionado para itens do dropdown */
+    background-color: #343a40;
+    color: #ffffff;
+}
+
+.sidebar .toggle-btn {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: none;
+    border: none;
+    color: #adb5bd;
+    font-size: 1.5rem;
+}
+
+.content {
+    margin-left: 250px;
+    padding: 30px;
+    width: 100%; /* Alterado para ocupar o espaço restante */
+    transition: margin-left 0.3s;
+    flex-grow: 1; /* Garante que o conteúdo ocupe o espaço */
+}
+
+.content.collapsed {
+    margin-left: 80px;
+}
+
+footer {
+    background-color: #212529;
+    color: #adb5bd;
+    text-align: center;
+    padding: 10px 0;
+    font-size: 0.9rem;
+    /* margin-top: auto;  Removido pois .wrapper com flex-direction: column e .main com flex:1 já cuidam disso */
+}
+
+.table thead th {
+    background-color: #212529;
+    color: #ffffff;
+}
+
+@media (max-width: 768px) {
+    .sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+        padding-top: 15px; /* Ajuste para mobile */
+    }
+
+    .sidebar.collapsed {
+        width: 100%;
+    }
+    .sidebar .toggle-btn {
+        /* Ajustar se necessário para mobile, mas pode ser ok */
+    }
+
+    .content,
+    .content.collapsed {
+        margin-left: 0;
+        padding: 15px; /* Ajuste para mobile */
+    }
+    .main {
+        flex-direction: column; /* Empilha sidebar e content em mobile */
+    }
+}
