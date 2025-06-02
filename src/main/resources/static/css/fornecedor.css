@@ -1,0 +1,8 @@
+/* static/css/fornecedor.css */
+/* Estilos específicos para a página de cadastro de fornecedor, se houver. */
+/* O estilo de .container e body já vem do Bootstrap ou global-admin.css */
+/* Este arquivo pode estar vazio ou conter apenas ajustes muito específicos. */
+/* Foi adicionado um body.bg-light no HTML original, o que é uma classe Bootstrap. */
+/* Se quiser manter esse fundo específico SÓ para esta página, pode adicionar aqui: */
+/* body { background-color: #f8f9fa; padding: 1.5rem; } */
+/* Mas como está no HTML, já funciona. Deixando este CSS vazio por enquanto. */

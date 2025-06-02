@@ -3,123 +3,12 @@
 
 <head>
   <meta charset="UTF-8">
-  <title>Produtos - PedAi</title>
+  <title>Cadastro de Produto - PedAi</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-  <style>
-    body,
-    html {
-      height: 100%;
-      margin: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: #f8f9fa;
-    }
-
-    .wrapper {
-      display: flex;
-      min-height: 100vh;
-      flex-direction: column;
-    }
-
-    .main {
-      display: flex;
-    }
-
-    .sidebar {
-      width: 250px;
-      background-color: #212529;
-      padding-top: 60px;
-      transition: width 0.3s;
-      position: fixed;
-      top: 0;
-      left: 0;
-      height: 100%;
-      overflow-x: hidden;
-      z-index: 1000;
-    }
-
-    .sidebar.collapsed {
-      width: 80px;
-    }
-
-    .sidebar a {
-      display: flex;
-      align-items: center;
-      padding: 12px 20px;
-      color: #adb5bd;
-      text-decoration: none;
-      white-space: nowrap;
-      overflow: hidden;
-      transition: 0.3s;
-    }
-
-    .sidebar a .menu-text {
-      margin-left: 10px;
-    }
-
-    .sidebar.collapsed a .menu-text {
-      display: none;
-    }
-
-    .sidebar a:hover,
-    .sidebar a.active {
-      background-color: #343a40;
-      color: #ffffff;
-    }
-
-    .sidebar .toggle-btn {
-      position: absolute;
-      top: 15px;
-      right: 15px;
-      background: none;
-      border: none;
-      color: #adb5bd;
-      font-size: 1.5rem;
-    }
-
-    .content {
-      margin-left: 250px;
-      padding: 30px;
-      width: 100%;
-      transition: margin-left 0.3s;
-    }
-
-    .content.collapsed {
-      margin-left: 80px;
-    }
-
-    footer {
-      background-color: #212529;
-      color: #adb5bd;
-      text-align: center;
-      padding: 10px 0;
-      font-size: 0.9rem;
-      margin-top: auto;
-    }
-
-    .table thead th {
-      background-color: #212529;
-      color: #ffffff;
-    }
-
-    @media (max-width: 768px) {
-      .sidebar {
-        width: 100%;
-        height: auto;
-        position: relative;
-      }
-
-      .sidebar.collapsed {
-        width: 100%;
-      }
-
-      .content,
-      .content.collapsed {
-        margin-left: 0;
-      }
-    }
-  </style>
+  <link rel="stylesheet" href="../css/global-admin.css">
+  <link rel="stylesheet" href="../css/cadastro.css">
 </head>
 
 <body>
@@ -129,157 +18,90 @@
         <button class="toggle-btn" onclick="toggleSidebar()">
           <i class="bi bi-list"></i>
         </button>
-        <a href="cadastro.html"><i class="bi bi-plus-circle"></i><span class="menu-text">Cadastro</span></a>
-        <a href="Produtos.html" class="active"><i class="bi bi-box-seam"></i><span class="menu-text">Produtos</span></a>
-        <a href="Pedidos.html"><i class="bi bi-cart4"></i><span class="menu-text">Pedidos</span></a>
-        <a href="admin-pedidos.html"><i class="bi bi-speedometer2"></i><span class="menu-text">Painel Pedidos</span></a>
-        <a href="#"><i class="bi bi-bar-chart-line"></i><span class="menu-text">Relatórios</span></a>
-        <a href="#"><i class="bi bi-gear"></i><span class="menu-text">Configurações</span></a>
-      </div>
+        
+        <div class="dropdown">
+          <a class="dropdown-toggle text-decoration-none active" href="#" role="button" id="cadastroMenu" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="bi bi-plus-circle"></i><span class="menu-text">Cadastro</span>
+          </a>
+          <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="cadastroMenu">
+            <li><a class="dropdown-item active" href="cadastro.html">Produtos</a></li>
+            <li><a class="dropdown-item" href="fornecedor.html">Fornecedores</a></li>
+            </ul>
+        </div>
 
-      <!-- Conteúdo principal -->
+        <a href="Pedidos.html"><i class="bi bi-cart4"></i><span class="menu-text">Pedidos</span></a>
+        <a href="entrada.html"><i class="bi bi-box-arrow-in-down"></i><span class="menu-text">Entradas</span></a>
+        <a href="admin-pedidos.html"><i class="bi bi-speedometer2"></i><span class="menu-text">Painel Pedidos</span></a>
+        <a href="Produtos.html"><i class="bi bi-box-seam"></i><span class="menu-text">Listar Produtos</span></a>
+        </div>
+
       <div class="content" id="content">
         <h1 class="mb-4">Cadastro de Produto</h1>
 
-        <form id="formProduto" class="mb-5">
+        <form id="formProduto" class="mb-5 needs-validation" novalidate>
           <div class="row g-3">
-            <div class="col-md-6">
-              <label class="form-label">Nome</label>
+            <div class="col-md-8">
+              <label for="nome" class="form-label">Nome do Produto</label>
               <input type="text" class="form-control" id="nome" required>
+              <div class="invalid-feedback">Por favor, informe o nome do produto.</div>
             </div>
-            <div class="col-md-3">
-              <label class="form-label">Preço</label>
-              <input type="number" class="form-control" id="preco" step="0.01" required>
-            </div>
-            <div class="col-md-3">
-              <label class="form-label">Quantidade Máxima</label>
-              <input type="number" class="form-control" id="qtdeMax" required>
-            </div>
-            <div class="col-md-6">
-              <label class="form-label">Categoria</label>
-              <input type="text" class="form-control" id="categoria">
-            </div>
-            <div class="col-md-6">
-              <label class="form-label">Código PDV</label>
-              <input type="text" class="form-control" id="codigoPdv">
-            </div>
-            <div class="col-md-6">
-              <label class="form-label">Descrição</label>
-              <textarea class="form-control" id="descricao"></textarea>
-            </div>
-            <div class="col-md-6">
-              <label class="form-label">Ordem Visualização</label>
-              <input type="number" class="form-control" id="ordemVisualizacao">
-            </div>
-            <div class="col-md-12">
-              <label class="form-label">Imagem (URL)</label>
-              <input type="text" class="form-control" id="imagem">
+            <div class="col-md-4">
+              <label for="preco" class="form-label">Preço (R$)</label>
+              <input type="number" class="form-control" id="preco" step="0.01" min="0" required>
+              <div class="invalid-feedback">Por favor, informe um preço válido.</div>
             </div>
           </div>
-          <button type="submit" class="btn btn-success mt-4">Salvar Produto</button>
+
+          <div class="row g-3 mt-2">
+            <div class="col-md-5">
+              <label for="categoria" class="form-label">Categoria</label>
+              <input type="text" class="form-control" id="categoria">
+            </div>
+            <div class="col-md-3">
+                <label for="qtdeMax" class="form-label">Qtde Máx. (Pedido)</label>
+                <input type="number" class="form-control" id="qtdeMax" min="1" required>
+                <div class="invalid-feedback">Informe a quantidade máxima por pedido.</div>
+            </div>
+            <div class="col-md-4">
+              <label for="codigoPdv" class="form-label">Código PDV / Referência</label>
+              <input type="text" class="form-control" id="codigoPdv">
+            </div>
+          </div>
+
+          <div class="row g-3 mt-2">
+            <div class="col-md-9">
+              <label for="descricao" class="form-label">Descrição</label>
+              <textarea class="form-control" id="descricao" rows="2"></textarea>
+            </div>
+            <div class="col-md-3">
+              <label for="ordemVisualizacao" class="form-label">Ordem no Cardápio</label>
+              <input type="number" class="form-control" id="ordemVisualizacao" placeholder="Ex: 1, 2, 3...">
+            </div>
+          </div>
+        
+          <div class="mt-3">
+            <label for="imagem" class="form-label">URL da Imagem</label>
+            <input type="text" class="form-control" id="imagem" placeholder="https://exemplo.com/imagem.jpg">
+          </div>
+
+          <button type="submit" class="btn btn-success mt-4">
+            <i class="bi bi-check-circle"></i> Salvar Produto
+          </button>
+          <a href="Produtos.html" class="btn btn-secondary mt-4">
+            <i class="bi bi-list-ul"></i> Ver Lista de Produtos
+          </a>
         </form>
       </div>
     </div>
 
-    <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="editModalLabel">Editar Produto</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
-          </div>
-          <div class="modal-body">
-            <form id="formEditProduto">
-              <div class="mb-3">
-                <label for="editNome" class="form-label">Nome</label>
-                <input type="text" class="form-control" id="editNome" required>
-              </div>
-              <div class="mb-3">
-                <label for="editPreco" class="form-label">Preço</label>
-                <input type="number" class="form-control" id="editPreco" step="0.01" required>
-              </div>
-              <div class="mb-3">
-                <label for="editQtdeMax" class="form-label">Quantidade Máxima</label>
-                <input type="number" class="form-control" id="editQtdeMax" required>
-              </div>
-              <div class="mb-3">
-                <label for="editCategoria" class="form-label">Categoria</label>
-                <input type="text" class="form-control" id="editCategoria">
-              </div>
-              <div class="mb-3">
-                <label for="editCodigoPdv" class="form-label">Código PDV</label>
-                <input type="text" class="form-control" id="editCodigoPdv">
-              </div>
-              <div class="mb-3">
-                <label for="editDescricao" class="form-label">Descrição</label>
-                <textarea class="form-control" id="editDescricao"></textarea>
-              </div>
-              <div class="mb-3">
-                <label for="editOrdemVisualizacao" class="form-label">Ordem Visualização</label>
-                <input type="number" class="form-control" id="editOrdemVisualizacao">
-              </div>
-              <div class="mb-3">
-                <label for="editImagem" class="form-label">Imagem (URL)</label>
-                <input type="text" class="form-control" id="editImagem">
-              </div>
-              <button type="submit" class="btn btn-primary">Salvar Alterações</button>
-            </form>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Footer -->
-    <footer>
-      <p>&copy; 2025 Sua Empresa. Todos os direitos reservados.</p>
+    <footer class="mt-auto">
+      <p>&copy; 2025 PedAi. Todos os direitos reservados.</p>
     </footer>
   </div>
 
-  <script>
-    function toggleSidebar() {
-      const sidebar = document.getElementById('sidebar');
-      const content = document.getElementById('content');
-      sidebar.classList.toggle('collapsed');
-      content.classList.toggle('collapsed');
-    }
-
-    document.getElementById('formProduto').addEventListener('submit', function (e) {
-      e.preventDefault();
-
-      const produto = {
-        nome: document.getElementById('nome').value,
-        preco: parseFloat(document.getElementById('preco').value),
-        qtdeMax: parseInt(document.getElementById('qtdeMax').value),
-        categoria: document.getElementById('categoria').value,
-        codigoPdv: document.getElementById('codigoPdv').value,
-        descricao: document.getElementById('descricao').value,
-        ordemVisualizacao: parseInt(document.getElementById('ordemVisualizacao').value),
-        imagem: document.getElementById('imagem').value
-      };
-
-      fetch('/api/produtos', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(produto)
-      })
-        .then(res => res.json())  // Aqui garantimos que a resposta seja convertida em JSON
-        .then(data => {
-          if (data.id) {
-            alert('Produto cadastrado com sucesso!');
-            document.getElementById('formProduto').reset();
-          } else {
-            alert('Erro ao cadastrar produto');
-          }
-        })
-        .catch(error => {
-          console.error('Erro:', error);
-          alert('Erro ao comunicar com o backend');
-        });
-    });
-
-    
-  </script>
-  </script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="../js/global-admin.js"></script>
+  <script src="../js/cadastro.js"></script>
 </body>
-
 </html>
