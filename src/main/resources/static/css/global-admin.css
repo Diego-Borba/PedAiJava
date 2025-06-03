@@ -1,4 +1,7 @@
 /* static/css/global-admin.css */
+
+/* ... (começo do seu arquivo global-admin.css existente) ... */
+
 body,
 html {
     height: 100%;
@@ -18,21 +21,22 @@ html {
     display: flex;
 }
 
+/* Definições da Sidebar (aplicáveis a desktop e base para mobile) */
 .sidebar {
-    width: 250px;
     background-color: #212529;
     padding-top: 60px;
-    transition: width 0.3s;
+    transition: width 0.3s ease-in-out; /* Transição na largura */
     position: fixed;
     top: 0;
     left: 0;
     height: 100%;
-    overflow-x: hidden;
-    z-index: 1000;
+    overflow-x: hidden; /* Importante para não mostrar scrollbar horizontal quando os textos são cortados */
+    z-index: 1030;
+    width: 250px; /* Largura padrão quando ABERTA */
 }
 
 .sidebar.collapsed {
-    width: 80px;
+    width: 80px; /* Largura padrão quando RECOLHIDA (desktop e mobile) */
 }
 
 .sidebar a,
@@ -42,34 +46,41 @@ html {
     padding: 12px 20px;
     color: #adb5bd;
     text-decoration: none;
-    white-space: nowrap;
-    overflow: hidden;
-    transition: 0.3s;
+    white-space: nowrap; /* Impede que o texto quebre linha e vaze */
+    overflow: hidden; /* Esconde o texto que transborda */
+    transition: background-color 0.3s;
 }
 
 .sidebar .dropdown-toggle::after {
     margin-left: auto;
 }
 
+/* Gerenciamento do texto do menu */
 .sidebar a .menu-text,
 .sidebar .dropdown-toggle .menu-text {
-    margin-left: 10px; /* Adaptado para funcionar com e sem dropdown */
+    margin-left: 10px;
+    display: inline-block; /* Padrão para mostrar texto */
+    transition: opacity 0.2s ease-in-out; /* Transição suave para o texto sumir/aparecer */
+    opacity: 1;
 }
-
 
 .sidebar.collapsed a .menu-text,
 .sidebar.collapsed .dropdown-toggle .menu-text {
-    display: none;
+    display: none; /* Ou opacity: 0; pointer-events: none; para uma transição mais suave se display:none quebrar */
+    opacity: 0; /* Esconde o texto suavemente */
+    pointer-events: none; /* Impede interação com texto invisível */
 }
+
 
 .sidebar a:hover,
 .sidebar a.active,
-.sidebar .dropdown-toggle:hover, /* Adicionado para dropdown */
-.sidebar .dropdown-menu a:hover { /* Adicionado para itens do dropdown */
+.sidebar .dropdown-toggle:hover,
+.sidebar .dropdown-menu a:hover {
     background-color: #343a40;
     color: #ffffff;
 }
 
+/* Botão de Toggle (Hambúrguer) */
 .sidebar .toggle-btn {
     position: absolute;
     top: 15px;
@@ -78,18 +89,20 @@ html {
     border: none;
     color: #adb5bd;
     font-size: 1.5rem;
+    z-index: 1031;
 }
 
+/* Conteúdo Principal */
 .content {
-    margin-left: 250px;
     padding: 30px;
-    width: 100%; /* Alterado para ocupar o espaço restante */
-    transition: margin-left 0.3s;
-    flex-grow: 1; /* Garante que o conteúdo ocupe o espaço */
+    width: 100%;
+    flex-grow: 1;
+    transition: margin-left 0.3s ease-in-out;
+    margin-left: 250px; /* Padrão para sidebar ABERTA (desktop) */
 }
 
 .content.collapsed {
-    margin-left: 80px;
+    margin-left: 80px; /* Padrão para sidebar RECOLHIDA (desktop e mobile com sidebar de ícones) */
 }
 
 footer {
@@ -98,7 +111,6 @@ footer {
     text-align: center;
     padding: 10px 0;
     font-size: 0.9rem;
-    /* margin-top: auto;  Removido pois .wrapper com flex-direction: column e .main com flex:1 já cuidam disso */
 }
 
 .table thead th {
@@ -106,27 +118,92 @@ footer {
     color: #ffffff;
 }
 
+
+/* --- ESTILOS PARA MOBILE --- */
 @media (max-width: 768px) {
     .sidebar {
-        width: 100%;
-        height: auto;
-        position: relative;
-        padding-top: 15px; /* Ajuste para mobile */
+        /* `position: fixed`, `top: 0`, `left: 0`, `height: 100%`, `z-index: 1030` já definidos */
+        /* A largura será controlada pela classe .collapsed (80px) ou ausência dela (250px) */
+        padding-top: 50px; /* Ajuste o padding se necessário */
+    }
+
+    /* .sidebar.collapsed já define width: 80px globalmente */
+    
+    .sidebar:not(.collapsed) { /* Sidebar aberta em mobile */
+        width: 250px; /* Mantém a largura de expansão */
+        box-shadow: 3px 0px 10px rgba(0,0,0,0.3); /* Sombra para destacar quando aberta como overlay */
+    }
+
+    /* Ajuste para o botão de toggle se a sidebar de 80px for muito estreita */
+    .sidebar .toggle-btn {
+        top: 10px; /* Um pouco mais para cima em mobile */
+        right: 10px; /* Um pouco mais para dentro em mobile */
+        font-size: 1.4rem; /* Ligeiramente menor se necessário */
+    }
+
+    /* Ocultar texto na sidebar recolhida em mobile já é coberto pela regra global:
+    .sidebar.collapsed a .menu-text { display: none; opacity: 0; } */
+
+    /* Conteúdo principal em mobile */
+    .content,
+    .content.collapsed { /* Em mobile, a margem do conteúdo é sempre para a sidebar recolhida (80px) */
+        margin-left: 80px;
+        padding: 15px;
+    }
+}
+
+/* --- ESTILOS PARA DESKTOP (garante que os padrões de desktop sejam aplicados/reafirmados) --- */
+@media (min-width: 769px) {
+    .sidebar {
+        width: 250px; /* Largura padrão da sidebar aberta */
+        padding-top: 60px; /* Padding original de desktop */
     }
 
     .sidebar.collapsed {
-        width: 100%;
-    }
-    .sidebar .toggle-btn {
-        /* Ajustar se necessário para mobile, mas pode ser ok */
+        width: 80px; /* Largura da sidebar recolhida em desktop */
     }
 
-    .content,
+    .sidebar .toggle-btn {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        font-size: 1.5rem; /* Garante tamanho original */
+    }
+    
+    /* Textos do menu em desktop */
+    .sidebar:not(.collapsed) a .menu-text,
+    .sidebar:not(.collapsed) .dropdown-toggle .menu-text {
+        display: inline-block;
+        opacity: 1;
+    }
+    .sidebar.collapsed a .menu-text,
+    .sidebar.collapsed .dropdown-toggle .menu-text {
+        display: none; /* Ou opacity: 0; */
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    .content {
+        margin-left: 250px;
+    }
+
     .content.collapsed {
-        margin-left: 0;
-        padding: 15px; /* Ajuste para mobile */
+        margin-left: 80px;
     }
-    .main {
-        flex-direction: column; /* Empilha sidebar e content em mobile */
-    }
+}
+
+/* Overlay e trava de rolagem para mobile QUANDO SIDEBAR ESTÁ ABERTA */
+body.sidebar-mobile-open {
+    overflow: hidden; 
+}
+
+body.sidebar-mobile-open::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1029; /* Abaixo da sidebar aberta, mas acima do conteúdo */
 }
