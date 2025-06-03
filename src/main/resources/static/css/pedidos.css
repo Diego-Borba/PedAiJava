@@ -1,12 +1,13 @@
 /* static/css/pedidos.css */
 body {
-    background-color: #f8f9fa; /* Um cinza claro para o fundo geral */
+    background-color: #f8f9fa;
     color: #343a40;
     font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    overflow-x: hidden; /* Prevenir scroll horizontal acidental */
 }
 
 .navbar {
-    background-color: #ff5722; /* Cor laranja principal */
+    background-color: #ff5722;
     padding-top: 0.8rem;
     padding-bottom: 0.8rem;
 }
@@ -15,7 +16,7 @@ body {
     font-size: 1.6rem;
     font-weight: bold;
     letter-spacing: 0.5px;
-    color: #ffffff !important; /* Garante que o texto da marca seja branco */
+    color: #ffffff !important;
 }
 .navbar-brand i {
     margin-right: 8px;
@@ -23,97 +24,108 @@ body {
 
 .nav-link {
     font-size: 0.95rem;
-    color: #ffffff !important; /* Cor do link da navbar */
+    color: #ffffff !important;
 }
 .nav-link i {
     margin-right: 5px;
 }
 .nav-link:hover, .nav-link:focus {
-    color: #f0f0f0 !important; /* Cor do link da navbar no hover */
+    color: #f0f0f0 !important;
 }
 
-
-#cartCountNavbar { /* ID atualizado para o contador na navbar */
+#cartCountNavbar {
     font-size: 0.7rem;
     padding: 0.3em 0.6em;
     vertical-align: super;
-    background-color: #ffffff; /* Fundo branco para o badge */
-    color: #ff5722; /* Texto laranja no badge */
+    background-color: #ffffff;
+    color: #ff5722;
     font-weight: bold;
 }
 
-
 .page-title {
-    color: #ff5722; /* Título da página em laranja */
+    color: #ff5722;
     font-weight: 700;
-    font-size: 2.2rem;
+    font-size: 2.2rem; /* Desktop */
 }
 .page-title i {
-    color: #ffc107; /* Cor para o ícone de estrelas, se mantido */
+    color: #ffc107;
 }
-
 
 .category-buttons {
     text-align: center;
     padding-bottom: 10px;
     border-bottom: 1px solid #e0e0e0;
+    margin-bottom: 1.5rem;
 }
 
 .category-buttons .btn {
-    margin: 5px 8px;
-    border-radius: 50rem; /* Botões pill */
+    margin: 5px 8px; /* Desktop */
+    border-radius: 50rem;
     font-weight: 500;
-    padding: 0.5rem 1.2rem;
+    padding: 0.5rem 1.2rem; /* Desktop */
     transition: all 0.3s ease;
-    border: 2px solid #ffc9ac; /* Borda laranja claro */
-    color: #ff5722; /* Texto laranja */
+    border: 2px solid #ffc9ac;
+    color: #ff5722;
     background-color: #fff;
 }
 
 .category-buttons .btn.active,
 .category-buttons .btn:hover {
-    background-color: #ff5722; /* Cor laranja no hover/active */
+    background-color: #ff5722;
     color: white;
     border-color: #ff5722;
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(255, 87, 34, 0.3); /* Sombra laranja */
+    box-shadow: 0 4px 12px rgba(255, 87, 34, 0.3);
 }
 .category-buttons .btn:not(.active):hover {
-     background-color: #fff5f0; /* Fundo muito leve no hover para botões não ativos */
+     background-color: #fff5f0;
      color: #ff5722;
 }
 
+/* O container dos cards já tem g-3 (gutter) vindo do HTML da row */
+/* #produtosContainer { } */
 
 .produto-card {
-    border: 1px solid #ffe0cc; /* Borda laranja bem clara */
+    border: 1px solid #ffe0cc;
     border-radius: 15px;
-    overflow: hidden;
+    overflow: hidden; /* Importante para o border-radius funcionar com a imagem */
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     background-color: #ffffff;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-    display: flex;
-    flex-direction: column;
+    display: flex; /* Para que align-items-stretch funcione (vem do JS) */
+    flex-direction: column; /* Para o card-body poder usar flex-grow e mt-auto no botão */
+    width: 100%; /* GARANTE QUE O CARD TENTE OCUPAR O ESPAÇO DA COLUNA BOOTSTRAP */
+                 /* Se as classes col-* já não fizerem isso por padrão, esta é uma segurança. */
 }
 
 .produto-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 10px 25px rgba(255, 87, 34, 0.15); /* Sombra laranja no hover */
+    box-shadow: 0 10px 25px rgba(255, 87, 34, 0.15);
 }
 
 .produto-card .card-img-top-wrapper {
-    height: 200px;
+    position: relative;
+    width: 100%; /* O wrapper da imagem ocupa toda a largura do card */
+    padding-top: 80%;   /* BASE: Proporção para desktop (4 colunas). Ajuste se necessário (ex: 75% para 4:3, 100% para 1:1) */
+    min-height: 160px;  /* BASE: Altura mínima para desktop. Ajuste! */
     overflow: hidden;
-    border-bottom: 3px solid #ff5722; /* Borda inferior da imagem em laranja */
+    border-bottom: 3px solid #ff5722;
+    background-color: #f0f0f0;
+    transition: padding-top 0.2s ease, min-height 0.2s ease;
 }
+
 .produto-card .card-img-top-wrapper img {
+    position: absolute;
+    top: 0;
+    left: 0;
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain;
+    object-position: center;
 }
 
-
 .produto-card .card-body {
-    padding: 1.25rem;
+    padding: 1rem;
     text-align: left;
     flex-grow: 1;
     display: flex;
@@ -121,56 +133,106 @@ body {
 }
 
 .produto-card .card-title {
-    font-size: 1.3rem;
+    font-size: 1.1rem;
     font-weight: 600;
-    color: #333; /* Título do produto mais escuro para legibilidade */
-    margin-bottom: 0.5rem;
+    color: #333;
+    margin-bottom: 0.4rem;
 }
 
 .produto-card .card-text.descricao {
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     color: #6c757d;
-    margin-bottom: 0.75rem;
-    min-height: 40px;
+    margin-bottom: 0.5rem;
+    min-height: 30px;
+    flex-grow: 1;
 }
 
 .produto-card .card-text.categoria {
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     color: #888;
-    margin-bottom: 1rem;
+    margin-bottom: 0.75rem;
 }
 
-
 .produto-card .preco {
-    font-size: 1.5rem;
+    font-size: 1.25rem;
     font-weight: bold;
-    color: #ff5722; /* Preço em laranja */
-    margin-bottom: 1rem;
+    color: #ff5722;
+    margin-bottom: 0.75rem;
 }
 
 .produto-card .btn-add-carrinho {
-    background-color: #ff7043; /* Botão "Adicionar" em um tom de laranja */
+    background-color: #ff7043;
     color: white;
     border: none;
-    font-weight: 600;
-    padding: 0.6rem 1rem;
+    font-weight: 500;
+    padding: 0.5rem 0.8rem;
     border-radius: 8px;
     transition: background-color 0.2s ease, transform 0.2s ease;
     margin-top: auto;
+    font-size: 0.9rem;
 }
-
 .produto-card .btn-add-carrinho:hover {
-    background-color: #f4511e; /* Laranja mais escuro no hover */
+    background-color: #f4511e;
     color: white;
     transform: scale(1.03);
 }
 .produto-card .btn-add-carrinho i {
-    margin-right: 8px;
+    margin-right: 6px;
 }
 
 #loadingIndicator {
-    padding: 3rem 0;
+    /* Estilos para o loading indicator, se necessário, mas não deve afetar a largura dos cards */
 }
 .spinner-border {
-    color: #ff5722; /* Spinner em laranja */
+    color: #ff5722;
+}
+
+/* MEDIA QUERIES PARA AJUSTES RESPONSIVOS */
+
+/* Telas Médias (md) - 2 CARDS POR LINHA (>=768px e <992px) */
+@media (min-width: 768px) and (max-width: 991.98px) {
+    .page-title { font-size: 2rem; }
+
+    .produto-card .card-img-top-wrapper {
+        padding-top: 75%;
+        min-height: 190px; /* Ajuste para 2 colunas */
+    }
+    .produto-card .card-title { font-size: 1.15rem; }
+    .produto-card .preco { font-size: 1.3rem; }
+    .produto-card .card-body { padding: 0.9rem; }
+    .produto-card .btn-add-carrinho { padding: 0.55rem 0.9rem; font-size: 0.9rem;}
+}
+
+/* Telas Pequenas (sm) e Extra Pequenas (xs) - 1 CARD POR LINHA (<768px) */
+@media (max-width: 767.98px) {
+    .page-title { font-size: 1.8rem; margin-bottom: 1.2rem; }
+
+    .category-buttons .btn { padding: 0.4rem 0.9rem; font-size: 0.9rem; margin: 4px 5px; }
+
+    .produto-card .card-img-top-wrapper {
+        padding-top: 70%;   /* Proporção para card largo. Ex: 60-75% */
+        min-height: 200px;  /* Altura mínima para card largo. Ex: 200px, 220px */
+    }
+
+    .produto-card .card-body { padding: 1rem; }
+    .produto-card .card-title { font-size: 1.2rem; margin-bottom: 0.5rem; }
+    .produto-card .card-text.descricao { font-size: 0.9rem; min-height: 35px; margin-bottom: 0.75rem; }
+    .produto-card .card-text.categoria { font-size: 0.85rem; margin-bottom: 1rem; }
+    .produto-card .preco { font-size: 1.4rem; margin-bottom: 1rem; }
+    .produto-card .btn-add-carrinho { font-size: 1rem; padding: 0.6rem 1rem; }
+}
+
+/* Ajustes ainda mais finos para telas extra pequenas (<420px) */
+@media (max-width: 420px) {
+    .page-title { font-size: 1.6rem; }
+    .category-buttons .btn { font-size: 0.85rem; padding: 0.35rem 0.7rem; margin: 3px; }
+
+    .produto-card .card-img-top-wrapper {
+        padding-top: 75%; /* Pode voltar a uma proporção mais quadrada aqui */
+        min-height: 170px; /* Reduzir um pouco o min-height */
+    }
+    .produto-card .card-title { font-size: 1.05rem; }
+    .produto-card .preco { font-size: 1.2rem; }
+    .produto-card .card-text.descricao { font-size: 0.8rem; min-height: 25px;}
+    .produto-card .btn-add-carrinho { font-size: 0.9rem; padding: 0.5rem 0.8rem;}
 }
