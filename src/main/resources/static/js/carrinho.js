@@ -1,7 +1,7 @@
 // static/js/carrinho.js
-const CART_STORAGE_KEY = 'pedAiCart';
-const CUSTOMER_STORAGE_KEY = 'pedAiCustomer';
-const PLACEHOLDER_IMAGE = 'https://via.placeholder.com/150x150.png?text=PedAi';
+const CART_STORAGE_KEY = 'pedAiCart'; //
+const CUSTOMER_STORAGE_KEY = 'pedAiCustomer'; //
+const PLACEHOLDER_IMAGE = 'https://via.placeholder.com/150x150.png?text=PedAi'; //
 
 let cart = {};
 let loggedInCustomer = null;
@@ -35,7 +35,9 @@ function updateCartCountNavbar() {
     if (!cartCountEl) return;
     let totalItensNoCarrinho = 0;
     Object.values(cart).forEach(item => {
-        totalItensNoCarrinho += item.qtde;
+        if (item && typeof item.qtde === 'number') { // Verifica se item e item.qtde são válidos
+            totalItensNoCarrinho += item.qtde;
+        }
     });
     cartCountEl.innerText = totalItensNoCarrinho;
 }
@@ -46,23 +48,25 @@ function displayCartItems() {
     const checkoutSection = document.getElementById('checkoutSection');
 
     if (!container || !emptyCartMessage || !checkoutSection) {
-        console.error("Elementos essenciais do carrinho (cartItemsContainer, emptyCartMessage ou checkoutSection) não encontrados no DOM.");
+        // Este erro ainda é útil para debug inicial, mas com recarregamento,
+        // é menos provável que seja a causa de não atualização se o HTML estiver correto.
+        console.error("Elementos essenciais do carrinho (cartItemsContainer, emptyCartMessage ou checkoutSection) não encontrados no DOM durante displayCartItems."); //
         return;
     }
-    container.innerHTML = ''; // Limpa itens antigos
+    container.innerHTML = '';
 
     const productIds = Object.keys(cart);
 
     if (productIds.length === 0) {
-        emptyCartMessage.style.display = 'block';
-        checkoutSection.style.display = 'none';
+        emptyCartMessage.style.display = 'block'; //
+        checkoutSection.style.display = 'none'; //
         updateCartSummary(0, 0);
-        updateCartCountNavbar(); // Garante que a navbar também seja atualizada para 0 aqui
+        // updateCartCountNavbar() já é chamado no onload
         return;
     }
 
-    emptyCartMessage.style.display = 'none';
-    checkoutSection.style.display = 'block';
+    emptyCartMessage.style.display = 'none'; //
+    checkoutSection.style.display = 'block'; //
 
     let totalGeralCompra = 0;
     let totalItensIndividuais = 0;
@@ -71,14 +75,14 @@ function displayCartItems() {
         const item = cart[id];
         if (!item || typeof item.preco !== 'number' || typeof item.qtde !== 'number') {
             console.warn(`Item inválido ou sem preço/quantidade no carrinho: ID ${id}`, item);
-            return; // Pula itens inválidos para evitar erros
+            return; 
         }
         const subtotal = item.preco * item.qtde;
         totalGeralCompra += subtotal;
         totalItensIndividuais += item.qtde;
 
         const itemRow = document.createElement('div');
-        itemRow.className = 'cart-item-row d-flex align-items-center';
+        itemRow.className = 'cart-item-row d-flex align-items-center'; //
         itemRow.innerHTML = `
             <img src="${item.imagem || PLACEHOLDER_IMAGE}" alt="${item.nome || 'Produto'}" class="cart-item-img">
             <div class="flex-grow-1 cart-item-details">
@@ -123,44 +127,54 @@ function updateCartSummary(totalGeral, totalItens) {
     `;
 }
 
+// REATORADO: handleChangeQuantity agora recarrega a página
 function handleChangeQuantity(productId, newQuantity) {
+    cart = getCartFromStorage(); // Garante que estamos trabalhando com o carrinho mais recente
     const item = cart[productId];
     if (!item) return;
+
     newQuantity = parseInt(newQuantity);
 
     if (newQuantity <= 0) {
-        handleRemoveItem(productId);
+        // Se a quantidade for zero ou menos, removemos o item e recarregamos
+        delete cart[productId];
+        saveCartToStorage();
+        window.location.reload(); // Recarrega a página
         return;
     }
+
     if (item.qtdeMax && newQuantity > item.qtdeMax) {
         Swal.fire({
             text: `A quantidade máxima para "${item.nome}" é ${item.qtdeMax}.`,
             icon: 'info', toast: true, position: 'top-end', showConfirmButton: false, timer: 3000
         });
-        return;
+        return; // Não faz nada se exceder o máximo, não recarrega
     }
+
     item.qtde = newQuantity;
     saveCartToStorage();
-    displayCartItems(); // Re-renderiza a lista e o resumo
-    updateCartCountNavbar(); // Atualiza o contador da navbar
+    window.location.reload(); // Recarrega a página para refletir a mudança
 }
 
+// REATORADO: handleRemoveItem agora recarrega a página
 function handleRemoveItem(productId) {
+    cart = getCartFromStorage(); // Garante que estamos trabalhando com o carrinho mais recente
     const itemRemovido = cart[productId];
-    if (!itemRemovido) return; // Item já pode ter sido removido
+    if (!itemRemovido) return; 
 
     delete cart[productId];
     saveCartToStorage();
-    displayCartItems(); // Re-renderiza a lista e o resumo
-    updateCartCountNavbar(); // Atualiza o contador da navbar
-
+    
+    // Mostra a notificação ANTES de recarregar
     Swal.fire({
         text: `"${itemRemovido.nome}" removido do carrinho.`,
-        icon: 'info', toast: true, position: 'top-end', showConfirmButton: false, timer: 2000
+        icon: 'info', toast: true, position: 'top-end', showConfirmButton: false, timer: 1500 // Tempo menor para o usuário ver
+    }).then(() => {
+        window.location.reload(); // Recarrega a página
     });
 }
 
-// --- Lógica de Cliente e Finalização ---
+// --- Lógica de Cliente e Finalização (sem alterações aqui, pois já funcionam com recarregamento ou modais) ---
 async function fetchAddressFromViaCEP(cep) {
     const cleanCep = cep.replace(/\D/g, '');
     if (cleanCep.length !== 8) {
@@ -192,7 +206,7 @@ async function handleRegister() {
     const { value: formValues, isConfirmed } = await Swal.fire({
         title: 'Crie sua Conta',
         html: `
-            <div style="text-align: left; max-height: 70vh; overflow-y: auto; padding-right: 15px;"> {/* Scroll para modal longo */}
+            <div style="text-align: left; max-height: 70vh; overflow-y: auto; padding-right: 15px;">
                 <label for="swal-input-name-reg" class="swal2-label">Nome Completo:</label>
                 <input id="swal-input-name-reg" class="swal2-input" placeholder="Seu nome completo" required>
 
@@ -248,14 +262,14 @@ async function handleRegister() {
             </div>
         `,
         focusConfirm: false,
-        width: '90%',
+        width: '90%', //
         customClass: {
-            label: 'form-label text-start d-block mb-1 mt-2', // Ajuste para melhor espaçamento dos labels
-            input: 'form-control form-control-sm', // Para consistência com inputs do Bootstrap
-            htmlContainer: 'swal2-html-container-custom' // Para CSS customizado se necessário
+            label: 'form-label text-start d-block mb-1 mt-2', 
+            input: 'form-control form-control-sm', 
+            htmlContainer: 'swal2-html-container-custom' 
         },
         confirmButtonText: 'Cadastrar e Entrar <i class="bi bi-check-circle"></i>',
-        confirmButtonColor: '#28a745',
+        confirmButtonColor: '#28a745', //
         showCancelButton: true,
         cancelButtonText: 'Cancelar',
         didOpen: () => {
@@ -267,7 +281,6 @@ async function handleRegister() {
             const estadoInput = document.getElementById('swal-input-estado-reg');
             const numeroInput = document.getElementById('swal-input-numero-reg');
 
-            // Aplicar máscara simples de CEP (opcional, mas melhora UX)
             cepInput.addEventListener('input', (e) => {
                 let value = e.target.value.replace(/\D/g, '');
                 if (value.length > 5) {
@@ -296,7 +309,7 @@ async function handleRegister() {
             };
             
             const handleCepSearch = async () => {
-                const cep = cepInput.value.replace(/\D/g, ''); // Limpa máscara antes de enviar
+                const cep = cepInput.value.replace(/\D/g, ''); 
                 if (cep.length !== 8) {
                      Swal.showValidationMessage('CEP deve ter 8 números.');
                      return;
@@ -320,7 +333,7 @@ async function handleRegister() {
             });
         },
         preConfirm: () => {
-            const getVal = (id) => document.getElementById(id)?.value || ''; // Adiciona verificação de nulidade
+            const getVal = (id) => document.getElementById(id)?.value || ''; 
             const nome = getVal('swal-input-name-reg');
             const telefone = getVal('swal-input-phone-reg').replace(/\D/g, '');
             const cep = getVal('swal-input-cep-reg').replace(/\D/g, '');
@@ -343,8 +356,8 @@ async function handleRegister() {
             if (!bairro.trim()) errors.push("Bairro");
             if (!cidade.trim()) errors.push("Cidade");
             if (!estado.trim()) errors.push("Estado (UF)");
-            if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errors.push("E-mail válido"); // Validação simples de email
-            if (!password || password.length < 6) errors.push("Senha (mínimo 6 caracteres)"); // Exemplo de validação de senha
+            if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errors.push("E-mail válido"); 
+            if (!password || password.length < 6) errors.push("Senha (mínimo 6 caracteres)"); 
 
             if (errors.length > 0) {
                 Swal.showValidationMessage(`Campos obrigatórios ou inválidos: ${errors.join(', ')}.`);
@@ -362,7 +375,7 @@ async function handleRegister() {
             telefone: formValues.telefone, endereco: formValues.endereco
         };
         saveCustomerToStorage(loggedInCustomer);
-        updateCustomerUI();
+        updateCustomerUI(); // Isso ainda é útil para atualizar a UI de cliente logado/deslogado
         Swal.fire('Cadastro Realizado!', 'Bem-vindo(a) ao PedAi! Você já está logado.', 'success');
     }
 }
@@ -373,10 +386,16 @@ function updateCustomerUI() {
     const customerNameEl = document.getElementById('customerName');
     const customerDetailsEl = document.getElementById('customerDetails');
 
+    if (!loggedInDiv || !guestDiv) { // Adiciona verificação para os elementos principais da UI do cliente
+        // console.warn("Elementos da UI do cliente (loggedInCustomer ou guestCustomer) não encontrados.");
+        // Não para a execução, mas o update da UI do cliente não funcionará completamente.
+    }
+
+
     if (loggedInCustomer) {
         if(customerNameEl) customerNameEl.textContent = loggedInCustomer.nome || 'Cliente';
         
-        if (customerDetailsEl && loggedInCustomer.endereco && loggedInCustomer.endereco.cep) { // Verifica se há endereço e CEP
+        if (customerDetailsEl && loggedInCustomer.endereco && loggedInCustomer.endereco.cep) { 
             const addr = loggedInCustomer.endereco;
             customerDetailsEl.innerHTML = `
                 <small>
@@ -387,17 +406,17 @@ function updateCustomerUI() {
                     ${addr.referencia ? `<br><strong>Ref:</strong> ${addr.referencia}` : ''}
                 </small>
             `;
-            customerDetailsEl.style.display = 'block';
+            customerDetailsEl.style.display = 'block'; //
         } else if (customerDetailsEl) {
             customerDetailsEl.innerHTML = '<small><em>Endereço não cadastrado. Por favor, atualize seu cadastro.</em></small>';
-            customerDetailsEl.style.display = 'block'; // Mostra a mensagem
+            customerDetailsEl.style.display = 'block'; 
         }
-        if(loggedInDiv) loggedInDiv.style.display = 'flex';
-        if(guestDiv) guestDiv.style.display = 'none';
+        if(loggedInDiv) loggedInDiv.style.display = 'flex'; //
+        if(guestDiv) guestDiv.style.display = 'none'; //
     } else {
-        if(loggedInDiv) loggedInDiv.style.display = 'none';
-        if(guestDiv) guestDiv.style.display = 'block';
-        if(customerDetailsEl) customerDetailsEl.style.display = 'none';
+        if(loggedInDiv) loggedInDiv.style.display = 'none'; //
+        if(guestDiv) guestDiv.style.display = 'block'; //
+        if(customerDetailsEl) customerDetailsEl.style.display = 'none'; //
     }
     updateFinalizeButtonState();
 }
@@ -410,11 +429,11 @@ function formatPhoneNumber(phone) {
 }
 function formatCEP(cep) {
     const cleaned = ('' + cep).replace(/\D/g, '');
-    if (cep.length === 8) { // Garante que só formata se tiver 8 dígitos limpos
+    if (cep.length === 8) { 
       const match = cleaned.match(/^(\d{5})(\d{3})$/);
       if (match) { return `${match[1]}-${match[2]}`; }
     }
-    return cep; // Retorna o CEP original (ou limpo) se não puder formatar
+    return cep; 
 }
 
 async function handleLogin() {
@@ -424,7 +443,7 @@ async function handleLogin() {
             '<input id="swal-input-email" class="swal2-input" placeholder="Seu e-mail" type="email" style="margin-bottom: 0.5em;">' +
             '<input id="swal-input-password" class="swal2-input" placeholder="Sua senha" type="password">',
         focusConfirm: false, confirmButtonText: 'Entrar <i class="bi bi-arrow-right-circle"></i>',
-        confirmButtonColor: '#ff5722', showCancelButton: true, cancelButtonText: 'Cancelar',
+        confirmButtonColor: '#ff5722', showCancelButton: true, cancelButtonText: 'Cancelar', //
         preConfirm: () => {
             const email = document.getElementById('swal-input-email').value;
             const password = document.getElementById('swal-input-password').value;
@@ -436,14 +455,8 @@ async function handleLogin() {
     if (isConfirmed && formValues) {
         const potentialExistingCustomer = getCustomerFromStorage();
         if (potentialExistingCustomer && potentialExistingCustomer.email === formValues.email) {
-            // Simulação de validação de senha - em um app real, isso seria feito no backend
-            // if (potentialExistingCustomer.password === formValues.password) { // Supondo que a senha está armazenada (não seguro para produção)
                 loggedInCustomer = potentialExistingCustomer;
                 Swal.fire('Bem-vindo(a) de volta!', 'Login realizado com sucesso.', 'success');
-            // } else {
-            //     Swal.fire('Login Falhou', 'Senha inválida.', 'error');
-            //     return;
-            // }
         } else {
             Swal.fire('Login Falhou', 'E-mail não cadastrado. Se você é novo, por favor, cadastre-se.', 'error');
             return;
@@ -458,7 +471,7 @@ function handleLogout() {
         title: 'Sair da conta?',
         text: "Você precisará fazer login novamente para finalizar um pedido.",
         icon: 'question', showCancelButton: true, confirmButtonText: 'Sim, sair',
-        cancelButtonText: 'Cancelar', confirmButtonColor: '#dc3545',
+        cancelButtonText: 'Cancelar', confirmButtonColor: '#dc3545', //
     }).then((result) => {
         if (result.isConfirmed) {
             removeCustomerFromStorage();
@@ -472,12 +485,11 @@ function updateFinalizeButtonState() {
     const finalizeBtn = document.getElementById('finalizeOrderButton');
     if (!finalizeBtn) return;
     const productIds = Object.keys(cart);
-    // Habilita o botão se houver itens no carrinho, cliente logado, e informações essenciais do endereço preenchidas
     const addressComplete = loggedInCustomer && loggedInCustomer.endereco &&
                             loggedInCustomer.endereco.logradouro && loggedInCustomer.endereco.numero &&
                             loggedInCustomer.endereco.bairro && loggedInCustomer.endereco.cidade &&
                             loggedInCustomer.endereco.estado && loggedInCustomer.endereco.cep;
-    finalizeBtn.disabled = !(productIds.length > 0 && loggedInCustomer && addressComplete);
+    finalizeBtn.disabled = !(productIds.length > 0 && loggedInCustomer && addressComplete); //
 }
 
 async function finalizeOrder() {
@@ -505,13 +517,6 @@ async function finalizeOrder() {
     const payload = {
         itens: pedidoItens,
         formaPagamento: formaPagamentoSelecionada.value,
-        // O backend deverá buscar/associar o cliente pelo usuário autenticado (não implementado aqui)
-        // Se precisar enviar dados do cliente explicitamente (não ideal para segurança se não autenticado via token):
-        // cliente: { 
-        //     nome: loggedInCustomer.nome, 
-        //     telefone: loggedInCustomer.telefone, 
-        //     endereco: loggedInCustomer.endereco 
-        // }
     };
 
     Swal.fire({
@@ -537,14 +542,14 @@ async function finalizeOrder() {
             html: `Oba! Seu pedido <strong>nº ${data.id || ''}</strong> foi enviado com sucesso.<br>Forma de pagamento: ${data.formaPagamento || formaPagamentoSelecionada.value}.<br>Agradecemos a preferência!`,
             icon: 'success',
             confirmButtonText: 'Continuar Comprando',
-            confirmButtonColor: '#ff5722',
+            confirmButtonColor: '#ff5722', //
         }).then((result) => {
             if (result.isConfirmed) {
                 cart = {};
                 saveCartToStorage();
-                updateCartCountNavbar();
-                displayCartItems(); // Para limpar a UI do carrinho atual
-                window.location.href = 'Pedidos.html'; // Redireciona para a tela de pedidos (cardápio)
+                // Não precisa chamar updateCartCountNavbar e displayCartItems aqui
+                // pois a página será recarregada ou redirecionada.
+                window.location.href = 'Pedidos.html'; 
             }
         });
 
@@ -555,41 +560,33 @@ async function finalizeOrder() {
 }
 
 // --- Inicialização da Página do Carrinho ---
+// Ocorre a cada recarregamento da página
 window.onload = () => {
     cart = getCartFromStorage();
     loggedInCustomer = getCustomerFromStorage();
 
-    updateCartCountNavbar();
-    displayCartItems();
-    updateCustomerUI();
+    updateCartCountNavbar(); // Atualiza o contador geral na navbar
+    displayCartItems();      // Desenha os itens do carrinho e o resumo
+    updateCustomerUI();      // Atualiza a UI de cliente (logado/deslogado)
 
-    // Adiciona listeners aos botões corretos
+    // Adiciona listeners aos botões que não causam recarregamento direto
     const loginButton = document.getElementById('loginButton');
-    if (loginButton) {
-        loginButton.addEventListener('click', handleLogin);
-    } else {
-        console.warn("Botão 'loginButton' não encontrado no HTML.");
-    }
-
+    if (loginButton) loginButton.addEventListener('click', handleLogin);
+    
     const registerButton = document.getElementById('registerButton');
-    if (registerButton) {
-        registerButton.addEventListener('click', handleRegister);
-    } else {
-        console.warn("Botão 'registerButton' não encontrado no HTML.");
-    }
-    
+    if (registerButton) registerButton.addEventListener('click', handleRegister);
+        
     const logoutButton = document.getElementById('logoutButton');
-    if (logoutButton) {
-        logoutButton.addEventListener('click', handleLogout);
-    } else {
-        // Este botão só aparece se logado, então o warning pode ser excessivo se o usuário não estiver logado.
-        // console.warn("Botão 'logoutButton' não encontrado no HTML."); 
-    }
-    
+    if (logoutButton) logoutButton.addEventListener('click', handleLogout);
+        
     const finalizeButton = document.getElementById('finalizeOrderButton');
-    if (finalizeButton) {
-        finalizeButton.addEventListener('click', finalizeOrder);
-    } else {
-        console.warn("Botão 'finalizeOrderButton' não encontrado no HTML.");
-    }
+    if (finalizeButton) finalizeButton.addEventListener('click', finalizeOrder);
 };
+
+// Listener para o StorageEvent para sincronização entre abas (mantido para consistência se outras abas estiverem abertas)
+window.addEventListener('storage', (event) => {
+    if (event.key === CART_STORAGE_KEY || event.key === CUSTOMER_STORAGE_KEY) {
+        // console.log('StorageEvent detectado, recarregando carrinho.js para consistência');
+        window.location.reload(); // Força recarregamento se outra aba modificar o carrinho ou cliente
+    }
+});
