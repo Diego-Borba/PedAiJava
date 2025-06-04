@@ -120,7 +120,7 @@ window.adicionarItem = function() {
     // let localContador = container.children.length; // Para nomes únicos se necessário, mas não usado abaixo
 
     const itemHTML = `
-      <div class="row mb-3 item-bloco gx-2"> {/* gx-2 para espaçamento entre colunas */}
+      <div class="row mb-3 item-bloco gx-2">
         <div class="col-md-3">
           <label class="form-label small">Produto ID</label>
           <input type="number" class="form-control form-control-sm" placeholder="ID do Produto" name="produtoId" required>
@@ -137,7 +137,7 @@ window.adicionarItem = function() {
           <label class="form-label small">Fator Entrada</label>
           <input type="number" step="0.01" class="form-control form-control-sm" placeholder="Fator" name="fatorEntrada" required>
         </div>
-        <div class="col-md-2 d-flex align-items-end"> {/* Botão alinhado em baixo */}
+        <div class="col-md-2 d-flex align-items-end">
           <button type="button" class="btn btn-danger btn-sm w-100" onclick="removerItem(this)">Remover</button>
         </div>
       </div>`;

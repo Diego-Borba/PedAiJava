@@ -17,6 +17,13 @@ public class Produto {
     private String imagem;
     private Integer codPdv;
     private Integer ordemVisualizacao;
+    private Boolean ativo;
+    public Boolean getAtivo() {
+        return ativo;
+    }
+    public void setAtivo(Boolean ativo) {
+        this.ativo = ativo;
+    }
     public Integer getCodPdv() {
         return codPdv;
     }
