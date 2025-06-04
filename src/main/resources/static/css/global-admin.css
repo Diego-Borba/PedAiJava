@@ -95,10 +95,12 @@ html {
 /* Conteúdo Principal */
 .content {
     padding: 30px;
-    width: 100%;
-    flex-grow: 1;
+    /* width: 100%; */ /* <--- REMOVA ou comente esta linha */
+    box-sizing: border-box; /* Garante que padding não aumente a largura total além do esperado */
+    flex-grow: 1;       /* Esta propriedade fará com que o content ocupe o espaço restante */
     transition: margin-left 0.3s ease-in-out;
-    margin-left: 250px; /* Padrão para sidebar ABERTA (desktop) */
+    margin-left: 250px;
+    overflow-x: hidden; /* Opcional: previne barras de rolagem horizontais se o conteúdo interno estourar */
 }
 
 .content.collapsed {
