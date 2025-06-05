@@ -72,3 +72,25 @@ body {
 .footer.fixed-bottom {
     box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
 }
+/* ... (estilos existentes) ... */
+
+.cart-complement-item {
+    background-color: #fcfcfc;
+    font-size: 0.9em;
+}
+.cart-complement-item img.cart-item-img-sm {
+    border: 1px solid #eee;
+}
+.cart-complement-item .btn-xs {
+    padding: 0.1rem 0.3rem;
+    font-size: 0.7rem;
+}
+.cart-complement-item .form-control-sm {
+    height: calc(1.5em + 0.5rem + 2px); /* Ajuste de altura se necessário */
+    font-size: 0.8rem;
+}
+
+.border-dotted {
+    border-bottom-style: dotted !important;
+    border-bottom-color: #ddd !important;
+}

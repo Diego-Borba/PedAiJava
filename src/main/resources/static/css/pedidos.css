@@ -236,3 +236,18 @@ body {
     .produto-card .card-text.descricao { font-size: 0.8rem; min-height: 25px;}
     .produto-card .btn-add-carrinho { font-size: 0.9rem; padding: 0.5rem 0.8rem;}
 }
+
+/* ... (estilos existentes) ... */
+
+/* Estilo para itens no modal de complementos */
+.complemento-item {
+    background-color: #f9f9f9;
+}
+.complemento-item h6 {
+    color: #333;
+    font-weight: 600;
+}
+.complemento-item .btn-xs { /* Botões menores para complementos */
+    padding: 0.15rem 0.4rem;
+    font-size: 0.75rem;
+}

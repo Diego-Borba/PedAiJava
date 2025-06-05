@@ -60,8 +60,7 @@
             </div>
             <div class="col-md-3">
               <label for="qtdeMax" class="form-label">Qtde Máx. (Pedido)</label>
-              <input type="number" class="form-control" id="qtdeMax" min="1" required>
-              <div class="invalid-feedback">Informe a quantidade máxima por pedido.</div>
+              <input type="number" class="form-control" id="qtdeMax" min="1" value="10" required> <div class="invalid-feedback">Informe a quantidade máxima por pedido.</div>
             </div>
             <div class="col-md-4">
               <label for="codigoPdv" class="form-label">Código PDV / Referência</label>
@@ -85,6 +84,32 @@
             <input type="text" class="form-control" id="imagem" placeholder="https://exemplo.com/imagem.jpg">
           </div>
 
+          <hr class="my-4">
+          <h5 class="mb-3">Configurações de Complemento</h5>
+          
+          <div class="form-check mb-2">
+            <input class="form-check-input" type="checkbox" id="isComplemento">
+            <label class="form-check-label" for="isComplemento">
+              Este produto é um complemento (não aparecerá no cardápio principal)
+            </label>
+          </div>
+
+          <div class="form-check mb-3">
+            <input class="form-check-input" type="checkbox" id="permiteComplementos">
+            <label class="form-check-label" for="permiteComplementos">
+              Este produto principal permite adicionar complementos
+            </label>
+          </div>
+
+          <div id="containerComplementosDisponiveis" class="mb-3" style="display: none;">
+            <label class="form-label">Complementos Disponíveis para este Produto Principal:</label>
+            <div id="listaComplementosConfig">
+              </div>
+            <button type="button" class="btn btn-sm btn-outline-info mt-2" id="btnAddComplementoConfig">Adicionar Configuração de Complemento</button>
+            <small class="d-block mt-1 text-muted">Para cada configuração, informe o ID do Produto (que será o complemento) e a quantidade máxima permitida desse complemento para este produto principal.</small>
+          </div>
+
+
           <button type="submit" class="btn btn-success mt-4">
             <i class="bi bi-check-circle"></i> Salvar Produto
           </button>
@@ -105,5 +130,4 @@
   <script src="../js/global-admin.js"></script>
   <script src="../js/cadastro.js"></script>
 </body>
-
 </html>
