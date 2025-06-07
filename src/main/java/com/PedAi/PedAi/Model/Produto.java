@@ -1,5 +1,6 @@
 package com.PedAi.PedAi.Model;
 
+import com.fasterxml.jackson.annotation.JsonProperty; // <-- IMPORTAÇÃO NECESSÁRIA
 import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,7 +24,7 @@ public class Produto {
     @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT TRUE")
     private boolean ativo = true;
 
-    @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
+    @Column(name = "is_complemento", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE") // Mapeia para a coluna do BD
     private boolean isComplemento = false; 
     
     @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
@@ -33,41 +34,9 @@ public class Produto {
     @CollectionTable(name = "produto_complemento_configs", joinColumns = @JoinColumn(name = "produto_principal_id"))
     private List<ComplementoConfig> complementosDisponiveis = new ArrayList<>();
 
-    // Mantenha TODOS os getters e setters como na resposta anterior completa.
-    // Omitidos aqui por brevidade, mas são essenciais.
-
-    // Getters e Setters para 'ativo'
-    public boolean isAtivo() { // Corrigido para seguir convenção para boolean primitivo
-        return ativo;
-    }
-    public void setAtivo(boolean ativo) { // Corrigido para boolean primitivo
-        this.ativo = ativo;
-    }
-
-    // Getters e Setters para 'isComplemento'
-    public boolean isComplemento() {
-        return isComplemento;
-    }
-    public void setComplemento(boolean complemento) {
-        isComplemento = complemento;
-    }
-
-    // Getters e Setters para 'permiteComplementos'
-    public boolean isPermiteComplementos() {
-        return permiteComplementos;
-    }
-    public void setPermiteComplementos(boolean permiteComplementos) {
-        this.permiteComplementos = permiteComplementos;
-    }
-
-    // Getters e Setters para 'complementosDisponiveis'
-    public List<ComplementoConfig> getComplementosDisponiveis() {
-        return complementosDisponiveis;
-    }
-    public void setComplementosDisponiveis(List<ComplementoConfig> complementosDisponiveis) {
-        this.complementosDisponiveis = complementosDisponiveis;
-    }
-    // ... outros getters e setters ...
+    // --- Getters e Setters ---
+    
+    // Getters e Setters Padrão
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     public String getNome() { return nome; }
@@ -86,4 +55,32 @@ public class Produto {
     public void setCodPdv(Integer codPdv) { this.codPdv = codPdv; }
     public Integer getOrdemVisualizacao() { return ordemVisualizacao; }
     public void setOrdemVisualizacao(Integer ordemVisualizacao) { this.ordemVisualizacao = ordemVisualizacao; }
+    public List<ComplementoConfig> getComplementosDisponiveis() { return complementosDisponiveis; }
+    public void setComplementosDisponiveis(List<ComplementoConfig> complementosDisponiveis) { this.complementosDisponiveis = complementosDisponiveis; }
+    
+    // --- GETTERS E SETTERS PARA BOOLEANOS COM ANOTAÇÃO CORRIGIDA ---
+
+    @JsonProperty("ativo") // Força o nome "ativo" no JSON
+    public boolean isAtivo() {
+        return ativo;
+    }
+    public void setAtivo(boolean ativo) {
+        this.ativo = ativo;
+    }
+
+    @JsonProperty("isComplemento") // Força o nome "isComplemento" no JSON
+    public boolean isComplemento() {
+        return isComplemento;
+    }
+    public void setIsComplemento(boolean isComplemento) {
+        this.isComplemento = isComplemento;
+    }
+
+    @JsonProperty("permiteComplementos") // Força o nome "permiteComplementos" no JSON
+    public boolean isPermiteComplementos() {
+        return permiteComplementos;
+    }
+    public void setPermiteComplementos(boolean permiteComplementos) {
+        this.permiteComplementos = permiteComplementos;
+    }
 }

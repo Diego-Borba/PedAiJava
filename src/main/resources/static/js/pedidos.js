@@ -114,12 +114,7 @@ async function carregarEProcessarProdutosAPI() {
         });
 
         console.log("--- TODOS OS PRODUTOS PROCESSADOS (pedidos.js) ---", todosProdutos);
-        // Exemplo de log para depuração (pode ser removido em produção)
-        // const molhoMaioneseNormalizado = todosProdutos.find(p => p.nome && p.nome.toUpperCase().includes("MAIONESE"));
-        // if (molhoMaioneseNormalizado) {
-        //     console.log("MOLHO MAIONESE (Normalizado em pedidos.js) DETALHES:", JSON.stringify(molhoMaioneseNormalizado, null, 2));
-        // }
-
+        
         await carregarCategoriasVisiveis(); // Carrega e exibe os botões de categoria.
         filtrarEExibirProdutosCardapio('todos'); // Exibe inicialmente produtos de "todas" as categorias.
     } catch (err) {
@@ -182,37 +177,35 @@ async function carregarCategoriasVisiveis() {
  */
 function filtrarEExibirProdutosCardapio(categoriaSelecionada) {
     console.log(`FILTRANDO CARDÁPIO (pedidos.js) para categoria: '${categoriaSelecionada}'`);
-    showLoadingIndicator(true); // Mostra loading rapidamente para feedback visual.
+    showLoadingIndicator(true);
     
-    // Usamos setTimeout para permitir que o indicador de loading renderize antes do processamento pesado.
     setTimeout(() => {
-        // Filtra apenas produtos principais (isComplemento === false) e ativos (ativo === true).
+        // --- LÓGICA DE FILTRAGEM REFORÇADA ---
+        // Garante que apenas produtos ATIVOS e que NÃO SÃO COMPLEMENTOS apareçam no cardápio.
         const produtosParaCardapio = todosProdutos.filter(p => {
             const naoEhComplemento = p.isComplemento === false;
             const estaAtivo = p.ativo === true;
             return naoEhComplemento && estaAtivo;
         });
+        // --- FIM DA LÓGICA REFORÇADA ---
 
         let produtosFiltradosPorCategoria = produtosParaCardapio;
         if (categoriaSelecionada !== 'todos') {
-            // Filtra pela categoria específica, ignorando case.
             produtosFiltradosPorCategoria = produtosParaCardapio.filter(p =>
                 p.categoria && String(p.categoria).toLowerCase() === String(categoriaSelecionada).toLowerCase()
             );
         }
         
         console.log(`  Total produtos para cardápio (categoria '${categoriaSelecionada}'): ${produtosFiltradosPorCategoria.length}`);
-        // console.log("  Nomes dos produtos que SERÃO exibidos:", produtosFiltradosPorCategoria.map(p => ({nome: p.nome, isComplemento: p.isComplemento, ativo: p.ativo})));
 
-        // Ordena os produtos para exibição (opcional, por ordem de visualização ou nome).
         produtosFiltradosPorCategoria.sort((a, b) =>
             (a.ordemVisualizacao ?? Infinity) - (b.ordemVisualizacao ?? Infinity) ||
             (a.nome || '').localeCompare(b.nome || '')
         );
 
-        renderizarCardsProdutos(produtosFiltradosPorCategoria); // Renderiza os cards dos produtos filtrados.
+        renderizarCardsProdutos(produtosFiltradosPorCategoria);
         showLoadingIndicator(false);
-    }, 50); // Pequeno delay.
+    }, 50);
 }
 
 /**
@@ -222,7 +215,7 @@ function filtrarEExibirProdutosCardapio(categoriaSelecionada) {
 function renderizarCardsProdutos(listaDeProdutosCardapio) {
     const container = document.getElementById('produtosContainer');
     if (!container) { console.error("Container 'produtosContainer' não encontrado em pedidos.js."); return; }
-    container.innerHTML = ''; // Limpa o container.
+    container.innerHTML = '';
 
     if (listaDeProdutosCardapio.length === 0) {
         container.innerHTML = '<p class="text-center col-12 mt-5">Nenhum produto encontrado nesta categoria.</p>';
@@ -231,7 +224,6 @@ function renderizarCardsProdutos(listaDeProdutosCardapio) {
 
     listaDeProdutosCardapio.forEach(produto => {
         const card = document.createElement('div');
-        // Define classes para responsividade (Bootstrap)
         card.className = 'col-12 col-sm-6 col-md-4 col-lg-3 mb-4 d-flex align-items-stretch';
         card.innerHTML = `
             <div class="card produto-card h-100 shadow-sm">
@@ -246,7 +238,6 @@ function renderizarCardsProdutos(listaDeProdutosCardapio) {
                     <button class="btn btn-add-carrinho w-100"><i class="bi bi-cart-plus me-2"></i>Adicionar</button>
                 </div>
             </div>`;
-        // Adiciona evento de clique ao botão "Adicionar" do card.
         card.querySelector('.btn-add-carrinho').addEventListener('click', () => handleProdutoPrincipalClick(produto));
         container.appendChild(card);
     });
@@ -264,30 +255,29 @@ function handleProdutoPrincipalClick(produtoPrincipal) {
     console.log("handleProdutoPrincipalClick (pedidos.js) para:", produtoPrincipal.nome, produtoPrincipal);
     const produtoPrincipalIdStr = String(produtoPrincipal.id);
 
-    if (cart[produtoPrincipalIdStr]) { // Se o produto já está no carrinho
+    if (cart[produtoPrincipalIdStr]) {
         if (cart[produtoPrincipalIdStr].qtde >= (produtoPrincipal.qtdeMax || 99)) {
             Swal.fire('Limite Atingido!', `Quantidade máxima para "${produtoPrincipal.nome}" já atingida no carrinho.`, 'warning');
             return;
         }
-        cart[produtoPrincipalIdStr].qtde++; // Incrementa a quantidade.
-    } else { // Se é um novo produto no carrinho
+        cart[produtoPrincipalIdStr].qtde++;
+    } else {
         cart[produtoPrincipalIdStr] = {
-            ...produtoPrincipal, // Copia todas as propriedades do produto.
-            id: produtoPrincipalIdStr, // Garante que o ID no carrinho seja string.
+            ...produtoPrincipal,
+            id: produtoPrincipalIdStr,
             qtde: 1,
-            selectedComplements: [] // Inicializa array para complementos selecionados.
+            selectedComplements: []
         };
     }
-    showProdutoAdicionadoToast(produtoPrincipal); // Mostra notificação.
+    showProdutoAdicionadoToast(produtoPrincipal);
 
-    // Verifica se o produto permite complementos e se há complementos disponíveis.
     if (produtoPrincipal.permiteComplementos && Array.isArray(produtoPrincipal.complementosDisponiveis) && produtoPrincipal.complementosDisponiveis.length > 0) {
         console.log(`Produto "${produtoPrincipal.nome}" permite complementos. Abrindo modal (pedidos.js).`);
         prepararEMostrarModalComplementos(produtoPrincipal);
     } else {
         console.log(`Produto "${produtoPrincipal.nome}" não tem complementos ou não permite (pedidos.js).`);
-        saveCartToStorage(); // Salva o carrinho no localStorage.
-        updateCartCountNavbar(); // Atualiza o contador na navbar.
+        saveCartToStorage();
+        updateCartCountNavbar();
     }
 }
 
@@ -299,7 +289,6 @@ function prepararEMostrarModalComplementos(produtoPrincipal) {
     const produtoPrincipalIdStr = String(produtoPrincipal.id);
     console.log(`Preparando modal de complementos para: ${produtoPrincipal.nome} (ID: ${produtoPrincipalIdStr}) em pedidos.js`);
 
-    // Referências aos elementos do modal.
     const modalElement = document.getElementById('complementosModal');
     const modalTitle = document.getElementById('complementosModalLabel');
     const principalProductNameModal = document.getElementById('principalProductNameModal');
@@ -308,18 +297,17 @@ function prepararEMostrarModalComplementos(produtoPrincipal) {
 
     if (!modalElement || !modalTitle || !principalProductNameModal || !complementosListContainer || !btnSalvarComplementos) {
         console.error("Elementos do modal de complementos não encontrados em pedidos.js.");
-        saveCartToStorage(); // Salva o estado atual do carrinho mesmo se o modal falhar.
+        saveCartToStorage();
         updateCartCountNavbar();
         return;
     }
 
     modalTitle.textContent = `Adicionar Complementos para:`;
     principalProductNameModal.textContent = produtoPrincipal.nome;
-    complementosListContainer.innerHTML = ''; // Limpa lista de complementos anterior.
-    modalElement.dataset.principalId = produtoPrincipalIdStr; // Armazena o ID do principal no modal.
+    complementosListContainer.innerHTML = '';
+    modalElement.dataset.principalId = produtoPrincipalIdStr;
 
     const itemPrincipalNoCarrinho = cart[produtoPrincipalIdStr];
-    // Complementos já selecionados para este item (se houver, para preencher o modal).
     const complementosJaSelecionados = (itemPrincipalNoCarrinho && Array.isArray(itemPrincipalNoCarrinho.selectedComplements)) ? itemPrincipalNoCarrinho.selectedComplements : [];
 
     if (!Array.isArray(produtoPrincipal.complementosDisponiveis) || produtoPrincipal.complementosDisponiveis.length === 0) {
@@ -327,18 +315,15 @@ function prepararEMostrarModalComplementos(produtoPrincipal) {
     } else {
         produtoPrincipal.complementosDisponiveis.forEach(configComp => {
             const idComplementoConfigStr = String(configComp.complementoProdutoId);
-            // Busca os detalhes do produto complemento na lista global `todosProdutos`.
-            // Garante que o complemento também esteja ativo.
             const produtoComplementoDetalhes = todosProdutos.find(p => p.id === idComplementoConfigStr && p.ativo);
 
             if (produtoComplementoDetalhes) {
                 const inputId = `comp-qty-${produtoPrincipalIdStr}-${produtoComplementoDetalhes.id}`;
                 let qtdAtualNoModal = 0;
-                // Verifica se este complemento já foi selecionado anteriormente para este item principal.
                 const compJaNoCarrinho = complementosJaSelecionados.find(cs => String(cs.produto.id) === idComplementoConfigStr);
                 if (compJaNoCarrinho) qtdAtualNoModal = compJaNoCarrinho.qtde;
 
-                const maxPermitido = configComp.maxQtdePermitida; // Máximo permitido para este complemento específico.
+                const maxPermitido = configComp.maxQtdePermitida;
 
                 const divCompItem = document.createElement('div');
                 divCompItem.className = 'complemento-item d-flex justify-content-between align-items-center mb-3 p-3 border rounded shadow-sm bg-light';
@@ -361,19 +346,16 @@ function prepararEMostrarModalComplementos(produtoPrincipal) {
         });
     }
 
-    // Adiciona eventos aos botões +/- de quantidade dos complementos no modal.
     complementosListContainer.querySelectorAll('.comp-qty-change').forEach(button => {
         button.addEventListener('click', function() {
             ajustarQtdeComplementoModal(this.dataset.targetInputId, this.dataset.action === 'increase' ? 1 : -1);
         });
     });
 
-    // Recria o listener do botão salvar para evitar duplicidade e garantir o ID correto do principal.
-    const novoBtnSalvar = btnSalvarComplementos.cloneNode(true); // Clona para remover listeners antigos.
+    const novoBtnSalvar = btnSalvarComplementos.cloneNode(true);
     btnSalvarComplementos.parentNode.replaceChild(novoBtnSalvar, btnSalvarComplementos);
     novoBtnSalvar.addEventListener('click', () => salvarComplementosDoModal(produtoPrincipalIdStr));
 
-    // Exibe o modal Bootstrap.
     const bootstrapModal = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
     bootstrapModal.show();
 }
@@ -390,8 +372,8 @@ function ajustarQtdeComplementoModal(inputId, delta) {
     let currentValue = parseInt(inputElement.value);
     let newValue = currentValue + delta;
 
-    if (newValue < 0) newValue = 0; // Não permite quantidade negativa.
-    if (newValue > maxQtde) newValue = maxQtde; // Não excede o máximo permitido.
+    if (newValue < 0) newValue = 0;
+    if (newValue > maxQtde) newValue = maxQtde;
     inputElement.value = newValue;
 }
 
@@ -407,34 +389,31 @@ function salvarComplementosDoModal(idProdutoPrincipalStr) {
     }
 
     const novosSelectedComplements = [];
-    // Coleta as quantidades dos inputs de complemento no modal.
     document.querySelectorAll('#complementosListContainer .comp-qty-input').forEach(input => {
         const quantidade = parseInt(input.value);
-        if (quantidade > 0) { // Apenas adiciona se a quantidade for maior que zero.
+        if (quantidade > 0) {
             const idComplementoStr = String(input.dataset.complementId);
             const produtoComplementoDetalhes = todosProdutos.find(p => p.id === idComplementoStr);
             if (produtoComplementoDetalhes) {
                 novosSelectedComplements.push({
-                    produto: { // Armazena uma cópia simplificada dos dados do complemento.
+                    produto: {
                         id: produtoComplementoDetalhes.id,
                         nome: produtoComplementoDetalhes.nome,
                         preco: produtoComplementoDetalhes.preco,
                         imagem: produtoComplementoDetalhes.imagem,
-                        // isComplemento: true // Pode ser útil para identificar no carrinho.js
                     },
                     qtde: quantidade
                 });
-                showProdutoAdicionadoToast(produtoComplementoDetalhes, true); // Toast para cada complemento adicionado
+                showProdutoAdicionadoToast(produtoComplementoDetalhes, true);
             }
         }
     });
     itemPrincipalNoCarrinho.selectedComplements = novosSelectedComplements;
     console.log("Complementos salvos para o item (pedidos.js):", itemPrincipalNoCarrinho.nome, itemPrincipalNoCarrinho.selectedComplements);
 
-    saveCartToStorage(); // Salva o carrinho (com os complementos atualizados) no localStorage.
-    updateCartCountNavbar(); // Atualiza o contador na navbar.
+    saveCartToStorage();
+    updateCartCountNavbar();
 
-    // Fecha o modal de complementos.
     const modalElement = document.getElementById('complementosModal');
     const bootstrapModal = bootstrap.Modal.getInstance(modalElement);
     if (bootstrapModal) bootstrapModal.hide();
@@ -445,8 +424,8 @@ function salvarComplementosDoModal(idProdutoPrincipalStr) {
 // --- INICIALIZAÇÃO DA PÁGINA ---
 window.onload = () => {
     console.log("pedidos.js: window.onload iniciado.");
-    cart = getCartFromStorage(); // Carrega o carrinho do localStorage ao iniciar a página.
-    updateCartCountNavbar(); // Atualiza o contador da navbar com os itens do carrinho.
-    carregarEProcessarProdutosAPI(); // Carrega, processa e exibe os produtos da API.
+    cart = getCartFromStorage();
+    updateCartCountNavbar();
+    carregarEProcessarProdutosAPI();
     console.log("pedidos.js: window.onload concluído.");
 };

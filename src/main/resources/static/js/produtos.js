@@ -10,11 +10,8 @@ document.addEventListener('DOMContentLoaded', function () {
         const div = document.createElement('div');
         div.className = 'row g-2 mb-2 align-items-center edit-comp-config-row';
         
-        // Criação do select para produtos complementos
         let selectOptions = '<option value="">Selecione um Produto Complemento</option>';
         todosOsProdutosParaSelecao.forEach(p => {
-            // Idealmente, filtrar para apenas produtos que SÃO complementos ou que fazem sentido como tal.
-            // Aqui, para simplificar, listamos todos, mas o admin deve escolher com sabedoria.
              selectOptions += `<option value="${p.id}" ${config.complementoProdutoId && p.id == config.complementoProdutoId ? 'selected' : ''}>${p.nome} (ID: ${p.id})</option>`;
         });
 
@@ -47,20 +44,20 @@ document.addEventListener('DOMContentLoaded', function () {
                 return res.json();
             })
             .then(data => {
-                todosOsProdutosParaSelecao = data; // Cache para o modal de edição
+                todosOsProdutosParaSelecao = data; 
                 const tbody = document.getElementById('produtos');
                 if (!tbody) {
                     console.error("Elemento tbody com ID 'produtos' não encontrado.");
                     return;
                 }
                 tbody.innerHTML = '';
-                // Ordenar primeiro por 'permiteComplementos' (principais primeiro), depois por 'isComplemento', depois ordem e nome
+                
                 data.sort((a, b) => {
                     if (a.permiteComplementos !== b.permiteComplementos) {
-                        return b.permiteComplementos - a.permiteComplementos; // true (1) antes de false (0)
+                        return b.permiteComplementos - a.permiteComplementos;
                     }
                     if (a.isComplemento !== b.isComplemento) {
-                        return a.isComplemento - b.isComplemento; // false (0) antes de true (1)
+                        return a.isComplemento - b.isComplemento;
                     }
                     const ordemA = a.ordemVisualizacao !== null ? a.ordemVisualizacao : Infinity;
                     const ordemB = b.ordemVisualizacao !== null ? b.ordemVisualizacao : Infinity;
@@ -98,7 +95,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 tabela = $('#tabela-produtos').DataTable({
                     language: { url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/pt-BR.json' },
                     responsive: true,
-                    order: [] // Desabilita ordenação inicial automática do DataTable para usar a do JS
+                    order: []
                 });
             })
             .catch(error => {
@@ -128,23 +125,24 @@ document.addEventListener('DOMContentLoaded', function () {
                     document.getElementById('edit-imagem').value = p.imagem || '';
                     document.getElementById('edit-ordemVisualizacao').value = p.ordemVisualizacao || '';
                     
-                    document.getElementById('edit-isComplemento').checked = p.isComplemento || false;
-                    const permiteComplementosCheckboxEdit = document.getElementById('edit-permiteComplementos');
-                    permiteComplementosCheckboxEdit.checked = p.permiteComplementos || false;
+                    // --- AQUI ESTÁ A CHECAGEM E ATUALIZAÇÃO DO CAMPO ---
+                    // Pega o valor booleano 'p.isComplemento' que vem do banco (true/false)
+                    // e define o estado do checkbox de acordo.
+                    document.getElementById('edit-isComplemento').checked = p.isComplemento;
                     
-                    const containerEditComplementos = document.getElementById('edit-containerComplementosDisponiveis');
-                    const listaEditComplementos = document.getElementById('edit-listaComplementosConfig');
-                    listaEditComplementos.innerHTML = ''; // Limpa configs anteriores
+                    // Fazemos o mesmo para o outro checkbox para garantir consistência
+                    document.getElementById('edit-permiteComplementos').checked = p.permiteComplementos;
+                    // --- FIM DA CHECAGEM ---
 
-                    if (p.permiteComplementos) {
-                        containerEditComplementos.style.display = 'block';
-                        if (p.complementosDisponiveis && p.complementosDisponiveis.length > 0) {
-                            p.complementosDisponiveis.forEach(config => adicionarLinhaComplementoConfigEdit(config));
-                        } else {
-                           // adicionarLinhaComplementoConfigEdit(); // Adiciona uma linha em branco se não houver configs
-                        }
-                    } else {
-                        containerEditComplementos.style.display = 'none';
+                    // Dispara o evento 'change' para que a UI que depende dele seja atualizada
+                    const permiteComplementosCheckboxEdit = document.getElementById('edit-permiteComplementos');
+                    permiteComplementosCheckboxEdit.dispatchEvent(new Event('change'));
+                    
+                    const listaEditComplementos = document.getElementById('edit-listaComplementosConfig');
+                    listaEditComplementos.innerHTML = ''; 
+
+                    if (p.permiteComplementos && p.complementosDisponiveis && p.complementosDisponiveis.length > 0) {
+                        p.complementosDisponiveis.forEach(config => adicionarLinhaComplementoConfigEdit(config));
                     }
 
                     const editModal = new bootstrap.Modal(document.getElementById('editModal'));
@@ -155,7 +153,6 @@ document.addEventListener('DOMContentLoaded', function () {
                     Swal.fire('Erro!', 'Não foi possível carregar dados do produto para edição.', 'error');
                 });
         } else if (e.target.closest('.btn-excluir')) {
-            // Lógica de excluir (mantida)
             const row = e.target.closest('tr');
             const id = row.getAttribute('data-id');
             const nomeProduto = row.cells[0].textContent.split('<span')[0].trim(); 
@@ -187,7 +184,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
     
-    // Lógica para mostrar/esconder container de configs no modal de EDIÇÃO
     const permiteComplementosCheckboxEdit = document.getElementById('edit-permiteComplementos');
     const containerEditComplementos = document.getElementById('edit-containerComplementosDisponiveis');
     if (permiteComplementosCheckboxEdit && containerEditComplementos) {
@@ -195,11 +191,11 @@ document.addEventListener('DOMContentLoaded', function () {
             containerEditComplementos.style.display = this.checked ? 'block' : 'none';
             const listaEditComplementos = document.getElementById('edit-listaComplementosConfig');
             if (this.checked && listaEditComplementos.children.length === 0) {
-                 adicionarLinhaComplementoConfigEdit(); // Adiciona uma linha inicial se estiver vazio
+                 adicionarLinhaComplementoConfigEdit();
             }
         });
     }
-    // Botão para adicionar nova linha de config no modal de EDIÇÃO
+
     const btnAddEditComplementoConfig = document.getElementById('edit-btnAddComplementoConfig');
     if (btnAddEditComplementoConfig) {
         btnAddEditComplementoConfig.addEventListener('click', () => adicionarLinhaComplementoConfigEdit());
@@ -210,6 +206,14 @@ document.addEventListener('DOMContentLoaded', function () {
     if (formEditProduto) {
         formEditProduto.addEventListener('submit', function (e) {
             e.preventDefault();
+
+            const isComplementoCheck = document.getElementById('edit-isComplemento').checked;
+            const permiteComplementosCheck = document.getElementById('edit-permiteComplementos').checked;
+
+            if (isComplementoCheck && permiteComplementosCheck) {
+                Swal.fire('Atenção!', 'Um produto não pode ser um "complemento" e ao mesmo tempo "permitir complementos". Escolha apenas uma opção.', 'warning');
+                return;
+            }
 
             const complementosDisponiveisEdit = [];
             if (document.getElementById('edit-permiteComplementos').checked) {
@@ -234,11 +238,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 codPdv: document.getElementById('edit-codigoPdv').value ? parseInt(document.getElementById('edit-codigoPdv').value) : null,
                 descricao: document.getElementById('edit-descricao').value,
                 imagem: document.getElementById('edit-imagem').value,
-                ordemVisualizacao: parseInt(document.getElementById('edit-ordemVisualizacao').value) || null,
+                ordemVisualizacao: document.getElementById('edit-ordemVisualizacao').value ? parseInt(document.getElementById('edit-ordemVisualizacao').value) : null,
                 isComplemento: document.getElementById('edit-isComplemento').checked,
                 permiteComplementos: document.getElementById('edit-permiteComplementos').checked,
                 complementosDisponiveis: complementosDisponiveisEdit,
-                ativo: true // Assumindo que se está editando, está ativo. Adicionar campo 'ativo' se necessário.
+                ativo: true
             };
 
             fetch(`/api/produtos/${produto.id}`, {
