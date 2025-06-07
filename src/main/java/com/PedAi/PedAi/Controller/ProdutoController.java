@@ -34,9 +34,7 @@ public class ProdutoController {
 
     @PostMapping
     public ResponseEntity<Produto> create(@RequestBody Produto produto) {
-        // O objeto 'produto' recebido do frontend DEVE conter os novos campos
-        // para que sejam persistidos corretamente.
-        // Ex: produto.setComplementosDisponiveis(listaRecebida);
+
         try {
             Produto savedProduto = repository.save(produto);
             return ResponseEntity.status(201).body(savedProduto);
@@ -54,15 +52,13 @@ public class ProdutoController {
     public ResponseEntity<Produto> update(@PathVariable Long id, @RequestBody Produto produtoDetails) {
         Optional<Produto> produtoExistenteOptional = repository.findById(id);
 
-        // 2. Se o produto não for encontrado, retorna o erro 404 (Not Found)
         if (produtoExistenteOptional.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
 
-        // 3. Se encontrou, pega o objeto para ser atualizado
         Produto produtoExistente = produtoExistenteOptional.get();
 
-        // 4. Atualiza todos os campos do objeto existente com os novos detalhes
+        // Atualiza todos os campos do objeto existente com os novos detalhes
         produtoExistente.setNome(produtoDetails.getNome());
         produtoExistente.setPreco(produtoDetails.getPreco());
         produtoExistente.setCategoria(produtoDetails.getCategoria());
@@ -72,23 +68,36 @@ public class ProdutoController {
         produtoExistente.setCodPdv(produtoDetails.getCodPdv());
         produtoExistente.setOrdemVisualizacao(produtoDetails.getOrdemVisualizacao());
         produtoExistente.setAtivo(produtoDetails.isAtivo());
+        produtoExistente.setMateriaPrima(produtoDetails.isMateriaPrima());
         produtoExistente.setIsComplemento(produtoDetails.isComplemento());
         produtoExistente.setPermiteComplementos(produtoDetails.isPermiteComplementos());
 
-        // 5. Aplica a lógica de negócio para garantir a consistência dos dados
-        if (produtoExistente.isComplemento()) {
-            produtoExistente.setPermiteComplementos(false);
-            if (produtoExistente.getComplementosDisponiveis() != null) {
-                produtoExistente.getComplementosDisponiveis().clear();
-            }
-        } else {
-            if (produtoDetails.getComplementosDisponiveis() != null) {
-                produtoExistente.getComplementosDisponiveis().clear();
-                produtoExistente.getComplementosDisponiveis().addAll(produtoDetails.getComplementosDisponiveis());
-            }
+        // Atualiza a lista de complementos disponíveis
+        if (produtoDetails.getComplementosDisponiveis() != null) {
+            produtoExistente.getComplementosDisponiveis().clear();
+            produtoExistente.getComplementosDisponiveis().addAll(produtoDetails.getComplementosDisponiveis());
         }
 
-        // 6. Salva o produto atualizado no banco e retorna como resposta de sucesso
+        // ================== CORREÇÃO AQUI ==================
+        // Atualiza a lista de receita
+        if (produtoDetails.getReceita() != null) {
+            // Limpa a receita antiga
+            produtoExistente.getReceita().clear();
+            // Adiciona os novos ingredientes da receita
+            produtoExistente.getReceita().addAll(produtoDetails.getReceita());
+        }
+        // ===================================================
+
+        // Aplica a lógica de negócio para garantir a consistência dos dados
+        if (produtoExistente.isMateriaPrima() || produtoExistente.isComplemento()) {
+            produtoExistente.getReceita().clear();
+            produtoExistente.setPermiteComplementos(false);
+        }
+        if (produtoExistente.isComplemento()) {
+            produtoExistente.setMateriaPrima(false);
+        }
+
+        // Salva o produto atualizado no banco
         final Produto updatedProduto = repository.save(produtoExistente);
         return ResponseEntity.ok(updatedProduto);
     }
@@ -105,5 +114,13 @@ public class ProdutoController {
     public ResponseEntity<List<String>> getCategorias() {
         List<String> categorias = repository.findDistinctCategorias();
         return ResponseEntity.ok(categorias);
+    }
+
+    @GetMapping("/cardapio")
+    public List<Produto> getProdutosParaCardapio() {
+        // Retorna todos os produtos que NÃO são matéria-prima E NÃO são complementos
+        return repository.findAll().stream()
+                .filter(p -> !p.isMateriaPrima() && !p.isComplemento() && p.isAtivo())
+                .toList();
     }
 }

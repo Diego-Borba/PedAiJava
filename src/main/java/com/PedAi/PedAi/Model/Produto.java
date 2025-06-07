@@ -20,13 +20,29 @@ public class Produto {
     private String imagem;
     private Integer codPdv;
     private Integer ordemVisualizacao;
-    
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "produto_receita", joinColumns = @JoinColumn(name = "produto_final_id"))
+    private List<ItemReceita> receita = new ArrayList<>();
+
+    public List<ItemReceita> getReceita() {
+        return receita;
+    }
+
+    public void setReceita(List<ItemReceita> receita) {
+        this.receita = receita;
+    }
+
+    @Column(nullable = false, precision = 10, scale = 3)
+    private java.math.BigDecimal estoqueAtual = java.math.BigDecimal.ZERO;
+
     @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT TRUE")
     private boolean ativo = true;
 
-    @Column(name = "is_complemento", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE") // Mapeia para a coluna do BD
-    private boolean isComplemento = false; 
-    
+    @Column(name = "is_complemento", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE") // Mapeia para a
+                                                                                                   // coluna do BD
+    private boolean isComplemento = false;
+
     @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
     private boolean permiteComplementos = false;
 
@@ -34,36 +50,94 @@ public class Produto {
     @CollectionTable(name = "produto_complemento_configs", joinColumns = @JoinColumn(name = "produto_principal_id"))
     private List<ComplementoConfig> complementosDisponiveis = new ArrayList<>();
 
-    // --- Getters e Setters ---
-    
-    // Getters e Setters Padrão
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-    public String getNome() { return nome; }
-    public void setNome(String nome) { this.nome = nome; }
-    public Double getPreco() { return preco; }
-    public void setPreco(Double preco) { this.preco = preco; }
-    public String getCategoria() { return categoria; }
-    public void setCategoria(String categoria) { this.categoria = categoria; }
-    public Integer getQtdeMax() { return qtdeMax; }
-    public void setQtdeMax(Integer qtdeMax) { this.qtdeMax = qtdeMax; }
-    public String getDescricao() { return descricao; }
-    public void setDescricao(String descricao) { this.descricao = descricao; }
-    public String getImagem() { return imagem; }
-    public void setImagem(String imagem) { this.imagem = imagem; }
-    public Integer getCodPdv() { return codPdv; }
-    public void setCodPdv(Integer codPdv) { this.codPdv = codPdv; }
-    public Integer getOrdemVisualizacao() { return ordemVisualizacao; }
-    public void setOrdemVisualizacao(Integer ordemVisualizacao) { this.ordemVisualizacao = ordemVisualizacao; }
-    public List<ComplementoConfig> getComplementosDisponiveis() { return complementosDisponiveis; }
-    public void setComplementosDisponiveis(List<ComplementoConfig> complementosDisponiveis) { this.complementosDisponiveis = complementosDisponiveis; }
-    
-    // --- GETTERS E SETTERS PARA BOOLEANOS COM ANOTAÇÃO CORRIGIDA ---
+    @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
+    private boolean isMateriaPrima = false;
 
-    @JsonProperty("ativo") // Força o nome "ativo" no JSON
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getNome() {
+        return nome;
+    }
+
+    public void setNome(String nome) {
+        this.nome = nome;
+    }
+
+    public Double getPreco() {
+        return preco;
+    }
+
+    public void setPreco(Double preco) {
+        this.preco = preco;
+    }
+
+    public String getCategoria() {
+        return categoria;
+    }
+
+    public void setCategoria(String categoria) {
+        this.categoria = categoria;
+    }
+
+    public Integer getQtdeMax() {
+        return qtdeMax;
+    }
+
+    public void setQtdeMax(Integer qtdeMax) {
+        this.qtdeMax = qtdeMax;
+    }
+
+    public String getDescricao() {
+        return descricao;
+    }
+
+    public void setDescricao(String descricao) {
+        this.descricao = descricao;
+    }
+
+    public String getImagem() {
+        return imagem;
+    }
+
+    public void setImagem(String imagem) {
+        this.imagem = imagem;
+    }
+
+    public Integer getCodPdv() {
+        return codPdv;
+    }
+
+    public void setCodPdv(Integer codPdv) {
+        this.codPdv = codPdv;
+    }
+
+    public Integer getOrdemVisualizacao() {
+        return ordemVisualizacao;
+    }
+
+    public void setOrdemVisualizacao(Integer ordemVisualizacao) {
+        this.ordemVisualizacao = ordemVisualizacao;
+    }
+
+    public List<ComplementoConfig> getComplementosDisponiveis() {
+        return complementosDisponiveis;
+    }
+
+    public void setComplementosDisponiveis(List<ComplementoConfig> complementosDisponiveis) {
+        this.complementosDisponiveis = complementosDisponiveis;
+    }
+
+    @JsonProperty("ativo")
     public boolean isAtivo() {
         return ativo;
     }
+
     public void setAtivo(boolean ativo) {
         this.ativo = ativo;
     }
@@ -72,6 +146,7 @@ public class Produto {
     public boolean isComplemento() {
         return isComplemento;
     }
+
     public void setIsComplemento(boolean isComplemento) {
         this.isComplemento = isComplemento;
     }
@@ -80,7 +155,26 @@ public class Produto {
     public boolean isPermiteComplementos() {
         return permiteComplementos;
     }
+
     public void setPermiteComplementos(boolean permiteComplementos) {
         this.permiteComplementos = permiteComplementos;
     }
+
+    public java.math.BigDecimal getEstoqueAtual() {
+        return estoqueAtual;
+    }
+
+    public void setEstoqueAtual(java.math.BigDecimal estoqueAtual) {
+        this.estoqueAtual = estoqueAtual;
+    }
+
+    @JsonProperty("isMateriaPrima")
+    public boolean isMateriaPrima() {
+        return isMateriaPrima;
+    }
+
+    public void setMateriaPrima(boolean isMateriaPrima) {
+        this.isMateriaPrima = isMateriaPrima;
+    }
+
 }

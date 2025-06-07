@@ -44,12 +44,10 @@
             <div class="col-md-8">
               <label for="nome" class="form-label">Nome do Produto</label>
               <input type="text" class="form-control" id="nome" required>
-              <div class="invalid-feedback">Por favor, informe o nome do produto.</div>
             </div>
             <div class="col-md-4">
               <label for="preco" class="form-label">Preço (R$)</label>
               <input type="number" class="form-control" id="preco" step="0.01" min="0" required>
-              <div class="invalid-feedback">Por favor, informe um preço válido.</div>
             </div>
           </div>
 
@@ -60,7 +58,7 @@
             </div>
             <div class="col-md-3">
               <label for="qtdeMax" class="form-label">Qtde Máx. (Pedido)</label>
-              <input type="number" class="form-control" id="qtdeMax" min="1" value="10" required> <div class="invalid-feedback">Informe a quantidade máxima por pedido.</div>
+              <input type="number" class="form-control" id="qtdeMax" min="1" value="10" required>
             </div>
             <div class="col-md-4">
               <label for="codigoPdv" class="form-label">Código PDV / Referência</label>
@@ -85,37 +83,53 @@
           </div>
 
           <hr class="my-4">
-          <h5 class="mb-3">Configurações de Complemento</h5>
+          <h5 class="mb-3">Tipo e Comportamento do Produto</h5>
           
+          <div class="form-check mb-2">
+            <input class="form-check-input" type="checkbox" id="isMateriaPrima">
+            <label class="form-check-label" for="isMateriaPrima">
+              <strong>Este produto é uma Matéria-Prima</strong> (Ex: Farinha, Tomate. Não aparecerá no cardápio).
+            </label>
+          </div>
+
           <div class="form-check mb-2">
             <input class="form-check-input" type="checkbox" id="isComplemento">
             <label class="form-check-label" for="isComplemento">
-              Este produto é um complemento (não aparecerá no cardápio principal)
+              Este produto é um Complemento Opcional (Ex: Bacon extra, Borda recheada).
             </label>
           </div>
 
           <div class="form-check mb-3">
             <input class="form-check-input" type="checkbox" id="permiteComplementos">
             <label class="form-check-label" for="permiteComplementos">
-              Este produto principal permite adicionar complementos
+              Este produto permite adicionar Complementos Opcionais.
             </label>
           </div>
 
           <div id="containerComplementosDisponiveis" class="mb-3" style="display: none;">
-            <label class="form-label">Complementos Disponíveis para este Produto Principal:</label>
-            <div id="listaComplementosConfig">
-              </div>
+            <label class="form-label">Complementos Disponíveis para este Produto:</label>
+            <div id="listaComplementosConfig"></div>
             <button type="button" class="btn btn-sm btn-outline-info mt-2" id="btnAddComplementoConfig">Adicionar Configuração de Complemento</button>
-            <small class="d-block mt-1 text-muted">Para cada configuração, informe o ID do Produto (que será o complemento) e a quantidade máxima permitida desse complemento para este produto principal.</small>
           </div>
 
+          <div id="containerReceita">
+            <hr class="my-4">
+            <h5 class="mb-3">Composição / Receita do Produto</h5>
+            <p class="text-muted small">Use esta seção para produtos compostos (ex: um sanduíche). Ao vender, o sistema dará baixa no estoque dos ingredientes.</p>
+            <div id="listaReceita"></div>
+            <button type="button" class="btn btn-sm btn-outline-primary mt-2" id="btnAddReceita">
+              <i class="bi bi-plus-circle"></i> Adicionar Ingrediente
+            </button>
+          </div>
 
-          <button type="submit" class="btn btn-success mt-4">
-            <i class="bi bi-check-circle"></i> Salvar Produto
-          </button>
-          <a href="Produtos.html" class="btn btn-secondary mt-4">
-            <i class="bi bi-list-ul"></i> Ver Lista de Produtos
-          </a>
+          <div class="mt-4">
+            <button type="submit" class="btn btn-success">
+              <i class="bi bi-check-circle"></i> Salvar Produto
+            </button>
+            <a href="Produtos.html" class="btn btn-secondary">
+              <i class="bi bi-list-ul"></i> Ver Lista de Produtos
+            </a>
+          </div>
         </form>
       </div>
     </div>

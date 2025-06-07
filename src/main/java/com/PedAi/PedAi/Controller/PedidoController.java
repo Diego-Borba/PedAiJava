@@ -2,6 +2,7 @@ package com.PedAi.PedAi.Controller;
 
 import com.PedAi.PedAi.Model.Pedido;
 import com.PedAi.PedAi.Model.ItemPedido;
+import com.PedAi.PedAi.Model.ItemReceita;
 import com.PedAi.PedAi.Model.Produto;
 import com.PedAi.PedAi.repository.PedidoRepository;
 import com.PedAi.PedAi.repository.ProdutoRepository;
@@ -11,9 +12,11 @@ import com.PedAi.PedAi.DTO.ItemPedidoDTO;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.data.domain.Sort;
 
+import java.math.BigDecimal;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.*;
@@ -29,6 +32,7 @@ public class PedidoController {
     private ProdutoRepository produtoRepository;
 
     @PostMapping
+    @Transactional // IMPORTANTE: Para garantir a consistência do estoque!
     public ResponseEntity<?> criarPedido(@RequestBody PedidoDTO pedidoDTO) {
         if (pedidoDTO.getItens() == null || pedidoDTO.getItens().isEmpty()) {
             return ResponseEntity.badRequest().body("O pedido deve conter ao menos um item.");
@@ -38,21 +42,62 @@ public class PedidoController {
         pedido.setDataPedido(ZonedDateTime.now(ZoneOffset.UTC));
         pedido.setStatus("Recebido");
 
-        List<ItemPedido> itens = new ArrayList<>();
-        for (ItemPedidoDTO dto : pedidoDTO.getItens()) {
-            Produto produto = produtoRepository.findById(dto.getProdutoId())
-                    .orElseThrow(() -> new RuntimeException("Produto não encontrado"));
+        List<ItemPedido> itensPedido = new ArrayList<>();
+        for (ItemPedidoDTO itemDto : pedidoDTO.getItens()) {
+            Produto produtoVendido = produtoRepository.findById(itemDto.getProdutoId())
+                    .orElseThrow(
+                            () -> new RuntimeException("Produto com ID " + itemDto.getProdutoId() + " não encontrado"));
+
+            // ================== LÓGICA DE BAIXA DE ESTOQUE (NOVO!) ==================
+            // Verifica se o produto vendido é composto (tem uma receita)
+            if (produtoVendido.getReceita() != null && !produtoVendido.getReceita().isEmpty()) {
+                // É um produto com receita (Ex: X-Burger)
+                // Vamos dar baixa nos ingredientes
+                for (ItemReceita ingrediente : produtoVendido.getReceita()) {
+                    Produto produtoIngrediente = produtoRepository.findById(ingrediente.getProdutoIngredienteId())
+                            .orElseThrow(() -> new RuntimeException(
+                                    "Ingrediente com ID " + ingrediente.getProdutoIngredienteId()
+                                            + " não encontrado na receita do produto " + produtoVendido.getNome()));
+
+                    // Qtde do ingrediente a ser baixada = qtde da receita * qtde de produtos
+                    // vendidos
+                    BigDecimal quantidadeAbaixar = ingrediente.getQuantidadeUtilizada()
+                            .multiply(new BigDecimal(itemDto.getQuantidade()));
+
+                    if (produtoIngrediente.getEstoqueAtual().compareTo(quantidadeAbaixar) < 0) {
+                        // Estoque insuficiente
+                        throw new RuntimeException(
+                                "Estoque insuficiente para o ingrediente: " + produtoIngrediente.getNome());
+                    }
+
+                    produtoIngrediente
+                            .setEstoqueAtual(produtoIngrediente.getEstoqueAtual().subtract(quantidadeAbaixar));
+                    produtoRepository.save(produtoIngrediente);
+                }
+
+            } else {
+                // É um produto simples/matéria-prima vendido diretamente (Ex: Lata de
+                // Refrigerante)
+                BigDecimal quantidadeAbaixar = new BigDecimal(itemDto.getQuantidade());
+                if (produtoVendido.getEstoqueAtual().compareTo(quantidadeAbaixar) < 0) {
+                    // Estoque insuficiente
+                    throw new RuntimeException("Estoque insuficiente para o produto: " + produtoVendido.getNome());
+                }
+                produtoVendido.setEstoqueAtual(produtoVendido.getEstoqueAtual().subtract(quantidadeAbaixar));
+                produtoRepository.save(produtoVendido);
+            }
+            // =======================================================================
 
             ItemPedido item = new ItemPedido();
-            item.setProduto(produto);
-            item.setQuantidade(dto.getQuantidade());
-            item.setPrecoUnitario(dto.getPrecoUnitario());
+            item.setProduto(produtoVendido);
+            item.setQuantidade(itemDto.getQuantidade());
+            item.setPrecoUnitario(itemDto.getPrecoUnitario());
             item.setPedido(pedido);
 
-            itens.add(item);
+            itensPedido.add(item);
         }
 
-        pedido.setItens(itens);
+        pedido.setItens(itensPedido);
         pedidoRepository.save(pedido);
 
         return ResponseEntity.ok(Map.of("id", pedido.getId()));
@@ -65,7 +110,7 @@ public class PedidoController {
             return ResponseEntity.notFound().build();
 
         Pedido pedido = optPedido.get();
-        
+
         List<Map<String, Object>> itens = new ArrayList<>();
         for (ItemPedido item : pedido.getItens()) {
             Map<String, Object> itemMap = new HashMap<>();

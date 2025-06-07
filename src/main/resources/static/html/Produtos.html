@@ -46,20 +46,22 @@
                             <tr>
                                 <th>Nome / Tipo</th>
                                 <th>Preço</th>
+                                <th>Estoque</th>
                                 <th>Categoria</th>
                                 <th>Qtde.Máx Pedido</th>
                                 <th>Info Adicional</th>
                                 <th>Ações</th>
                             </tr>
                         </thead>
-                        <tbody id="produtos"></tbody>
+                        <tbody></tbody>
                     </table>
                 </div>
             </div>
         </div>
 
         <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-xl"> <div class="modal-content">
+            <div class="modal-dialog modal-xl">
+                <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title" id="editModalLabel">Editar Produto</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
@@ -67,71 +69,47 @@
                     <div class="modal-body">
                         <form id="formEditProduto">
                             <input type="hidden" id="edit-id">
+                            
                             <div class="row">
-                                <div class="col-md-8 mb-3">
-                                    <label for="edit-nome" class="form-label">Nome</label>
-                                    <input type="text" class="form-control" id="edit-nome" required>
-                                </div>
-                                <div class="col-md-4 mb-3">
-                                    <label for="edit-preco" class="form-label">Preço</label>
-                                    <input type="number" step="0.01" class="form-control" id="edit-preco" required>
-                                </div>
+                                <div class="col-md-8 mb-3"><label for="edit-nome" class="form-label">Nome</label><input type="text" class="form-control" id="edit-nome" required></div>
+                                <div class="col-md-4 mb-3"><label for="edit-preco" class="form-label">Preço</label><input type="number" step="0.01" class="form-control" id="edit-preco" required></div>
                             </div>
                             <div class="row">
-                                <div class="col-md-4 mb-3">
-                                    <label for="edit-categoria" class="form-label">Categoria</label>
-                                    <input type="text" class="form-control" id="edit-categoria">
-                                </div>
-                                <div class="col-md-2 mb-3">
-                                    <label for="edit-qtdeMax" class="form-label">Qtde.Máx</label>
-                                    <input type="number" class="form-control" id="edit-qtdeMax" required>
-                                </div>
-                                <div class="col-md-3 mb-3">
-                                    <label for="edit-codigoPdv" class="form-label">Cód. PDV</label>
-                                    <input type="text" class="form-control" id="edit-codigoPdv">
-                                </div>
-                                <div class="col-md-3 mb-3">
-                                    <label for="edit-ordemVisualizacao" class="form-label">Ordem Cardápio</label>
-                                    <input type="number" class="form-control" id="edit-ordemVisualizacao">
-                                </div>
+                                <div class="col-md-4 mb-3"><label for="edit-categoria" class="form-label">Categoria</label><input type="text" class="form-control" id="edit-categoria"></div>
+                                <div class="col-md-2 mb-3"><label for="edit-qtdeMax" class="form-label">Qtde.Máx</label><input type="number" class="form-control" id="edit-qtdeMax" required></div>
+                                <div class="col-md-3 mb-3"><label for="edit-codigoPdv" class="form-label">Cód. PDV</label><input type="text" class="form-control" id="edit-codigoPdv"></div>
+                                <div class="col-md-3 mb-3"><label for="edit-ordemVisualizacao" class="form-label">Ordem Cardápio</label><input type="number" class="form-control" id="edit-ordemVisualizacao"></div>
                             </div>
-                            <div class="mb-3">
-                                <label for="edit-descricao" class="form-label">Descrição</label>
-                                <textarea class="form-control" id="edit-descricao" rows="2"></textarea>
-                            </div>
-                            <div class="mb-3">
-                                <label for="edit-imagem" class="form-label">URL da Imagem</label>
-                                <input type="text" class="form-control" id="edit-imagem">
-                            </div>
+                            <div class="mb-3"><label for="edit-descricao" class="form-label">Descrição</label><textarea class="form-control" id="edit-descricao" rows="2"></textarea></div>
+                            <div class="mb-3"><label for="edit-imagem" class="form-label">URL da Imagem</label><input type="text" class="form-control" id="edit-imagem"></div>
 
                             <hr class="my-4">
-                            <h5 class="mb-3">Configurações de Complemento</h5>
-                            <div class="row">
-                                <div class="col-md-6 mb-2">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" id="edit-isComplemento">
-                                        <label class="form-check-label" for="edit-isComplemento">
-                                            Este produto é um complemento
-                                        </label>
-                                    </div>
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" id="edit-permiteComplementos">
-                                        <label class="form-check-label" for="edit-permiteComplementos">
-                                            Este produto principal permite adicionar complementos
-                                        </label>
-                                    </div>
-                                </div>
+                            <h5 class="mb-3">Tipo e Comportamento do Produto</h5>
+                            
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" id="edit-isMateriaPrima">
+                                <label class="form-check-label" for="edit-isMateriaPrima"><strong>Este produto é uma Matéria-Prima</strong></label>
+                            </div>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" id="edit-isComplemento">
+                                <label class="form-check-label" for="edit-isComplemento">Este produto é um Complemento Opcional</label>
+                            </div>
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="checkbox" id="edit-permiteComplementos">
+                                <label class="form-check-label" for="edit-permiteComplementos">Este produto permite adicionar Complementos</label>
                             </div>
 
                             <div id="edit-containerComplementosDisponiveis" class="mb-3" style="display: none;">
-                                <label class="form-label">Complementos Disponíveis para este Produto Principal:</label>
-                                <div id="edit-listaComplementosConfig">
-                                    </div>
-                                <button type="button" class="btn btn-sm btn-outline-info mt-2" id="edit-btnAddComplementoConfig">
-                                    <i class="bi bi-plus-circle"></i> Adicionar Configuração de Complemento
-                                </button>
+                                <label class="form-label">Complementos Disponíveis:</label>
+                                <div id="edit-listaComplementosConfig"></div>
+                                <button type="button" class="btn btn-sm btn-outline-info mt-2" id="edit-btnAddComplementoConfig"><i class="bi bi-plus-circle"></i> Adicionar Configuração</button>
+                            </div>
+                            
+                            <div id="edit-containerReceita">
+                                <hr class="my-4">
+                                <h5 class="mb-3">Composição / Receita do Produto</h5>
+                                <div id="edit-listaReceita"></div>
+                                <button type="button" class="btn btn-sm btn-outline-primary mt-2" id="edit-btnAddReceita"><i class="bi bi-plus-circle"></i> Adicionar Ingrediente</button>
                             </div>
 
                             <div class="d-flex justify-content-end mt-4">
@@ -143,6 +121,7 @@
                 </div>
             </div>
         </div>
+        
         <footer class="mt-auto">
             &copy; 2025 PedAi | Todos os direitos reservados
         </footer>

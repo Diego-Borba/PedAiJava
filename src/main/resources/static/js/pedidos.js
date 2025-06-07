@@ -95,7 +95,7 @@ function showProdutoAdicionadoToast(produto, isComplemento = false) {
 async function carregarEProcessarProdutosAPI() {
     showLoadingIndicator(true);
     try {
-        const response = await axios.get('/api/produtos');
+        const response = await axios.get('/api/produtos/cardapio');
         todosProdutos = response.data.map(p => {
             // Normalização para determinar se é um complemento.
             const ehComplemento = p.isComplemento === true || p.complemento === true;
