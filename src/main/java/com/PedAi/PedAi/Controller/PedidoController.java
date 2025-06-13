@@ -6,6 +6,7 @@ import com.PedAi.PedAi.Model.ItemReceita;
 import com.PedAi.PedAi.Model.Produto;
 import com.PedAi.PedAi.repository.PedidoRepository;
 import com.PedAi.PedAi.repository.ProdutoRepository;
+import com.PedAi.PedAi.services.PedidoService;
 import com.PedAi.PedAi.DTO.PedidoDTO;
 import com.PedAi.PedAi.DTO.StatusDTO;
 import com.PedAi.PedAi.DTO.ItemPedidoDTO;
@@ -30,9 +31,12 @@ public class PedidoController {
 
     @Autowired
     private ProdutoRepository produtoRepository;
+    
+    @Autowired
+    private PedidoService pedidoService;
 
     @PostMapping
-    @Transactional // IMPORTANTE: Para garantir a consistência do estoque!
+    @Transactional
     public ResponseEntity<?> criarPedido(@RequestBody PedidoDTO pedidoDTO) {
         if (pedidoDTO.getItens() == null || pedidoDTO.getItens().isEmpty()) {
             return ResponseEntity.badRequest().body("O pedido deve conter ao menos um item.");
@@ -47,46 +51,35 @@ public class PedidoController {
             Produto produtoVendido = produtoRepository.findById(itemDto.getProdutoId())
                     .orElseThrow(
                             () -> new RuntimeException("Produto com ID " + itemDto.getProdutoId() + " não encontrado"));
-
-            // ================== LÓGICA DE BAIXA DE ESTOQUE (NOVO!) ==================
-            // Verifica se o produto vendido é composto (tem uma receita)
             if (produtoVendido.getReceita() != null && !produtoVendido.getReceita().isEmpty()) {
-                // É um produto com receita (Ex: X-Burger)
-                // Vamos dar baixa nos ingredientes
                 for (ItemReceita ingrediente : produtoVendido.getReceita()) {
                     Produto produtoIngrediente = produtoRepository.findById(ingrediente.getProdutoIngredienteId())
                             .orElseThrow(() -> new RuntimeException(
                                     "Ingrediente com ID " + ingrediente.getProdutoIngredienteId()
                                             + " não encontrado na receita do produto " + produtoVendido.getNome()));
-
-                    // Qtde do ingrediente a ser baixada = qtde da receita * qtde de produtos
-                    // vendidos
                     BigDecimal quantidadeAbaixar = ingrediente.getQuantidadeUtilizada()
                             .multiply(new BigDecimal(itemDto.getQuantidade()));
+                    BigDecimal estoqueAtualDoIngrediente = produtoIngrediente.getEstoqueAtual() == null
+                            ? BigDecimal.ZERO
+                            : produtoIngrediente.getEstoqueAtual();
 
-                    if (produtoIngrediente.getEstoqueAtual().compareTo(quantidadeAbaixar) < 0) {
-                        // Estoque insuficiente
+                    if (estoqueAtualDoIngrediente.compareTo(quantidadeAbaixar) < 0) {
                         throw new RuntimeException(
                                 "Estoque insuficiente para o ingrediente: " + produtoIngrediente.getNome());
                     }
-
-                    produtoIngrediente
-                            .setEstoqueAtual(produtoIngrediente.getEstoqueAtual().subtract(quantidadeAbaixar));
-                    produtoRepository.save(produtoIngrediente);
+                    produtoIngrediente.setEstoqueAtual(estoqueAtualDoIngrediente.subtract(quantidadeAbaixar));
                 }
 
             } else {
-                // É um produto simples/matéria-prima vendido diretamente (Ex: Lata de
-                // Refrigerante)
                 BigDecimal quantidadeAbaixar = new BigDecimal(itemDto.getQuantidade());
-                if (produtoVendido.getEstoqueAtual().compareTo(quantidadeAbaixar) < 0) {
-                    // Estoque insuficiente
+                BigDecimal estoqueAtualDoProdutoVendido = produtoVendido.getEstoqueAtual() == null ? BigDecimal.ZERO
+                        : produtoVendido.getEstoqueAtual();
+
+                if (estoqueAtualDoProdutoVendido.compareTo(quantidadeAbaixar) < 0) {
                     throw new RuntimeException("Estoque insuficiente para o produto: " + produtoVendido.getNome());
                 }
-                produtoVendido.setEstoqueAtual(produtoVendido.getEstoqueAtual().subtract(quantidadeAbaixar));
-                produtoRepository.save(produtoVendido);
+                produtoVendido.setEstoqueAtual(estoqueAtualDoProdutoVendido.subtract(quantidadeAbaixar));
             }
-            // =======================================================================
 
             ItemPedido item = new ItemPedido();
             item.setProduto(produtoVendido);

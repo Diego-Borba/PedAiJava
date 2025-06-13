@@ -21,7 +21,7 @@ public class Produto {
     private Integer codPdv;
     private Integer ordemVisualizacao;
 
-    @ElementCollection(fetch = FetchType.EAGER)
+    @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "produto_receita", joinColumns = @JoinColumn(name = "produto_final_id"))
     private List<ItemReceita> receita = new ArrayList<>();
 
@@ -46,7 +46,7 @@ public class Produto {
     @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
     private boolean permiteComplementos = false;
 
-    @ElementCollection(fetch = FetchType.EAGER)
+    @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "produto_complemento_configs", joinColumns = @JoinColumn(name = "produto_principal_id"))
     private List<ComplementoConfig> complementosDisponiveis = new ArrayList<>();
 
