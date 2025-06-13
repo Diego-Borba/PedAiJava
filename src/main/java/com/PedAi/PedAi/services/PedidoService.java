@@ -1,6 +1,7 @@
 package com.PedAi.PedAi.services;
 
 import com.PedAi.PedAi.DTO.ItemPedidoDTO;
+import com.PedAi.PedAi.DTO.PedidoDTO;
 import com.PedAi.PedAi.Model.ItemPedido;
 import com.PedAi.PedAi.Model.ItemReceita;
 import com.PedAi.PedAi.Model.Pedido;
@@ -39,7 +40,8 @@ public class PedidoService {
         List<ItemPedido> itensPedido = new ArrayList<>();
         for (ItemPedidoDTO itemDto : itensDTO) {
             Produto produtoVendido = produtoRepository.findById(itemDto.getProdutoId())
-                    .orElseThrow(() -> new RuntimeException("Produto com ID " + itemDto.getProdutoId() + " não encontrado"));
+                    .orElseThrow(
+                            () -> new RuntimeException("Produto com ID " + itemDto.getProdutoId() + " não encontrado"));
 
             // Lógica de baixa de estoque
             darBaixaEstoque(produtoVendido, itemDto.getQuantidade());
@@ -50,6 +52,9 @@ public class PedidoService {
             item.setPrecoUnitario(itemDto.getPrecoUnitario());
             item.setPedido(pedido);
             itensPedido.add(item);
+            pedido.setEnderecoEntrega(pedidoDTO.getEnderecoEntrega());
+            pedido.setFormaPagamento(pedidoDTO.getFormaPagamento());
+
         }
 
         pedido.setItens(itensPedido);
@@ -61,14 +66,16 @@ public class PedidoService {
             // Baixa de ingredientes para produtos compostos
             for (ItemReceita ingrediente : produtoVendido.getReceita()) {
                 Produto produtoIngrediente = produtoRepository.findById(ingrediente.getProdutoIngredienteId())
-                        .orElseThrow(() -> new RuntimeException("Ingrediente com ID " + ingrediente.getProdutoIngredienteId()
-                                + " não encontrado na receita do produto " + produtoVendido.getNome()));
+                        .orElseThrow(
+                                () -> new RuntimeException("Ingrediente com ID " + ingrediente.getProdutoIngredienteId()
+                                        + " não encontrado na receita do produto " + produtoVendido.getNome()));
 
                 BigDecimal quantidadeAbaixar = ingrediente.getQuantidadeUtilizada()
                         .multiply(new BigDecimal(quantidadeVendida));
 
                 if (produtoIngrediente.getEstoqueAtual().compareTo(quantidadeAbaixar) < 0) {
-                    throw new RuntimeException("Estoque insuficiente para o ingrediente: " + produtoIngrediente.getNome());
+                    throw new RuntimeException(
+                            "Estoque insuficiente para o ingrediente: " + produtoIngrediente.getNome());
                 }
                 produtoIngrediente.setEstoqueAtual(produtoIngrediente.getEstoqueAtual().subtract(quantidadeAbaixar));
                 produtoRepository.save(produtoIngrediente);

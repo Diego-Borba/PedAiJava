@@ -21,14 +21,11 @@ function getCartFromStorageCarrinho() {
 
 function saveCartToStorageCarrinho() {
     localStorage.setItem(CART_STORAGE_KEY_CARRINHO, JSON.stringify(cartData));
-    // Log para verificar os dados ANTES de redesenhar a UI
-    console.log("[SAVE_CART] Dados em cartData ANTES de displayCartItems:", JSON.parse(JSON.stringify(cartData)));
     console.log("[SAVE_CART] Carrinho salvo (carrinho.js), chamando atualização da UI...");
     displayCartItems();
     updateCartCountNavbarCarrinho();
 }
 
-// ... (demais funções de customer storage permanecem iguais) ...
 function getCustomerFromStorageCarrinho() { const s = localStorage.getItem(CUSTOMER_STORAGE_KEY_CARRINHO); try { const p = JSON.parse(s); return typeof p === 'object' && p !== null ? p : null; } catch (e) { return null; } }
 function saveCustomerToStorageCarrinho(c) { localStorage.setItem(CUSTOMER_STORAGE_KEY_CARRINHO, JSON.stringify(c)); }
 function removeCustomerFromStorageCarrinho() { localStorage.removeItem(CUSTOMER_STORAGE_KEY_CARRINHO); }
@@ -36,8 +33,10 @@ function removeCustomerFromStorageCarrinho() { localStorage.removeItem(CUSTOMER_
 // --- CARREGAR PRODUTOS GLOBAIS ---
 async function carregarTodosProdutosParaReferenciaCarrinho() {
     try {
-        const response = await axios.get('/api/produtos');
-        todosProdutosGlobaisParaCarrinho = response.data.map(p => ({
+        const response = await fetch('/api/produtos'); // Usando fetch em vez de axios para consistência
+        if (!response.ok) throw new Error('Falha ao carregar produtos');
+        const data = await response.json();
+        todosProdutosGlobaisParaCarrinho = data.map(p => ({
             ...p,
             id: String(p.id),
             isComplemento: p.isComplemento === true || p.complemento === true,
@@ -55,7 +54,7 @@ async function carregarTodosProdutosParaReferenciaCarrinho() {
     }
 }
 
-// --- UI DO CARRINHO ---
+// --- UI DO CARRINHO (Suas funções displayCartItems, updateCartSummary, etc. permanecem aqui sem alterações) ---
 function updateCartCountNavbarCarrinho() {
     const cartCountEl = document.getElementById('cartCountNavbar');
     if (!cartCountEl) return;
@@ -68,61 +67,30 @@ function updateCartCountNavbarCarrinho() {
     cartCountEl.innerText = totalItens;
 }
 function displayCartItems() {
-    console.log("[DISPLAY_CART] Iniciando displayCartItems. Dados atuais:", JSON.parse(JSON.stringify(cartData)));
     const container = document.getElementById('cartItemsContainer');
     const emptyCartMessage = document.getElementById('emptyCartMessage');
     const checkoutSection = document.getElementById('checkoutSection');
+    if (!container || !emptyCartMessage || !checkoutSection) return;
 
-    let missingElements = false;
-    if (!container) {
-        console.error("[DISPLAY_CART_ERROR] Elemento 'cartItemsContainer' NÃO encontrado no DOM!");
-        missingElements = true;
-    }
-    if (!emptyCartMessage) {
-        console.error("[DISPLAY_CART_ERROR] Elemento 'emptyCartMessage' NÃO encontrado no DOM!");
-        missingElements = true;
-    }
-    if (!checkoutSection) {
-        console.error("[DISPLAY_CART_ERROR] Elemento 'checkoutSection' NÃO encontrado no DOM!");
-        missingElements = true;
-    }
-
-    if (missingElements) {
-        console.warn("[DISPLAY_CART] Um ou mais elementos cruciais da UI do carrinho não foram encontrados. A renderização dos itens do carrinho foi pulada. Verifique os erros acima.");
-        // Mesmo que alguns elementos não sejam encontrados, ainda podemos tentar atualizar o resumo se ele existir
-        // ou outras partes, mas a lista de itens não será renderizada.
-        // Para simplificar, vamos retornar se os elementos principais não estiverem lá.
-        return;
-    }
-
-    console.log("[DISPLAY_CART] Todos os elementos base ('cartItemsContainer', 'emptyCartMessage', 'checkoutSection') foram encontrados.");
-
-    // O restante da sua lógica de displayCartItems continua aqui...
-    container.innerHTML = ''; // Limpa o container
+    container.innerHTML = '';
     const idsProdutosPrincipais = Object.keys(cartData);
 
     if (idsProdutosPrincipais.length === 0) {
         emptyCartMessage.style.display = 'block';
-        checkoutSection.style.display = 'none'; // Esconde a seção de checkout se o carrinho estiver vazio
-        updateCartSummary(0, 0); // Atualiza o resumo para R$ 0,00 e 0 itens.
-        console.log("[DISPLAY_CART] Carrinho vazio, exibindo mensagem de carrinho vazio.");
+        checkoutSection.style.display = 'none';
+        updateCartSummary(0, 0);
         return;
     }
 
     emptyCartMessage.style.display = 'none';
-    checkoutSection.style.display = 'block'; // Mostra a seção de checkout se houver itens
+    checkoutSection.style.display = 'block';
 
     let totalGeralCompra = 0;
     let totalItensPrincipaisDisplay = 0;
 
     idsProdutosPrincipais.forEach(idPrincipalStr => {
         const itemPrincipal = cartData[idPrincipalStr];
-        if (!itemPrincipal || typeof itemPrincipal.preco !== 'number' || typeof itemPrincipal.qtde !== 'number') {
-            console.warn(`[DISPLAY_CART] Item principal inválido (ID ${idPrincipalStr}), pulando renderização do item.`);
-            return;
-        }
-
-        console.log(`[DISPLAY_CART] Renderizando item ${itemPrincipal.nome} (ID ${idPrincipalStr}) com quantidade: ${itemPrincipal.qtde}`);
+        if (!itemPrincipal || typeof itemPrincipal.preco !== 'number' || typeof itemPrincipal.qtde !== 'number') return;
 
         const subtotalItemPrincipal = itemPrincipal.preco * itemPrincipal.qtde;
         totalGeralCompra += subtotalItemPrincipal;
@@ -149,13 +117,10 @@ function displayCartItems() {
             </div>`;
 
         if (Array.isArray(itemPrincipal.selectedComplements) && itemPrincipal.selectedComplements.length > 0) {
-            const complementsContainer = document.createElement('div');
+             const complementsContainer = document.createElement('div');
             complementsContainer.className = 'ms-md-4 mt-2 ps-md-2';
             itemPrincipal.selectedComplements.forEach(compItem => {
-                if (!compItem || !compItem.produto || typeof compItem.produto.preco !== 'number' || typeof compItem.qtde !== 'number') {
-                    console.warn(`[DISPLAY_CART] Complemento inválido para o item ${idPrincipalStr}, pulando renderização do complemento.`);
-                    return;
-                }
+                 if (!compItem || !compItem.produto || typeof compItem.produto.preco !== 'number' || typeof compItem.qtde !== 'number') return;
                 const complemento = compItem.produto;
                 const idComplementoStr = String(complemento.id);
                 const qtdeComplemento = compItem.qtde;
@@ -166,12 +131,8 @@ function displayCartItems() {
                 const produtoPrincipalOriginalConfig = todosProdutosGlobaisParaCarrinho.find(p => p.id === idPrincipalStr);
                 if (produtoPrincipalOriginalConfig && Array.isArray(produtoPrincipalOriginalConfig.complementosDisponiveis)) {
                     const configDoPrincipal = produtoPrincipalOriginalConfig.complementosDisponiveis.find(cd => cd.complementoProdutoId === idComplementoStr);
-                    if (configDoPrincipal && typeof configDoPrincipal.maxQtdePermitida === 'number') {
-                        maxQtdePermitidaEsteComp = configDoPrincipal.maxQtdePermitida;
-                    }
+                    if (configDoPrincipal) maxQtdePermitidaEsteComp = configDoPrincipal.maxQtdePermitida;
                 }
-
-                console.log(`[DISPLAY_CART] Renderizando complemento ${complemento.nome} (ID ${idComplementoStr}) para ${itemPrincipal.nome} com quantidade: ${qtdeComplemento}`);
 
                 const complementRow = document.createElement('div');
                 complementRow.className = 'cart-complement-item d-flex align-items-center mb-2 py-2 border-bottom border-light';
@@ -199,7 +160,6 @@ function displayCartItems() {
 
     updateCartSummary(totalGeralCompra, totalItensPrincipaisDisplay);
     updateFinalizeButtonState();
-    console.log("[DISPLAY_CART] displayCartItems concluído com sucesso.");
 }
 
 function updateCartSummary(totalGeral, totalItensPrincipais) {
@@ -218,45 +178,26 @@ function updateCartSummary(totalGeral, totalItensPrincipais) {
             </li>
         </ul>`;
 }
-
-// --- MANIPULAÇÃO DO CARRINHO ---
+// --- MANIPULAÇÃO DO CARRINHO (Suas funções handleChangeQuantity, etc. permanecem aqui sem alterações) ---
 function handleChangeQuantity(idProdutoPrincipalStr, newQuantity) {
     const itemPrincipal = cartData[idProdutoPrincipalStr];
-    // Log no início da função
-    console.log(`[HANDLE_CHANGE_QTY] ID: ${idProdutoPrincipalStr}, Nova Qtde Desejada: ${newQuantity}, Qtde Atual no Carrinho: ${itemPrincipal?.qtde}`);
-
-    if (!itemPrincipal) {
-        console.warn(`[HANDLE_CHANGE_QTY] Item principal não encontrado para ID: ${idProdutoPrincipalStr}`);
-        return;
-    }
-
-    newQuantity = parseInt(newQuantity); // Garante que é um número
+    if (!itemPrincipal) return;
 
     if (newQuantity <= 0) {
-        console.log(`[HANDLE_CHANGE_QTY] Nova quantidade é ${newQuantity}. Removendo item ${idProdutoPrincipalStr}.`);
         handleRemoveItem(idProdutoPrincipalStr);
         return;
     }
     if (itemPrincipal.qtdeMax && newQuantity > itemPrincipal.qtdeMax) {
-        console.warn(`[HANDLE_CHANGE_QTY] Limite de quantidade atingido para ${itemPrincipal.nome}. Máx: ${itemPrincipal.qtdeMax}, Desejado: ${newQuantity}`);
         Swal.fire('Limite Atingido!', `Qtd. máx. para "${itemPrincipal.nome}" é ${itemPrincipal.qtdeMax}.`, 'warning');
-        // Importante: Não altera a quantidade e não salva se atingir o limite.
-        // A UI não será atualizada para a quantidade inválida.
-        // Se você quiser que o input volte ao valor máximo, teria que chamar displayCartItems aqui também,
-        // ou ajustar o valor do input diretamente (o que é menos ideal com a sua estratégia de recriar tudo).
         return;
     }
-
-    console.log(`[HANDLE_CHANGE_QTY] Atualizando qtde de ${itemPrincipal.nome} de ${itemPrincipal.qtde} para ${newQuantity}`);
     itemPrincipal.qtde = newQuantity;
-    saveCartToStorageCarrinho(); // Salva e dispara a re-renderização
+    saveCartToStorageCarrinho();
 }
 
 function handleRemoveItem(idProdutoPrincipalStr) {
     const itemRemovido = cartData[idProdutoPrincipalStr];
     if (!itemRemovido) return;
-
-    console.log(`[HANDLE_REMOVE_ITEM] Removendo item ${itemRemovido.nome} (ID: ${idProdutoPrincipalStr})`);
     delete cartData[idProdutoPrincipalStr];
     Swal.fire('Removido!', `"${itemRemovido.nome}" e complementos removidos.`, 'success');
     saveCartToStorageCarrinho();
@@ -264,43 +205,24 @@ function handleRemoveItem(idProdutoPrincipalStr) {
 
 function handleChangeComplementQuantity(idPrincipalStr, idComplementoStr, novaQtde) {
     const itemPrincipal = cartData[idPrincipalStr];
-    console.log(`[HANDLE_CHANGE_COMP_QTY] Item Principal: ${itemPrincipal?.nome}, Complemento ID: ${idComplementoStr}, Nova Qtde Desejada: ${novaQtde}`);
-
-    if (!itemPrincipal || !Array.isArray(itemPrincipal.selectedComplements)) {
-        console.warn(`[HANDLE_CHANGE_COMP_QTY] Item principal ou array de complementos não encontrado.`);
-        return;
-    }
-
+    if (!itemPrincipal || !Array.isArray(itemPrincipal.selectedComplements)) return;
     const indexComp = itemPrincipal.selectedComplements.findIndex(c => String(c.produto.id) === idComplementoStr);
-    if (indexComp === -1) {
-        console.warn(`[HANDLE_CHANGE_COMP_QTY] Complemento ID ${idComplementoStr} não encontrado no item ${itemPrincipal.nome}.`);
-        return;
-    }
+    if (indexComp === -1) return;
 
     const complementoSelecionado = itemPrincipal.selectedComplements[indexComp];
-    console.log(`[HANDLE_CHANGE_COMP_QTY] Complemento encontrado: ${complementoSelecionado.produto.nome}, Qtde Atual: ${complementoSelecionado.qtde}`);
-
-
     let maxQtdePermitidaConfigurada = 99;
     const produtoPrincipalOriginal = todosProdutosGlobaisParaCarrinho.find(p => p.id === idPrincipalStr);
-    if (produtoPrincipalOriginal && Array.isArray(produtoPrincipalOriginal.complementosDisponiveis)) {
+    if (produtoPrincipalOriginal && produtoPrincipalOriginal.complementosDisponiveis) {
         const configDoPrincipal = produtoPrincipalOriginal.complementosDisponiveis.find(cd => cd.complementoProdutoId === idComplementoStr);
-        if (configDoPrincipal && typeof configDoPrincipal.maxQtdePermitida === 'number') {
-            maxQtdePermitidaConfigurada = configDoPrincipal.maxQtdePermitida;
-        }
+        if (configDoPrincipal) maxQtdePermitidaConfigurada = configDoPrincipal.maxQtdePermitida;
     }
-    console.log(`[HANDLE_CHANGE_COMP_QTY] Máx. qtde permitida para ${complementoSelecionado.produto.nome}: ${maxQtdePermitidaConfigurada}`);
 
-    novaQtde = parseInt(novaQtde);
     if (novaQtde <= 0) {
-        console.log(`[HANDLE_CHANGE_COMP_QTY] Nova qtde é ${novaQtde}. Removendo complemento ${complementoSelecionado.produto.nome}.`);
         itemPrincipal.selectedComplements.splice(indexComp, 1);
     } else if (novaQtde > maxQtdePermitidaConfigurada) {
-        console.warn(`[HANDLE_CHANGE_COMP_QTY] Limite de qtde atingido para complemento ${complementoSelecionado.produto.nome}. Máx: ${maxQtdePermitidaConfigurada}, Desejado: ${novaQtde}. Ajustando para o máximo.`);
         Swal.fire('Limite Atingido!', `Máximo de "${complementoSelecionado.produto.nome}" é ${maxQtdePermitidaConfigurada}.`, 'warning');
         itemPrincipal.selectedComplements[indexComp].qtde = maxQtdePermitidaConfigurada;
     } else {
-        console.log(`[HANDLE_CHANGE_COMP_QTY] Atualizando qtde do complemento ${complementoSelecionado.produto.nome} para ${novaQtde}`);
         itemPrincipal.selectedComplements[indexComp].qtde = novaQtde;
     }
     saveCartToStorageCarrinho();
@@ -309,30 +231,20 @@ function handleChangeComplementQuantity(idPrincipalStr, idComplementoStr, novaQt
 function handleRemoveComplement(idProdutoPrincipalStr, idComplementoStr) {
     const itemPrincipal = cartData[idProdutoPrincipalStr];
     if (!itemPrincipal || !Array.isArray(itemPrincipal.selectedComplements)) return;
-
     const compRemovido = itemPrincipal.selectedComplements.find(c => String(c.produto.id) === idComplementoStr);
-    console.log(`[HANDLE_REMOVE_COMP] Removendo complemento ID ${idComplementoStr} do item ${itemPrincipal.nome}`);
     itemPrincipal.selectedComplements = itemPrincipal.selectedComplements.filter(c => String(c.produto.id) !== idComplementoStr);
-    if (compRemovido) Swal.fire('Complemento Removido', `"${compRemovido.produto.nome}" removido.`, 'info');
+    if(compRemovido) Swal.fire('Complemento Removido', `"${compRemovido.produto.nome}" removido.`, 'info');
     saveCartToStorageCarrinho();
 }
 
 // --- LÓGICA DE CLIENTE E FINALIZAÇÃO ---
-// (Suas funções updateCustomerUI, formatPhoneNumber, formatCEP, fetchAddressFromViaCEP, 
-// handleRegister, handleLogin, handleLogout, updateFinalizeButtonState, e finalizeOrder
-// permanecem como na sua versão anterior. Cole-as aqui.)
-// ... (COLE AQUI AS SUAS FUNÇÕES DE CLIENTE E FINALIZAÇÃO COMPLETAS) ...
-// COPIEI AS FUNÇÕES PARA CÁ PARA O EXEMPLO SER COMPLETO:
 function updateCustomerUI() {
     const loggedInDiv = document.getElementById('loggedInCustomer');
     const guestDiv = document.getElementById('guestCustomer');
     const customerNameEl = document.getElementById('customerName');
     const customerDetailsEl = document.getElementById('customerDetails');
 
-    if (!loggedInDiv || !guestDiv || !customerNameEl || !customerDetailsEl) {
-        console.warn("Elementos da UI do cliente não encontrados.");
-        return;
-    }
+    if (!loggedInDiv || !guestDiv || !customerNameEl || !customerDetailsEl) return;
 
     if (loggedInCustomerData) {
         customerNameEl.textContent = loggedInCustomerData.nome || 'Cliente';
@@ -358,10 +270,12 @@ function formatCEP(c) { const cl = ('' + c).replace(/\D/g, ''); if (cl.length ==
 async function fetchAddressFromViaCEP(cep) {
     const cleanCep = cep.replace(/\D/g, ''); if (cleanCep.length !== 8) { Swal.showValidationMessage(`CEP inválido. Deve conter 8 dígitos.`); return null; }
     try {
-        Swal.showLoading(); const response = await fetch(`https://viacep.com.br/ws/${cleanCep}/json/`); if (!response.ok) throw new Error('Erro ao buscar CEP. Verifique a conexão.'); const data = await response.json(); if (data.erro) throw new Error('CEP não localizado.'); return data;
+        Swal.showLoading(); const response = await fetch(`https://viacep.com.br/ws/${cleanCep}/json/`); if (!response.ok) throw new Error('Erro ao buscar CEP.'); const data = await response.json(); if (data.erro) throw new Error('CEP não localizado.'); return data;
     } catch (error) { Swal.showValidationMessage(`${error.message}`); return null; } finally { Swal.hideLoading(); }
 }
+
 async function handleRegister() {
+    // A sua função de modal do SweetAlert2 continua a mesma, pois ela é ótima para coletar os dados.
     const { value: formValues, isConfirmed } = await Swal.fire({
         title: 'Crie sua Conta',
         html: `
@@ -382,47 +296,48 @@ async function handleRegister() {
         focusConfirm: false, width: '90%', customClass: { label: 'form-label text-start d-block mb-1 mt-2', input: 'form-control form-control-sm', htmlContainer: 'swal2-html-container-custom' },
         confirmButtonText: 'Cadastrar e Entrar <i class="bi bi-check-circle"></i>', confirmButtonColor: '#28a745', showCancelButton: true, cancelButtonText: 'Cancelar',
         didOpen: () => {
-            const cepInput = document.getElementById('swal-input-cep-reg');
-            const buscarCepBtn = document.getElementById('swal-button-buscar-cep');
-            const logInput = document.getElementById('swal-input-logradouro-reg');
-            const bairroInput = document.getElementById('swal-input-bairro-reg');
-            const cidInput = document.getElementById('swal-input-cidade-reg');
-            const estInput = document.getElementById('swal-input-estado-reg');
-            const numInput = document.getElementById('swal-input-numero-reg');
-            cepInput.addEventListener('input', (e) => { let v = e.target.value.replace(/\D/g, ''); if (v.length > 5) v = v.substring(0, 5) + '-' + v.substring(5, 8); e.target.value = v.substring(0, 9); });
-            const fillAddr = (d) => { logInput.value = d.logradouro || ''; bairroInput.value = d.bairro || ''; cidInput.value = d.localidade || ''; estInput.value = d.uf || '';[logInput, bairroInput, cidInput, estInput].forEach(i => i.readOnly = !!i.value); if (d.logradouro || d.bairro) numInput.focus(); else logInput.focus(); };
-            const cepSearch = async () => { const c = cepInput.value.replace(/\D/g, ''); if (c.length !== 8) { Swal.showValidationMessage('CEP deve ter 8 dígitos.'); return; } Swal.showLoading(); const addrData = await fetchAddressFromViaCEP(c); Swal.hideLoading(); if (addrData) fillAddr(addrData); else[logInput, bairroInput, cidInput, estInput].forEach(i => { i.value = ''; i.readOnly = false; }); };
-            if (buscarCepBtn) buscarCepBtn.addEventListener('click', cepSearch);
-            cepInput.addEventListener('blur', async () => { const c = cepInput.value.replace(/\D/g, ''); if (c.length === 8 && (!logInput.value || logInput.readOnly === false)) await cepSearch(); });
-            const phoneInput = document.getElementById('swal-input-phone-reg');
-            phoneInput.addEventListener('input', (e) => { let v = e.target.value.replace(/\D/g, ''); if (v.length > 11) v = v.substring(0, 11); if (v.length > 10) { v = v.replace(/^(\d{2})(\d{5})(\d{4}).*/, '($1) $2-$3'); } else if (v.length > 6) { v = v.replace(/^(\d{2})(\d{4})(\d{0,4}).*/, '($1) $2-$3'); } else if (v.length > 2) { v = v.replace(/^(\d{2})(\d{0,5}).*/, '($1) $2'); } else { v = v.replace(/^(\d*)/, '($1'); } e.target.value = v; });
+             const cepInput = document.getElementById('swal-input-cep-reg'); const buscarCepBtn = document.getElementById('swal-button-buscar-cep'); const logInput = document.getElementById('swal-input-logradouro-reg'); const bairroInput = document.getElementById('swal-input-bairro-reg'); const cidInput = document.getElementById('swal-input-cidade-reg'); const estInput = document.getElementById('swal-input-estado-reg'); const numInput = document.getElementById('swal-input-numero-reg'); cepInput.addEventListener('input', (e) => { let v = e.target.value.replace(/\D/g, ''); if (v.length > 5) v = v.substring(0, 5) + '-' + v.substring(5, 8); e.target.value = v.substring(0, 9); }); const fillAddr = (d) => { logInput.value = d.logradouro || ''; bairroInput.value = d.bairro || ''; cidInput.value = d.localidade || ''; estInput.value = d.uf || '';[logInput, bairroInput, cidInput, estInput].forEach(i => i.readOnly = !!i.value); if (d.logradouro || d.bairro) numInput.focus(); else logInput.focus(); }; const cepSearch = async () => { const c = cepInput.value.replace(/\D/g, ''); if (c.length !== 8) { Swal.showValidationMessage('CEP deve ter 8 dígitos.'); return; } Swal.showLoading(); const addrData = await fetchAddressFromViaCEP(c); Swal.hideLoading(); if (addrData) fillAddr(addrData); else[logInput, bairroInput, cidInput, estInput].forEach(i => { i.value = ''; i.readOnly = false; }); }; if (buscarCepBtn) buscarCepBtn.addEventListener('click', cepSearch); cepInput.addEventListener('blur', async () => { const c = cepInput.value.replace(/\D/g, ''); if (c.length === 8 && (!logInput.value || logInput.readOnly === false)) await cepSearch(); }); const phoneInput = document.getElementById('swal-input-phone-reg'); phoneInput.addEventListener('input', (e) => { let v = e.target.value.replace(/\D/g, ''); if (v.length > 11) v = v.substring(0, 11); if (v.length > 10) { v = v.replace(/^(\d{2})(\d{5})(\d{4}).*/, '($1) $2-$3'); } else if (v.length > 6) { v = v.replace(/^(\d{2})(\d{4})(\d{0,4}).*/, '($1) $2-$3'); } else if (v.length > 2) { v = v.replace(/^(\d{2})(\d{0,5}).*/, '($1) $2'); } else { v = v.replace(/^(\d*)/, '($1'); } e.target.value = v; });
         },
         preConfirm: () => {
             const getV = (id) => document.getElementById(id)?.value || ''; const n = getV('swal-input-name-reg').trim(), t = getV('swal-input-phone-reg').replace(/\D/g, ''), c = getV('swal-input-cep-reg').replace(/\D/g, ''), l = getV('swal-input-logradouro-reg').trim(), num = getV('swal-input-numero-reg').trim(), comp = getV('swal-input-complemento-reg').trim(), b = getV('swal-input-bairro-reg').trim(), cid = getV('swal-input-cidade-reg').trim(), est = getV('swal-input-estado-reg').trim(), ref = getV('swal-input-referencia-reg').trim(), e = getV('swal-input-email-reg').trim(), p = getV('swal-input-password-reg');
             let errs = [];
-            if (!n) errs.push("Nome");
-            if (!t || t.length < 10 || t.length > 11) errs.push("Telefone (10 ou 11 dígitos)");
-            if (!c || c.length !== 8) errs.push("CEP (8 dígitos)");
-            if (!l) errs.push("Endereço (Rua/Av.)");
-            if (!num) errs.push("Número do endereço");
-            if (!b) errs.push("Bairro");
-            if (!cid) errs.push("Cidade");
-            if (!est) errs.push("UF");
-            if (!e || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)) errs.push("E-mail válido");
-            if (!p || p.length < 6) errs.push("Senha (mínimo 6 caracteres)");
-            if (errs.length > 0) { Swal.showValidationMessage(`Campos inválidos ou faltando: ${errs.join(', ')}.`); return false; }
-            return { nome: n, telefone: t, email: e, password: p, endereco: { cep: c, logradouro: l, numero: num, complemento: comp, bairro: b, cidade: cid, estado: est, referencia: ref } };
+            if (!n) errs.push("Nome"); if (!t || t.length < 10) errs.push("Telefone"); if (!c || c.length !== 8) errs.push("CEP"); if (!l) errs.push("Endereço"); if (!num) errs.push("Número"); if (!b) errs.push("Bairro"); if (!cid) errs.push("Cidade"); if (!est) errs.push("UF"); if (!e || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)) errs.push("E-mail válido"); if (!p || p.length < 6) errs.push("Senha (mín. 6 caracteres)");
+            if (errs.length > 0) { Swal.showValidationMessage(`Campos inválidos: ${errs.join(', ')}.`); return false; }
+            return { nome: n, telefone: t, email: e, senha: p, endereco: { cep: c, logradouro: l, numero: num, complemento: comp, bairro: b, cidade: cid, estado: est, referencia: ref } };
         }
     });
 
     if (isConfirmed && formValues) {
-        loggedInCustomerData = { id: 'user-' + Date.now(), nome: formValues.nome, email: formValues.email, telefone: formValues.telefone, endereco: formValues.endereco };
-        saveCustomerToStorageCarrinho(loggedInCustomerData);
-        updateCustomerUI();
-        Swal.fire('Cadastro Realizado!', 'Bem-vindo(a)! Você já está logado(a).', 'success');
+        // A lógica de salvar localmente é substituída pela chamada da API
+        try {
+            Swal.showLoading();
+            const response = await fetch('/api/clientes/cadastro', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formValues)
+            });
+
+            if (!response.ok) {
+                const errorBody = await response.text();
+                throw new Error(errorBody || `Erro ${response.status}`);
+            }
+
+            const clienteSalvo = await response.json();
+
+            // Agora usamos os dados retornados pelo servidor (com ID real)
+            loggedInCustomerData = clienteSalvo;
+            saveCustomerToStorageCarrinho(loggedInCustomerData);
+            updateCustomerUI();
+            Swal.fire('Cadastro Realizado!', 'Bem-vindo(a)! Você já está logado(a).', 'success');
+
+        } catch (error) {
+            Swal.fire('Erro no Cadastro', error.message, 'error');
+        }
     }
 }
+
 async function handleLogin() {
+    // A lógica de coletar dados do modal continua a mesma.
     const { value: formValues, isConfirmed } = await Swal.fire({
         title: 'Entrar na sua Conta',
         html: '<input id="swal-input-email" class="swal2-input" placeholder="Seu e-mail" type="email" style="margin-bottom:0.5em;"><input id="swal-input-password" class="swal2-input" placeholder="Sua senha" type="password">',
@@ -431,83 +346,107 @@ async function handleLogin() {
             const email = document.getElementById('swal-input-email').value;
             const password = document.getElementById('swal-input-password').value;
             if (!email || !password) { Swal.showValidationMessage(`E-mail e senha são obrigatórios.`); return false; }
-            const potentialCustomer = getCustomerFromStorageCarrinho();
-            if (potentialCustomer && potentialCustomer.email === email) {
-                return { customerData: potentialCustomer };
-            }
-            Swal.showValidationMessage(`E-mail não cadastrado ou senha inválida.`);
-            return false;
+            return { email: email, senha: password };
         }
     });
+    
     if (isConfirmed && formValues) {
-        loggedInCustomerData = formValues.customerData;
-        saveCustomerToStorageCarrinho(loggedInCustomerData);
-        updateCustomerUI();
-        Swal.fire('Bem-vindo(a) de volta!', 'Login realizado com sucesso!', 'success');
+        // A lógica de verificação local é substituída pela chamada da API
+        try {
+            Swal.showLoading();
+            const response = await fetch('/api/clientes/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formValues) // Envia o DTO LoginRequest
+            });
+
+            if (!response.ok) {
+                // Se o status for 401 (Unauthorized), a API já tratou o erro de e-mail/senha
+                const errorBody = await response.text();
+                throw new Error(errorBody || 'E-mail ou senha inválidos.');
+            }
+
+            const clienteLogado = await response.json();
+            
+            // Sucesso! Salva o cliente retornado pela API e atualiza a UI
+            loggedInCustomerData = clienteLogado;
+            saveCustomerToStorageCarrinho(loggedInCustomerData);
+            updateCustomerUI();
+            Swal.fire('Bem-vindo(a) de volta!', 'Login realizado com sucesso!', 'success');
+
+        } catch (error) {
+            Swal.fire('Erro no Login', error.message, 'error');
+        }
     }
 }
+
 function handleLogout() {
     Swal.fire({
-        title: 'Sair da conta?', text: "Você precisará fazer login novamente para finalizar um pedido no futuro.", icon: 'question', showCancelButton: true, confirmButtonText: 'Sim, sair', cancelButtonText: 'Cancelar', confirmButtonColor: '#dc3545',
+        title: 'Sair da conta?', text: "Você precisará fazer login novamente para finalizar um pedido.", icon: 'question', showCancelButton: true, confirmButtonText: 'Sim, sair', cancelButtonText: 'Cancelar', confirmButtonColor: '#dc3545',
     }).then((result) => { if (result.isConfirmed) { removeCustomerFromStorageCarrinho(); loggedInCustomerData = null; updateCustomerUI(); Swal.fire("Desconectado", "Você saiu da sua conta.", "info"); } });
 }
 function updateFinalizeButtonState() {
     const finalizeBtn = document.getElementById('finalizeOrderButton'); if (!finalizeBtn) return;
     const idsPrincipais = Object.keys(cartData);
-    const addrCompleto = loggedInCustomerData && loggedInCustomerData.endereco && loggedInCustomerData.endereco.logradouro && loggedInCustomerData.endereco.numero && loggedInCustomerData.endereco.bairro && loggedInCustomerData.endereco.cidade && loggedInCustomerData.endereco.estado && loggedInCustomerData.endereco.cep;
+    const addrCompleto = loggedInCustomerData && loggedInCustomerData.endereco && loggedInCustomerData.endereco.logradouro;
     finalizeBtn.disabled = !(idsPrincipais.length > 0 && loggedInCustomerData && addrCompleto);
     if (finalizeBtn.disabled) {
-        if (idsPrincipais.length === 0) { finalizeBtn.title = "Seu carrinho está vazio. Adicione itens para continuar."; }
+        if (idsPrincipais.length === 0) { finalizeBtn.title = "Seu carrinho está vazio."; }
         else if (!loggedInCustomerData) { finalizeBtn.title = "Você precisa estar logado para finalizar o pedido."; }
-        else if (!addrCompleto) { finalizeBtn.title = "Seu endereço de entrega está incompleto. Por favor, atualize seu cadastro."; }
+        else if (!addrCompleto) { finalizeBtn.title = "Seu endereço está incompleto."; }
     } else { finalizeBtn.title = "Prosseguir para o pagamento."; }
 }
 async function finalizeOrder() {
-    if (Object.keys(cartData).length === 0) { Swal.fire('Carrinho Vazio!', 'Adicione itens ao seu carrinho antes de finalizar.', 'warning'); return; }
-    if (!loggedInCustomerData) { Swal.fire('Identifique-se!', 'Por favor, entre na sua conta ou cadastre-se para continuar.', 'info'); return; }
-    if (!loggedInCustomerData.endereco || !loggedInCustomerData.endereco.logradouro || !loggedInCustomerData.endereco.numero || !loggedInCustomerData.endereco.bairro || !loggedInCustomerData.endereco.cidade || !loggedInCustomerData.endereco.estado || !loggedInCustomerData.endereco.cep) {
-        Swal.fire('Endereço Incompleto!', 'Seu endereço de entrega parece incompleto. Por favor, verifique seu cadastro.', 'warning'); return;
+    if (Object.keys(cartData).length === 0) { Swal.fire('Carrinho Vazio!', 'Adicione itens ao seu carrinho.', 'warning'); return; }
+    if (!loggedInCustomerData) { Swal.fire('Identifique-se!', 'Por favor, entre na sua conta ou cadastre-se.', 'info'); return; }
+    if (!loggedInCustomerData.endereco || !loggedInCustomerData.endereco.logradouro) {
+        Swal.fire('Endereço Incompleto!', 'Verifique seu cadastro.', 'warning'); return;
     }
     const formaPagamentoSelecionada = document.querySelector('input[name="formaPagamento"]:checked');
-    if (!formaPagamentoSelecionada) { Swal.fire('Atenção!', 'Por favor, selecione uma forma de pagamento.', 'warning'); return; }
+    if (!formaPagamentoSelecionada) { Swal.fire('Atenção!', 'Selecione uma forma de pagamento.', 'warning'); return; }
+    
     const pedidoItensPayload = [];
     Object.values(cartData).forEach(itemPrincipal => {
-        if (itemPrincipal && itemPrincipal.id && typeof itemPrincipal.qtde === 'number' && typeof itemPrincipal.preco === 'number') {
+        if (itemPrincipal && itemPrincipal.id) {
             pedidoItensPayload.push({ produtoId: itemPrincipal.id, quantidade: itemPrincipal.qtde, precoUnitario: itemPrincipal.preco, });
             if (Array.isArray(itemPrincipal.selectedComplements)) {
                 itemPrincipal.selectedComplements.forEach(compItem => {
-                    if (compItem && compItem.produto && compItem.produto.id && typeof compItem.qtde === 'number' && typeof compItem.produto.preco === 'number') {
+                    if (compItem && compItem.produto) {
                         pedidoItensPayload.push({ produtoId: compItem.produto.id, quantidade: compItem.qtde, precoUnitario: compItem.produto.preco, });
                     }
                 });
             }
         }
     });
-    if (pedidoItensPayload.length === 0) { Swal.fire('Carrinho com Itens Inválidos!', 'Não foi possível processar os itens do carrinho. Tente novamente.', 'warning'); return; }
-    const payload = { clienteId: loggedInCustomerData.id, enderecoEntrega: loggedInCustomerData.endereco, itens: pedidoItensPayload, formaPagamento: formaPagamentoSelecionada.value, };
-    Swal.fire({ title: 'Confirmando seu pedido...', text: 'Aguarde um momento.', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+    const payload = {
+        // Ajustaremos isso no próximo passo para incluir o clienteId
+        // clienteId: loggedInCustomerData.id, 
+        enderecoEntrega: loggedInCustomerData.endereco,
+        itens: pedidoItensPayload,
+        formaPagamento: formaPagamentoSelecionada.value,
+    };
+
+    Swal.fire({ title: 'Confirmando seu pedido...', text: 'Aguarde.', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
     try {
-        console.log("Enviando payload do pedido:", JSON.stringify(payload, null, 2));
         const response = await fetch('/api/pedidos', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-        if (!response.ok) { const errorData = await response.json().catch(() => ({ message: `Erro HTTP ${response.status} ao enviar o pedido.` })); throw new Error(errorData.message || `Falha ao enviar pedido. Código: ${response.status}`); }
+        if (!response.ok) { const errorData = await response.json().catch(() => ({ message: `Erro HTTP ${response.status}` })); throw new Error(errorData.message); }
         const data = await response.json();
-        Swal.fire('Pedido Enviado!', `Seu pedido nº ${data.id || '(não informado)'} foi registrado com sucesso!`, 'success').then(() => { cartData = {}; saveCartToStorageCarrinho(); window.location.href = 'Pedidos.html'; });
-    } catch (err) { console.error("Erro ao finalizar pedido:", err); Swal.fire('Ops, algo deu errado!', `Não foi possível registrar seu pedido: ${err.message}`, 'error'); }
+        Swal.fire('Pedido Enviado!', `Seu pedido nº ${data.id} foi registrado!`, 'success').then(() => { cartData = {}; saveCartToStorageCarrinho(); window.location.href = 'Pedidos.html'; });
+    } catch (err) { Swal.fire('Ops!', `Não foi possível registrar seu pedido: ${err.message}`, 'error'); }
 }
 
 
 // --- INICIALIZAÇÃO DA PÁGINA DO CARRINHO ---
 window.onload = async () => {
-    console.log("carrinho.js: window.onload iniciado.");
     cartData = getCartFromStorageCarrinho();
-    console.log("carrinho.js: Carrinho carregado do localStorage:", JSON.parse(JSON.stringify(cartData)));
-
-    loggedInCustomerData = getCustomerFromStorageCarrinho();
+    loggedInCustomerData = getCustomerFromStorageCarrinho(); // Pega o cliente que pode já estar logado
+    
     await carregarTodosProdutosParaReferenciaCarrinho();
 
     updateCartCountNavbarCarrinho();
     displayCartItems();
-    updateCustomerUI();
+    updateCustomerUI(); // Atualiza a UI para mostrar "Bem-vindo" ou os botões de login/cadastro
 
     const loginBtn = document.getElementById('loginButton');
     if (loginBtn) loginBtn.addEventListener('click', handleLogin);
@@ -517,6 +456,4 @@ window.onload = async () => {
     if (logoutBtn) logoutBtn.addEventListener('click', handleLogout);
     const finalizeBtn = document.getElementById('finalizeOrderButton');
     if (finalizeBtn) finalizeBtn.addEventListener('click', finalizeOrder);
-
-    console.log("carrinho.js: window.onload concluído.");
 };

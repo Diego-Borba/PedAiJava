@@ -22,6 +22,29 @@ public class Pedido {
     @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ItemPedido> itens = new ArrayList<>();
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "cliente_id")
+    private Cliente cliente;
+
+    @Embedded
+    private Endereco enderecoEntrega;
+
+    public Endereco getEnderecoEntrega() {
+        return enderecoEntrega;
+    }
+
+    public void setEnderecoEntrega(Endereco enderecoEntrega) {
+        this.enderecoEntrega = enderecoEntrega;
+    }
+
+    public Cliente getCliente() {
+        return cliente;
+    }
+
+    public void setCliente(Cliente cliente) {
+        this.cliente = cliente;
+    }
+
     public BigDecimal getTotal() {
         return itens.stream()
                 .map(ItemPedido::getSubtotal)
