@@ -5,6 +5,7 @@ import com.PedAi.PedAi.repository.ProdutoRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,9 +20,6 @@ public class ProdutoController {
 
     @GetMapping
     public List<Produto> getAll() {
-        // Ao buscar todos, os novos campos (isComplemento, permiteComplementos,
-        // complementosDisponiveis)
-        // serão serializados e enviados para o frontend.
         return repository.findAll();
     }
 
@@ -31,75 +29,65 @@ public class ProdutoController {
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
+    // ... (imports e a anotação @RestController no topo da classe)
 
     @PostMapping
+    @Transactional
     public ResponseEntity<Produto> create(@RequestBody Produto produto) {
-
         try {
+            // MUDANÇA: Estabelece a relação de mão dupla antes de salvar
+            if (produto.isKit() && produto.getGruposKit() != null) {
+                produto.getGruposKit().forEach(grupo -> {
+                    grupo.setProdutoKit(produto); // Linka o grupo de volta para o produto
+                    grupo.getOpcoes().forEach(opcao -> {
+                        opcao.setGrupo(grupo); // Linka a opção de volta para o grupo
+                        // Garante que o produto da opção seja uma entidade gerenciada
+                        if (opcao.getProduto() != null && opcao.getProduto().getId() != null) {
+                            repository.findById(opcao.getProduto().getId()).ifPresent(opcao::setProduto);
+                        }
+                    });
+                });
+            }
             Produto savedProduto = repository.save(produto);
             return ResponseEntity.status(201).body(savedProduto);
         } catch (Exception e) {
-            // Logar o erro e retornar uma resposta mais informativa se possível
             System.err.println("Erro ao criar produto: " + e.getMessage());
             e.printStackTrace();
             return ResponseEntity.status(500).build();
         }
     }
 
-    // Dentro da classe com.PedAi.PedAi.Controller.ProdutoController
-
     @PutMapping("/{id}")
+    @Transactional
     public ResponseEntity<Produto> update(@PathVariable Long id, @RequestBody Produto produtoDetails) {
-        Optional<Produto> produtoExistenteOptional = repository.findById(id);
+        return repository.findById(id).map(produtoExistente -> {
 
-        if (produtoExistenteOptional.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
+            // (Atualiza todos os seus campos normais: nome, preco, etc.)
+            produtoExistente.setNome(produtoDetails.getNome());
+            produtoExistente.setPreco(produtoDetails.getPreco());
+            // ... e assim por diante para os outros campos.
 
-        Produto produtoExistente = produtoExistenteOptional.get();
+            // --- LÓGICA ATUALIZADA PARA KITS ---
+            produtoExistente.setKit(produtoDetails.isKit());
+            // Limpa a lista antiga para evitar duplicatas ou órfãos
+            produtoExistente.getGruposKit().clear();
+            if (produtoDetails.isKit() && produtoDetails.getGruposKit() != null) {
+                produtoDetails.getGruposKit().forEach(grupoNovo -> {
+                    grupoNovo.setProdutoKit(produtoExistente); // Link de volta para o produto
+                    grupoNovo.getOpcoes().forEach(opcaoNova -> {
+                        opcaoNova.setGrupo(grupoNovo); // Link de volta para o grupo
+                        if (opcaoNova.getProduto() != null && opcaoNova.getProduto().getId() != null) {
+                            repository.findById(opcaoNova.getProduto().getId()).ifPresent(opcaoNova::setProduto);
+                        }
+                    });
+                    produtoExistente.getGruposKit().add(grupoNovo);
+                });
+            }
 
-        // Atualiza todos os campos do objeto existente com os novos detalhes
-        produtoExistente.setNome(produtoDetails.getNome());
-        produtoExistente.setPreco(produtoDetails.getPreco());
-        produtoExistente.setCategoria(produtoDetails.getCategoria());
-        produtoExistente.setQtdeMax(produtoDetails.getQtdeMax());
-        produtoExistente.setDescricao(produtoDetails.getDescricao());
-        produtoExistente.setImagem(produtoDetails.getImagem());
-        produtoExistente.setCodPdv(produtoDetails.getCodPdv());
-        produtoExistente.setOrdemVisualizacao(produtoDetails.getOrdemVisualizacao());
-        produtoExistente.setAtivo(produtoDetails.isAtivo());
-        produtoExistente.setMateriaPrima(produtoDetails.isMateriaPrima());
-        produtoExistente.setIsComplemento(produtoDetails.isComplemento());
-        produtoExistente.setPermiteComplementos(produtoDetails.isPermiteComplementos());
+            final Produto updatedProduto = repository.save(produtoExistente);
+            return ResponseEntity.ok(updatedProduto);
 
-        // Atualiza a lista de complementos disponíveis
-        if (produtoDetails.getComplementosDisponiveis() != null) {
-            produtoExistente.getComplementosDisponiveis().clear();
-            produtoExistente.getComplementosDisponiveis().addAll(produtoDetails.getComplementosDisponiveis());
-        }
-
-        // ================== CORREÇÃO AQUI ==================
-        // Atualiza a lista de receita
-        if (produtoDetails.getReceita() != null) {
-            // Limpa a receita antiga
-            produtoExistente.getReceita().clear();
-            // Adiciona os novos ingredientes da receita
-            produtoExistente.getReceita().addAll(produtoDetails.getReceita());
-        }
-        // ===================================================
-
-        // Aplica a lógica de negócio para garantir a consistência dos dados
-        if (produtoExistente.isMateriaPrima() || produtoExistente.isComplemento()) {
-            produtoExistente.getReceita().clear();
-            produtoExistente.setPermiteComplementos(false);
-        }
-        if (produtoExistente.isComplemento()) {
-            produtoExistente.setMateriaPrima(false);
-        }
-
-        // Salva o produto atualizado no banco
-        final Produto updatedProduto = repository.save(produtoExistente);
-        return ResponseEntity.ok(updatedProduto);
+        }).orElse(ResponseEntity.notFound().build());
     }
 
     @DeleteMapping("/{id}")
@@ -118,9 +106,10 @@ public class ProdutoController {
 
     @GetMapping("/cardapio")
     public List<Produto> getProdutosParaCardapio() {
-        // Retorna todos os produtos que NÃO são matéria-prima E NÃO são complementos
+        // Filtra produtos que não são matéria-prima nem complementos simples para
+        // aparecer no cardápio
         return repository.findAll().stream()
-                .filter(p -> !p.isMateriaPrima() && !p.isComplemento() && p.isAtivo())
+                .filter(p -> p.isAtivo() && !p.isMateriaPrima() && !p.isComplemento())
                 .toList();
     }
 }

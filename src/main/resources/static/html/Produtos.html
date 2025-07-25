@@ -48,7 +48,6 @@
                                 <th>Preço</th>
                                 <th>Estoque</th>
                                 <th>Categoria</th>
-                                <th>Qtde.Máx Pedido</th>
                                 <th>Info Adicional</th>
                                 <th>Ações</th>
                             </tr>
@@ -69,7 +68,7 @@
                     <div class="modal-body">
                         <form id="formEditProduto">
                             <input type="hidden" id="edit-id">
-                            
+
                             <div class="row">
                                 <div class="col-md-8 mb-3"><label for="edit-nome" class="form-label">Nome</label><input type="text" class="form-control" id="edit-nome" required></div>
                                 <div class="col-md-4 mb-3"><label for="edit-preco" class="form-label">Preço</label><input type="number" step="0.01" class="form-control" id="edit-preco" required></div>
@@ -85,26 +84,24 @@
 
                             <hr class="my-4">
                             <h5 class="mb-3">Tipo e Comportamento do Produto</h5>
-                            
-                            <div class="form-check mb-2">
-                                <input class="form-check-input" type="checkbox" id="edit-isMateriaPrima">
-                                <label class="form-check-label" for="edit-isMateriaPrima"><strong>Este produto é uma Matéria-Prima</strong></label>
-                            </div>
-                            <div class="form-check mb-2">
-                                <input class="form-check-input" type="checkbox" id="edit-isComplemento">
-                                <label class="form-check-label" for="edit-isComplemento">Este produto é um Complemento Opcional</label>
-                            </div>
-                            <div class="form-check mb-3">
-                                <input class="form-check-input" type="checkbox" id="edit-permiteComplementos">
-                                <label class="form-check-label" for="edit-permiteComplementos">Este produto permite adicionar Complementos</label>
-                            </div>
+
+                            <div class="form-check mb-2"><input class="form-check-input" type="checkbox" id="edit-isMateriaPrima"><label class="form-check-label" for="edit-isMateriaPrima"><strong>Este produto é uma Matéria-Prima</strong></label></div>
+                            <div class="form-check mb-2"><input class="form-check-input" type="checkbox" id="edit-isComplemento"><label class="form-check-label" for="edit-isComplemento">Este produto é um Complemento Opcional</label></div>
+                            <div class="form-check mb-2"><input class="form-check-input" type="checkbox" id="edit-permiteComplementos"><label class="form-check-label" for="edit-permiteComplementos">Este produto permite adicionar Complementos</label></div>
+                            <div class="form-check mb-3"><input class="form-check-input" type="checkbox" id="edit-isKit"><label class="form-check-label" for="edit-isKit"><strong>Este produto é um Kit</strong></label></div>
 
                             <div id="edit-containerComplementosDisponiveis" class="mb-3" style="display: none;">
                                 <label class="form-label">Complementos Disponíveis:</label>
                                 <div id="edit-listaComplementosConfig"></div>
                                 <button type="button" class="btn btn-sm btn-outline-info mt-2" id="edit-btnAddComplementoConfig"><i class="bi bi-plus-circle"></i> Adicionar Configuração</button>
                             </div>
-                            
+
+                            <div id="edit-containerKit" class="p-3 border rounded bg-light" style="display: none;">
+                                <h5 class="mb-3">Configuração do Kit</h5>
+                                <div id="edit-listaGruposKit"></div>
+                                <button type="button" class="btn btn-info mt-2" id="edit-btnAddGrupoKit"><i class="bi bi-plus-lg"></i> Adicionar Grupo ao Kit</button>
+                            </div>
+
                             <div id="edit-containerReceita">
                                 <hr class="my-4">
                                 <h5 class="mb-3">Composição / Receita do Produto</h5>
@@ -121,7 +118,7 @@
                 </div>
             </div>
         </div>
-        
+
         <footer class="mt-auto">
             &copy; 2025 PedAi | Todos os direitos reservados
         </footer>

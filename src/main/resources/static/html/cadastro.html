@@ -84,7 +84,7 @@
 
           <hr class="my-4">
           <h5 class="mb-3">Tipo e Comportamento do Produto</h5>
-          
+
           <div class="form-check mb-2">
             <input class="form-check-input" type="checkbox" id="isMateriaPrima">
             <label class="form-check-label" for="isMateriaPrima">
@@ -106,11 +106,29 @@
             </label>
           </div>
 
+          <div class="form-check mb-2">
+              <input class="form-check-input" type="checkbox" id="isKit">
+              <label class="form-check-label" for="isKit">
+                  <strong>Este produto é um Kit</strong> (Ex: Kit Festa, Combo).
+              </label>
+          </div>
+
+
           <div id="containerComplementosDisponiveis" class="mb-3" style="display: none;">
             <label class="form-label">Complementos Disponíveis para este Produto:</label>
             <div id="listaComplementosConfig"></div>
             <button type="button" class="btn btn-sm btn-outline-info mt-2" id="btnAddComplementoConfig">Adicionar Configuração de Complemento</button>
           </div>
+
+          <div id="containerKit" class="p-3 border rounded bg-light" style="display: none;">
+              <h5 class="mb-3">Configuração do Kit</h5>
+              <div id="listaGruposKit">
+                  </div>
+              <button type="button" class="btn btn-info mt-2" id="btnAddGrupoKit">
+                  <i class="bi bi-plus-lg"></i> Adicionar Grupo ao Kit
+              </button>
+          </div>
+
 
           <div id="containerReceita">
             <hr class="my-4">

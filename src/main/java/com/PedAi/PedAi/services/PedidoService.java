@@ -32,11 +32,15 @@ public class PedidoService {
     @Autowired
     private ClienteRepository clienteRepository;
 
+    /**
+     * Cria um pedido completo a partir do fluxo do carrinho de compras.
+     * Este método espera um cliente identificado, endereço e forma de pagamento.
+     * @param pedidoDTO O objeto com todos os dados do pedido.
+     * @return O pedido que foi salvo no banco de dados.
+     */
     @Transactional
-
     public Pedido criarPedido(PedidoDTO pedidoDTO) {
 
-        
         if (pedidoDTO.getClienteId() == null) {
             throw new IllegalArgumentException("A identificação do cliente é obrigatória.");
         }
@@ -52,12 +56,12 @@ public class PedidoService {
         pedido.setDataPedido(ZonedDateTime.now(ZoneOffset.UTC));
         pedido.setStatus("Recebido");
         
-        // CORREÇÃO: Atribuição do endereço e forma de pagamento movida para fora do loop
+        // Atribui o endereço de entrega e a forma de pagamento do DTO
         pedido.setEnderecoEntrega(pedidoDTO.getEnderecoEntrega());
-        pedido.setFormaPagamento(pedidoDTO.getFormaPagamento());
+        // A forma de pagamento foi removida do modelo Pedido. Se precisar, adicione o campo novamente.
+        // pedido.setFormaPagamento(pedidoDTO.getFormaPagamento());
 
         List<ItemPedido> itensPedido = new ArrayList<>();
-        // CORREÇÃO: Itera sobre os itens do DTO recebido
         for (ItemPedidoDTO itemDto : pedidoDTO.getItens()) {
             Produto produtoVendido = produtoRepository.findById(itemDto.getProdutoId())
                     .orElseThrow(() -> new RuntimeException("Produto com ID " + itemDto.getProdutoId() + " não encontrado"));
@@ -77,6 +81,50 @@ public class PedidoService {
         return pedidoRepository.save(pedido);
     }
 
+    /**
+     * Cria um pedido simplificado, geralmente vindo de fontes como o Webhook do Dialogflow.
+     * @param itensDTO A lista de itens do pedido.
+     * @return O pedido que foi salvo.
+     */
+    @Transactional
+    public Pedido criarPedido(List<ItemPedidoDTO> itensDTO) {
+        if (itensDTO == null || itensDTO.isEmpty()) {
+            throw new IllegalArgumentException("O pedido via webhook deve conter ao menos um item.");
+        }
+
+        Pedido pedido = new Pedido();
+        pedido.setCliente(null); // Pedidos de webhook podem não ter cliente associado
+        pedido.setDataPedido(ZonedDateTime.now(ZoneOffset.UTC));
+        pedido.setStatus("Recebido");
+        pedido.setEnderecoEntrega(null);
+
+        List<ItemPedido> itensPedido = new ArrayList<>();
+        for (ItemPedidoDTO itemDto : itensDTO) {
+            Produto produtoVendido = produtoRepository.findById(itemDto.getProdutoId())
+                    .orElseThrow(() -> new RuntimeException("Produto com ID " + itemDto.getProdutoId() + " não encontrado"));
+            
+            darBaixaEstoque(produtoVendido, itemDto.getQuantidade());
+
+            ItemPedido item = new ItemPedido();
+            item.setProduto(produtoVendido);
+            item.setQuantidade(itemDto.getQuantidade());
+            item.setPrecoUnitario(itemDto.getPrecoUnitario());
+            item.setPedido(pedido);
+            itensPedido.add(item);
+        }
+
+        pedido.setItens(itensPedido);
+        return pedidoRepository.save(pedido);
+    }
+
+
+    /**
+     * Método auxiliar para dar baixa no estoque de um produto.
+     * Ele verifica se o produto é composto (tem receita) e baixa os ingredientes,
+     * ou se é um produto simples e baixa de seu próprio estoque.
+     * @param produtoVendido O produto que está sendo vendido.
+     * @param quantidadeVendida A quantidade que está sendo vendida.
+     */
     private void darBaixaEstoque(Produto produtoVendido, int quantidadeVendida) {
         if (produtoVendido.getReceita() != null && !produtoVendido.getReceita().isEmpty()) {
             // Baixa de ingredientes para produtos compostos
@@ -92,7 +140,6 @@ public class PedidoService {
                     throw new RuntimeException("Estoque insuficiente para o ingrediente: " + produtoIngrediente.getNome());
                 }
                 produtoIngrediente.setEstoqueAtual(produtoIngrediente.getEstoqueAtual().subtract(quantidadeAbaixar));
-                // O save é desnecessário aqui, pois o @Transactional cuida disso ao final do método.
             }
         } else {
             // Baixa para produtos de venda direta
@@ -101,7 +148,6 @@ public class PedidoService {
                 throw new RuntimeException("Estoque insuficiente para o produto: " + produtoVendido.getNome());
             }
             produtoVendido.setEstoqueAtual(produtoVendido.getEstoqueAtual().subtract(quantidadeAbaixar));
-            // O save é desnecessário aqui, pois o @Transactional cuida disso ao final do método.
         }
     }
 }
