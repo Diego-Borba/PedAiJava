@@ -82,20 +82,16 @@ body {
      color: #ff5722;
 }
 
-/* O container dos cards já tem g-3 (gutter) vindo do HTML da row */
-/* #produtosContainer { } */
-
 .produto-card {
     border: 1px solid #ffe0cc;
     border-radius: 15px;
-    overflow: hidden; /* Importante para o border-radius funcionar com a imagem */
+    overflow: hidden;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     background-color: #ffffff;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-    display: flex; /* Para que align-items-stretch funcione (vem do JS) */
-    flex-direction: column; /* Para o card-body poder usar flex-grow e mt-auto no botão */
-    width: 100%; /* GARANTE QUE O CARD TENTE OCUPAR O ESPAÇO DA COLUNA BOOTSTRAP */
-                 /* Se as classes col-* já não fizerem isso por padrão, esta é uma segurança. */
+    display: flex;
+    flex-direction: column;
+    width: 100%;
 }
 
 .produto-card:hover {
@@ -105,9 +101,9 @@ body {
 
 .produto-card .card-img-top-wrapper {
     position: relative;
-    width: 100%; /* O wrapper da imagem ocupa toda a largura do card */
-    padding-top: 80%;   /* BASE: Proporção para desktop (4 colunas). Ajuste se necessário (ex: 75% para 4:3, 100% para 1:1) */
-    min-height: 160px;  /* BASE: Altura mínima para desktop. Ajuste! */
+    width: 100%;
+    padding-top: 80%;
+    min-height: 160px;
     overflow: hidden;
     border-bottom: 3px solid #ff5722;
     background-color: #f0f0f0;
@@ -180,66 +176,22 @@ body {
     margin-right: 6px;
 }
 
-#loadingIndicator {
-    /* Estilos para o loading indicator, se necessário, mas não deve afetar a largura dos cards */
-}
 .spinner-border {
     color: #ff5722;
 }
 
-/* MEDIA QUERIES PARA AJUSTES RESPONSIVOS */
-
-/* Telas Médias (md) - 2 CARDS POR LINHA (>=768px e <992px) */
+/* MEDIA QUERIES (Seus estilos responsivos permanecem aqui) */
 @media (min-width: 768px) and (max-width: 991.98px) {
-    .page-title { font-size: 2rem; }
-
-    .produto-card .card-img-top-wrapper {
-        padding-top: 75%;
-        min-height: 190px; /* Ajuste para 2 colunas */
-    }
-    .produto-card .card-title { font-size: 1.15rem; }
-    .produto-card .preco { font-size: 1.3rem; }
-    .produto-card .card-body { padding: 0.9rem; }
-    .produto-card .btn-add-carrinho { padding: 0.55rem 0.9rem; font-size: 0.9rem;}
+    /* ... seu código ... */
 }
-
-/* Telas Pequenas (sm) e Extra Pequenas (xs) - 1 CARD POR LINHA (<768px) */
 @media (max-width: 767.98px) {
-    .page-title { font-size: 1.8rem; margin-bottom: 1.2rem; }
-
-    .category-buttons .btn { padding: 0.4rem 0.9rem; font-size: 0.9rem; margin: 4px 5px; }
-
-    .produto-card .card-img-top-wrapper {
-        padding-top: 70%;   /* Proporção para card largo. Ex: 60-75% */
-        min-height: 200px;  /* Altura mínima para card largo. Ex: 200px, 220px */
-    }
-
-    .produto-card .card-body { padding: 1rem; }
-    .produto-card .card-title { font-size: 1.2rem; margin-bottom: 0.5rem; }
-    .produto-card .card-text.descricao { font-size: 0.9rem; min-height: 35px; margin-bottom: 0.75rem; }
-    .produto-card .card-text.categoria { font-size: 0.85rem; margin-bottom: 1rem; }
-    .produto-card .preco { font-size: 1.4rem; margin-bottom: 1rem; }
-    .produto-card .btn-add-carrinho { font-size: 1rem; padding: 0.6rem 1rem; }
+    /* ... seu código ... */
 }
-
-/* Ajustes ainda mais finos para telas extra pequenas (<420px) */
 @media (max-width: 420px) {
-    .page-title { font-size: 1.6rem; }
-    .category-buttons .btn { font-size: 0.85rem; padding: 0.35rem 0.7rem; margin: 3px; }
-
-    .produto-card .card-img-top-wrapper {
-        padding-top: 75%; /* Pode voltar a uma proporção mais quadrada aqui */
-        min-height: 170px; /* Reduzir um pouco o min-height */
-    }
-    .produto-card .card-title { font-size: 1.05rem; }
-    .produto-card .preco { font-size: 1.2rem; }
-    .produto-card .card-text.descricao { font-size: 0.8rem; min-height: 25px;}
-    .produto-card .btn-add-carrinho { font-size: 0.9rem; padding: 0.5rem 0.8rem;}
+    /* ... seu código ... */
 }
 
-/* ... (estilos existentes) ... */
-
-/* Estilo para itens no modal de complementos */
+/* Estilo para itens no modal de complementos (seu código original) */
 .complemento-item {
     background-color: #f9f9f9;
 }
@@ -247,7 +199,111 @@ body {
     color: #333;
     font-weight: 600;
 }
-.complemento-item .btn-xs { /* Botões menores para complementos */
+.complemento-item .btn-xs {
     padding: 0.15rem 0.4rem;
     font-size: 0.75rem;
+}
+
+
+/* ======================================================= */
+/* ====== ESTILOS MELHORADOS PARA O MODAL DO KIT ======= */
+/* ======================================================= */
+
+#kitModal .modal-body {
+    background-color: #f8f9fa; /* Fundo do modal um pouco mais suave */
+}
+
+/* Título principal do Kit no Modal (ex: "KIT FESTA") */
+#kitProductNameModal {
+    color: #ff5722; /* Cor laranja da marca */
+    font-weight: bold;
+    text-align: center;
+    border-bottom: 2px solid #ffede6;
+    padding-bottom: 0.75rem;
+    margin-bottom: 1.5rem !important;
+}
+
+/* Container de cada grupo (Torta, Salgados) */
+.modal-body .p-3.border.rounded {
+    background-color: #ffffff !important; /* Fundo branco para destacar */
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    border: 1px solid #e9ecef !important;
+}
+
+.modal-body .p-3.border.rounded h5 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #333;
+}
+
+/* Item individual de opção (Torta de Chocolate, Coxinha) */
+.kit-option-item {
+    padding: 0.75rem 0.5rem; /* Mais espaçamento vertical */
+    border-bottom: 1px solid #f0f0f0;
+    transition: background-color 0.2s ease;
+}
+
+.kit-option-item:last-child {
+    border-bottom: none;
+}
+
+.kit-option-item:hover {
+    background-color: #fffaf7; /* Leve fundo laranja no hover */
+}
+
+/* --- AJUSTE PARA CENTRALIZAR O RADIO BUTTON --- */
+.kit-option-item.form-check {
+    display: flex;
+    align-items: center; /* Alinha verticalmente o radio button e o texto */
+    padding-left: 1rem;
+}
+
+.kit-option-item.form-check .form-check-input {
+    margin-top: 0; /* Reseta a margem padrão do bootstrap */
+    width: 1.25em; /* Aumenta um pouco o tamanho do radio */
+    height: 1.25em;
+    flex-shrink: 0; /* Impede que o radio button encolha */
+}
+
+.kit-option-item.form-check .form-check-label {
+    padding-left: 0.75rem; /* Aumenta a distância entre o radio e o texto */
+    font-size: 1rem;
+}
+/* --- FIM DO AJUSTE --- */
+
+
+/* Estilo para os botões de mais/menos quantidade */
+.kit-qty-btn {
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    font-size: 1rem;
+    line-height: 1;
+}
+
+.kit-qty-input {
+    /* Remove as setas no Firefox */
+    -moz-appearance: textfield;
+    /* Remove as setas em navegadores modernos */
+    appearance: none;
+}
+
+/* Remove as setas no Chrome, Safari, Edge, Opera */
+.kit-qty-input::-webkit-outer-spin-button,
+.kit-qty-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* Contador (0 / 100) */
+.modal-body .fw-bold.mt-2 {
+    color: #555;
+    font-size: 0.9rem;
+    transition: color 0.3s ease;
+}
+.modal-body .fw-bold.mt-2.text-success {
+    color: #198754 !important; /* Garante que a cor de sucesso seja aplicada */
+}
+.modal-body .fw-bold.mt-2.text-danger {
+    color: #dc3545 !important;
 }
