@@ -23,8 +23,8 @@ public class GrupoComplemento {
 
     private int quantidadeMaxima;
 
-    @OneToMany(mappedBy = "grupo", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-    @JsonManagedReference("grupo-opcoes") // Adicionado um nome para a referência
+    @OneToMany(mappedBy = "grupo", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JsonManagedReference("grupo-opcoes")
     private List<OpcaoComplemento> opcoes = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.LAZY)

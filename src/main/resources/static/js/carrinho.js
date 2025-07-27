@@ -14,14 +14,12 @@ function getCartFromStorageCarrinho() {
         const parsed = JSON.parse(storedCart);
         return typeof parsed === 'object' && parsed !== null ? parsed : {};
     } catch (e) {
-        console.error("Erro ao parsear carrinho (carrinho.js):", e);
         return {};
     }
 }
 
 function saveCartToStorageCarrinho() {
     localStorage.setItem(CART_STORAGE_KEY_CARRINHO, JSON.stringify(cartData));
-    console.log("[SAVE_CART] Carrinho salvo (carrinho.js), chamando atualização da UI...");
     displayCartItems();
     updateCartCountNavbarCarrinho();
 }
@@ -35,13 +33,7 @@ async function carregarTodosProdutosParaReferenciaCarrinho() {
     try {
         const response = await fetch('/api/produtos');
         if (!response.ok) throw new Error('Falha ao carregar produtos');
-        const data = await response.json();
-        todosProdutosGlobaisParaCarrinho = data.map(p => ({
-            ...p,
-            id: String(p.id)
-            // Outras normalizações que você já tinha podem ser mantidas aqui
-        }));
-        console.log("Produtos globais carregados (carrinho.js):", todosProdutosGlobaisParaCarrinho);
+        todosProdutosGlobaisParaCarrinho = (await response.json()).map(p => ({ ...p, id: String(p.id) }));
     } catch (error) {
         console.error("Falha ao carregar produtos globais (carrinho.js):", error);
     }
@@ -80,25 +72,13 @@ function displayCartItems() {
         const itemPrincipal = cartData[cartId];
         if (!itemPrincipal) return;
 
-        // Calcula o subtotal apenas do item principal (seja simples, com complemento ou kit)
         const subtotalItem = (itemPrincipal.preco || 0) * itemPrincipal.qtde;
         totalGeralCompra += subtotalItem;
         
-        // Adiciona o preço dos complementos simples ao total geral
-        if (Array.isArray(itemPrincipal.selectedComplements)) {
-            itemPrincipal.selectedComplements.forEach(comp => {
-                totalGeralCompra += (comp.produto.preco || 0) * comp.qtde;
-            });
-        }
-
-
         const itemRow = document.createElement('div');
         itemRow.className = 'cart-item-row mb-3 p-3 border rounded bg-white shadow-sm';
 
-        // =================== INÍCIO DA MODIFICAÇÃO ===================
         let detalhesHtml = '';
-
-        // **NOVA LÓGICA**: Verifica se o item é um KIT e renderiza as escolhas
         if (itemPrincipal.type === 'kit' && itemPrincipal.escolhas) {
             detalhesHtml += '<div class="ms-md-4 mt-2 ps-md-2 border-start">';
             for (const nomeGrupo in itemPrincipal.escolhas) {
@@ -112,29 +92,7 @@ function displayCartItems() {
             }
             detalhesHtml += '</div>';
         }
-        // **LÓGICA ANTIGA MANTIDA**: Renderiza complementos simples (se existirem)
-        else if (Array.isArray(itemPrincipal.selectedComplements) && itemPrincipal.selectedComplements.length > 0) {
-            detalhesHtml += '<div class="ms-md-4 mt-2 ps-md-2">';
-            itemPrincipal.selectedComplements.forEach(compItem => {
-                 if (!compItem || !compItem.produto) return;
-                const complemento = compItem.produto;
-                const subtotalComplemento = (complemento.preco || 0) * compItem.qtde;
-
-                detalhesHtml += `
-                    <div class="cart-complement-item d-flex align-items-center mb-2 py-1">
-                        <div class="flex-grow-1">
-                            <small class="fw-semibold d-block text-muted">+ ${complemento.nome}</small>
-                        </div>
-                        <div class="text-end" style="min-width:80px;">
-                            <small class="cart-item-subtotal d-block">+ R$ ${subtotalComplemento.toFixed(2)}</small>
-                        </div>
-                    </div>`;
-            });
-            detalhesHtml += '</div>';
-        }
-        // =================== FIM DA MODIFICAÇÃO ===================
-
-
+        
         itemRow.innerHTML = `
             <div class="d-flex align-items-center">
                 <img src="${itemPrincipal.imagem || PLACEHOLDER_IMAGE_CARRINHO}" alt="${itemPrincipal.nome || 'Produto'}" class="cart-item-img">
@@ -160,7 +118,6 @@ function displayCartItems() {
     updateFinalizeButtonState();
 }
 
-
 function updateCartSummary(totalGeral) {
     const summaryContainer = document.getElementById('cartSummary');
     if (!summaryContainer) return;
@@ -173,83 +130,196 @@ function updateCartSummary(totalGeral) {
         </ul>`;
 }
 
-// --- MANIPULAÇÃO DO CARRINHO (Suas funções existentes, sem alterações) ---
 function handleChangeQuantity(cartId, newQuantity) {
-    const itemPrincipal = cartData[cartId];
-    if (!itemPrincipal) return;
     if (newQuantity <= 0) {
         handleRemoveItem(cartId);
         return;
     }
-    itemPrincipal.qtde = newQuantity;
+    cartData[cartId].qtde = newQuantity;
     saveCartToStorageCarrinho();
 }
 
 function handleRemoveItem(cartId) {
     const itemRemovido = cartData[cartId];
-    if (!itemRemovido) return;
     delete cartData[cartId];
     Swal.fire('Removido!', `"${itemRemovido.nome}" foi removido do carrinho.`, 'success');
     saveCartToStorageCarrinho();
 }
-// (Suas outras funções de manipulação de complementos, etc, permanecem aqui)
 
+function updateCustomerUI() {
+    const loggedInDiv = document.getElementById('loggedInCustomer');
+    const guestDiv = document.getElementById('guestCustomer');
+    const customerNameSpan = document.getElementById('customerName');
+    const customerDetailsDiv = document.getElementById('customerDetails');
 
-// --- LÓGICA DE CLIENTE E FINALIZAÇÃO ---
-// (Suas funções de UI de cliente (updateCustomerUI, handleRegister, handleLogin, etc) permanecem as mesmas)
-// ...
+    if (loggedInCustomerData) {
+        loggedInDiv.style.display = 'flex';
+        guestDiv.style.display = 'none';
+        customerNameSpan.textContent = loggedInCustomerData.nome;
+        if (loggedInCustomerData.endereco) {
+            customerDetailsDiv.style.display = 'block';
+            customerDetailsDiv.innerHTML = `
+                <i class="bi bi-truck"></i> Entregar em: 
+                ${loggedInCustomerData.endereco.logradouro || ''}, 
+                ${loggedInCustomerData.endereco.numero || ''} - 
+                ${loggedInCustomerData.endereco.bairro || ''}`;
+        }
+    } else {
+        loggedInDiv.style.display = 'none';
+        guestDiv.style.display = 'block';
+    }
+    updateFinalizeButtonState();
+}
+
+function updateFinalizeButtonState() {
+    const finalizeBtn = document.getElementById('finalizeOrderButton');
+    if (!finalizeBtn) return;
+    const isCartEmpty = Object.keys(cartData).length === 0;
+    const isCustomerLoggedIn = !!loggedInCustomerData;
+    finalizeBtn.disabled = isCartEmpty || !isCustomerLoggedIn;
+}
+
+async function handleRegister() {
+    const { value: formValues, isConfirmed } = await Swal.fire({
+        title: 'Cadastro Rápido',
+        html: `
+            <input id="swal-nome" class="swal2-input" placeholder="Nome Completo" required>
+            <input id="swal-email" type="email" class="swal2-input" placeholder="E-mail" required>
+            <input id="swal-senha" type="password" class="swal2-input" placeholder="Senha" required>
+            <input id="swal-telefone" type="tel" class="swal2-input" placeholder="Telefone / WhatsApp" required>
+            <hr>
+            <input id="swal-cep" class="swal2-input" placeholder="CEP">
+            <input id="swal-logradouro" class="swal2-input" placeholder="Rua / Avenida">
+            <input id="swal-numero" class="swal2-input" placeholder="Número">
+            <input id="swal-bairro" class="swal2-input" placeholder="Bairro">
+            <input id="swal-cidade" class="swal2-input" placeholder="Cidade">
+            <input id="swal-estado" class="swal2-input" placeholder="Estado (UF)">
+            <input id="swal-complemento" class="swal2-input" placeholder="Complemento (opcional)">
+        `,
+        focusConfirm: false,
+        showCancelButton: true,
+        confirmButtonText: 'Cadastrar e Entrar',
+        cancelButtonText: 'Cancelar',
+        preConfirm: () => {
+            return {
+                nome: document.getElementById('swal-nome').value,
+                email: document.getElementById('swal-email').value,
+                senha: document.getElementById('swal-senha').value,
+                telefone: document.getElementById('swal-telefone').value,
+                endereco: {
+                    cep: document.getElementById('swal-cep').value,
+                    logradouro: document.getElementById('swal-logradouro').value,
+                    numero: document.getElementById('swal-numero').value,
+                    bairro: document.getElementById('swal-bairro').value,
+                    cidade: document.getElementById('swal-cidade').value,
+                    estado: document.getElementById('swal-estado').value,
+                    complemento: document.getElementById('swal-complemento').value,
+                }
+            };
+        }
+    });
+
+    if (isConfirmed && formValues) {
+        try {
+            const response = await fetch('/api/clientes/cadastro', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formValues)
+            });
+            if (!response.ok) throw new Error('Falha no cadastro.');
+            const customer = await response.json();
+            loggedInCustomerData = customer;
+            saveCustomerToStorageCarrinho(customer);
+            Swal.fire('Sucesso!', 'Cadastro realizado e login efetuado!', 'success');
+            updateCustomerUI();
+        } catch (error) {
+            Swal.fire('Erro!', 'Não foi possível realizar o cadastro.', 'error');
+        }
+    }
+}
+
+async function handleLogin() {
+    const { value: formValues } = await Swal.fire({
+        title: 'Login',
+        html: `
+            <input id="swal-email" class="swal2-input" placeholder="E-mail">
+            <input id="swal-senha" type="password" class="swal2-input" placeholder="Senha">
+        `,
+        focusConfirm: false,
+        showCancelButton: true,
+        confirmButtonText: 'Entrar',
+        preConfirm: () => ({
+            email: document.getElementById('swal-email').value,
+            senha: document.getElementById('swal-senha').value
+        })
+    });
+
+    if (formValues) {
+        try {
+            const response = await fetch('/api/clientes/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formValues)
+            });
+            if (!response.ok) throw new Error('E-mail ou senha inválidos.');
+            const customer = await response.json();
+            loggedInCustomerData = customer;
+            saveCustomerToStorageCarrinho(customer);
+            Swal.fire('Bem-vindo(a)!', 'Login efetuado com sucesso!', 'success');
+            updateCustomerUI();
+        } catch (error) {
+            Swal.fire('Erro!', error.message, 'error');
+        }
+    }
+}
+
+function handleLogout() {
+    removeCustomerFromStorageCarrinho();
+    loggedInCustomerData = null;
+    Swal.fire('Até logo!', 'Você saiu da sua conta.', 'info');
+    updateCustomerUI();
+}
 
 async function finalizeOrder() {
-    // Validações iniciais (carrinho vazio, cliente logado, etc) permanecem as mesmas
-    if (Object.keys(cartData).length === 0) { Swal.fire('Carrinho Vazio!', 'Adicione itens ao seu carrinho.', 'warning'); return; }
-    if (!loggedInCustomerData) { Swal.fire('Identifique-se!', 'Por favor, entre na sua conta ou cadastre-se.', 'info'); return; }
-    if (!loggedInCustomerData.endereco || !loggedInCustomerData.endereco.cep) { Swal.fire('Endereço Incompleto!', 'Verifique seu cadastro.', 'warning'); return; }
-
+    if (Object.keys(cartData).length === 0) { Swal.fire('Carrinho Vazio!', 'Adicione itens ao seu carrinho para continuar.', 'warning'); return; }
+    if (!loggedInCustomerData) { Swal.fire('Identifique-se!', 'Por favor, entre na sua conta ou cadastre-se para finalizar o pedido.', 'info'); return; }
+    if (!loggedInCustomerData.endereco || !loggedInCustomerData.endereco.cep) { Swal.fire('Endereço Incompleto!', 'Por favor, complete seu endereço no cadastro para continuar.', 'warning'); return; }
+    
     const formaPagamentoSelecionada = document.querySelector('input[name="formaPagamento"]:checked');
-    if (!formaPagamentoSelecionada) { Swal.fire('Atenção!', 'Selecione uma forma de pagamento.', 'warning'); return; }
+    if (!formaPagamentoSelecionada) { Swal.fire('Atenção!', 'Por favor, selecione uma forma de pagamento.', 'warning'); return; }
 
     const pedidoItensPayload = [];
 
-    // =================== INÍCIO DA MODIFICAÇÃO ===================
     for (const cartId in cartData) {
         const item = cartData[cartId];
-
-        // Adiciona o produto principal (seja simples ou kit) ao pedido
+        
+        // 1. Adiciona o item principal (seja um produto simples ou um kit)
         pedidoItensPayload.push({
             produtoId: parseInt(item.id),
             quantidade: item.qtde,
             precoUnitario: item.preco
         });
 
-        // **NOVA LÓGICA**: Se for um kit, adiciona suas opções escolhidas ao payload também
-        // Isso é crucial para a baixa de estoque dos "sabores"
+        // 2. Se for um kit, adiciona suas opções como itens separados com preço 0
+        // A baixa de estoque será feita pelo backend com base nesses itens.
         if (item.type === 'kit' && item.escolhas) {
             for (const nomeGrupo in item.escolhas) {
                 item.escolhas[nomeGrupo].forEach(opcao => {
-                    pedidoItensPayload.push({
-                        produtoId: parseInt(opcao.produtoId),
-                        // Multiplica a qtde da opção pela qtde de kits pedidos
-                        quantidade: opcao.quantidade * item.qtde,
-                        // O preço unitário aqui é 0, pois o valor já está no preço do Kit principal.
-                        precoUnitario: 0
-                    });
+                    const produtoOpcao = todosProdutosGlobaisParaCarrinho.find(p => p.id == opcao.produtoId);
+                    if (produtoOpcao) {
+                         pedidoItensPayload.push({
+                            produtoId: parseInt(opcao.produtoId),
+                            // Multiplica a quantidade da opção pela quantidade de kits pedidos
+                            quantidade: opcao.quantidade * item.qtde,
+                            // O preço unitário aqui é 0, pois o valor já está no preço do Kit principal.
+                            // O backend usará isso para saber que é um sub-item.
+                            precoUnitario: 0 
+                        });
+                    }
                 });
             }
         }
-        // **LÓGICA ANTIGA MANTIDA**: Adiciona complementos simples ao payload
-        else if (Array.isArray(item.selectedComplements)) {
-            item.selectedComplements.forEach(compItem => {
-                if (compItem && compItem.produto) {
-                    pedidoItensPayload.push({
-                        produtoId: parseInt(compItem.produto.id),
-                        quantidade: compItem.qtde * item.qtde,
-                        precoUnitario: compItem.produto.preco
-                    });
-                }
-            });
-        }
     }
-    // =================== FIM DA MODIFICAÇÃO ===================
 
     const payload = {
         clienteId: loggedInCustomerData.id,
@@ -257,17 +327,21 @@ async function finalizeOrder() {
         itens: pedidoItensPayload,
         formaPagamento: formaPagamentoSelecionada.value,
     };
-
-    // (O resto da sua função de finalização (chamada fetch, etc) permanece o mesmo)
-    Swal.fire({ title: 'Confirmando seu pedido...', text: 'Aguarde.', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+    
+    Swal.fire({ title: 'Confirmando seu pedido...', text: 'Aguarde um momento.', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+    
     try {
-        const response = await fetch('/api/pedidos', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-        if (!response.ok) { const errorData = await response.json().catch(() => ({ message: `Erro HTTP ${response.status}` })); throw new Error(errorData.message || 'Erro ao registrar pedido.'); }
-        const data = await response.json();
-        Swal.fire('Pedido Enviado!', `Seu pedido nº ${data.id} foi registrado!`, 'success').then(() => { cartData = {}; saveCartToStorageCarrinho(); window.location.href = 'meus-pedidos.html'; });
-    } catch (err) { Swal.fire('Ops!', `Não foi possível registrar seu pedido: ${err.message}`, 'error'); }
+        const response = await axios.post('/api/pedidos', payload);
+        Swal.fire('Pedido Enviado!', `Seu pedido nº ${response.data.id} foi registrado com sucesso!`, 'success').then(() => {
+            cartData = {};
+            saveCartToStorageCarrinho();
+            window.location.href = 'meus-pedidos.html';
+        });
+    } catch (err) {
+        const errorMsg = err.response?.data?.message || err.message || 'Ocorreu um erro desconhecido.';
+        Swal.fire('Ops! Algo deu errado', `Não foi possível registrar seu pedido: ${errorMsg}`, 'error');
+    }
 }
-
 
 // --- INICIALIZAÇÃO DA PÁGINA DO CARRINHO ---
 window.onload = async () => {
@@ -280,13 +354,8 @@ window.onload = async () => {
     displayCartItems();
     updateCustomerUI();
 
-    // (Sua lógica de inicialização de listeners de botões (login, etc) permanece a mesma)
-    const loginBtn = document.getElementById('loginButton');
-    if (loginBtn) loginBtn.addEventListener('click', handleLogin);
-    const registerBtn = document.getElementById('registerButton');
-    if (registerBtn) registerBtn.addEventListener('click', handleRegister);
-    const logoutBtn = document.getElementById('logoutButton');
-    if (logoutBtn) logoutBtn.addEventListener('click', handleLogout);
-    const finalizeBtn = document.getElementById('finalizeOrderButton');
-    if (finalizeBtn) finalizeBtn.addEventListener('click', finalizeOrder);
+    document.getElementById('loginButton')?.addEventListener('click', handleLogin);
+    document.getElementById('registerButton')?.addEventListener('click', handleRegister);
+    document.getElementById('logoutButton')?.addEventListener('click', handleLogout);
+    document.getElementById('finalizeOrderButton')?.addEventListener('click', finalizeOrder);
 };

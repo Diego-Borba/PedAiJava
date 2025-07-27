@@ -47,12 +47,12 @@ function showProdutoAdicionadoToast(produto) {
 async function carregarEProcessarProdutosAPI() {
     showLoadingIndicator(true);
     try {
-        const response = await fetch('/api/produtos');
+        const response = await fetch('/api/produtos/cardapio');
         if (!response.ok) throw new Error('Falha ao carregar produtos');
-        // Garante que o ID seja sempre uma string para comparações seguras
-        todosProdutos = (await response.json()).map(p => ({...p, id: String(p.id)}));
-        console.log("--- TODOS OS PRODUTOS PROCESSADOS (pedidos.js) ---", todosProdutos);
         
+        // A variável `todosProdutos` agora contém TODOS os produtos ativos, incluindo os que são apenas para kits.
+        todosProdutos = (await response.json()).map(p => ({...p, id: String(p.id)}));
+
         await carregarCategoriasVisiveis();
         filtrarEExibirProdutosCardapio('todos');
     } catch (err) {
@@ -67,7 +67,8 @@ async function carregarCategoriasVisiveis() {
     if (!container) return;
     container.innerHTML = '';
 
-    const produtosParaCategorias = todosProdutos.filter(p => !p.isComplemento && !p.isMateriaPrima && p.ativo);
+    // Os botões de categoria são gerados com base nos produtos que são vendidos individualmente.
+    const produtosParaCategorias = todosProdutos.filter(p => p.vendidoIndividualmente);
     const categoriasUnicas = [...new Set(produtosParaCategorias.map(p => p.categoria).filter(Boolean))];
     categoriasUnicas.sort();
 
@@ -95,12 +96,16 @@ async function carregarCategoriasVisiveis() {
 }
 
 function filtrarEExibirProdutosCardapio(categoriaSelecionada) {
-    const produtosParaCardapio = todosProdutos.filter(p => p.ativo && !p.isComplemento && !p.isMateriaPrima);
+    // AQUI ESTÁ A LÓGICA FINAL: Filtramos para mostrar nos "cards" apenas os produtos
+    // que estão marcados como `vendidoIndividualmente`.
+    const produtosParaCardapio = todosProdutos.filter(p => p.vendidoIndividualmente);
+    
     let produtosFiltrados = produtosParaCardapio;
     if (categoriaSelecionada !== 'todos') {
         produtosFiltrados = produtosParaCardapio.filter(p => p.categoria === categoriaSelecionada);
     }
     produtosFiltrados.sort((a, b) => (a.ordemVisualizacao ?? Infinity) - (b.ordemVisualizacao ?? Infinity) || (a.nome || '').localeCompare(b.nome || ''));
+
     renderizarCardsProdutos(produtosFiltrados);
 }
 
@@ -121,7 +126,7 @@ function renderizarCardsProdutos(listaDeProdutos) {
             <div class="card produto-card h-100 shadow-sm">
                 <div class="card-img-top-wrapper"><img src="${produto.imagem || PLACEHOLDER_IMAGE}" class="card-img-top" alt="${produto.nome}"></div>
                 <div class="card-body d-flex flex-column">
-                    <h5 class="card-title">${produto.nome}</h5>
+                    <h5 class="card-title">${produto.nome || 'Nome Indefinido'}</h5>
                     <p class="card-text descricao small text-muted">${produto.descricao || ''}</p>
                     <p class="preco fw-bold fs-5 mt-auto mb-2">R$ ${(produto.preco || 0).toFixed(2)}</p>
                     <button class="btn btn-add-carrinho w-100"><i class="bi bi-cart-plus me-2"></i>Adicionar</button>
@@ -160,6 +165,7 @@ function abrirModalMontagemKit(produtoKit) {
     const groupsContainer = document.getElementById('kitGroupsContainer');
     groupsContainer.innerHTML = '';
 
+    // Esta função agora funcionará, pois `todosProdutos` tem a lista completa.
     produtoKit.gruposKit.forEach((grupo, index) => {
         const grupoDiv = document.createElement('div');
         grupoDiv.className = 'p-3 border rounded mb-3 bg-light';
@@ -172,22 +178,17 @@ function abrirModalMontagemKit(produtoKit) {
         groupsContainer.appendChild(grupoDiv);
 
         const optionsContainer = document.getElementById(`group-options-${index}`);
-        
-        // =================== INÍCIO DA CORREÇÃO 1 (undefined) ===================
-        grupo.opcoes.forEach(opcao => {
-            // A informação do produto pode vir só com o ID.
-            const produtoIdDaOpcao = String(typeof opcao.produto === 'object' ? opcao.produto.id : opcao.produto);
 
-            // Buscamos o produto completo na nossa lista principal 'todosProdutos'
+        grupo.opcoes.forEach(opcao => {
+            const produtoIdDaOpcao = String(typeof opcao.produto === 'object' ? opcao.produto.id : opcao.produto);
             const produtoOpcaoCompleto = todosProdutos.find(p => p.id === produtoIdDaOpcao);
 
             if (produtoOpcaoCompleto) {
                 optionsContainer.appendChild(criarInputOpcao(produtoOpcaoCompleto, grupo, index));
             } else {
-                console.error(`Produto da opção com ID ${produtoIdDaOpcao} não encontrado.`);
+                console.error(`Produto da opção com ID ${produtoIdDaOpcao} não encontrado na lista de produtos carregada.`);
             }
         });
-        // =================== FIM DA CORREÇÃO 1 =================================
     });
 
     const btnConfirmar = document.getElementById('btnConfirmarKit');
@@ -195,7 +196,7 @@ function abrirModalMontagemKit(produtoKit) {
     btnConfirmar.parentNode.replaceChild(novoBtn, btnConfirmar);
     novoBtn.addEventListener('click', () => {
         const escolhas = coletarEscolhasDoKit(produtoKit);
-        if(escolhas.valido) {
+        if (escolhas.valido) {
             adicionarKitAoCarrinho(produtoKit, escolhas.dados);
             modal.hide();
         }
@@ -216,7 +217,6 @@ function criarInputOpcao(produtoOpcao, grupo, groupIndex) {
         `;
     } else { // QUANTIDADE_TOTAL
         div.classList.add('d-flex', 'justify-content-between', 'align-items-center');
-        // =================== INÍCIO DA CORREÇÃO 2 (campo de quantidade) ===================
         div.innerHTML = `
             <span>${produtoOpcao.nome}</span>
             <div class="d-flex align-items-center">
@@ -225,7 +225,6 @@ function criarInputOpcao(produtoOpcao, grupo, groupIndex) {
                 <button type="button" class="btn btn-outline-secondary btn-sm kit-qty-btn" data-action="increase">+</button>
             </div>
         `;
-        // =================== FIM DA CORREÇÃO 2 =========================================
 
         const input = div.querySelector('input');
         div.querySelectorAll('.kit-qty-btn').forEach(btn => {
@@ -239,7 +238,7 @@ function criarInputOpcao(produtoOpcao, grupo, groupIndex) {
                 input.dispatchEvent(new Event('input'));
             });
         });
-        
+
         input.addEventListener('input', () => {
             let totalNoGrupo = 0;
             document.querySelectorAll(`input[data-group-index="${groupIndex}"]`).forEach(i => {
