@@ -1,5 +1,6 @@
 document.addEventListener('DOMContentLoaded', function () {
     let tabela;
+    // Esta variável vai guardar a lista de produtos (no formato DTO) para usar nos selects.
     let todosOsProdutosParaSelecao = [];
 
     // --- Funções de Manipulação do Modal de Edição ---
@@ -34,13 +35,11 @@ document.addEventListener('DOMContentLoaded', function () {
         `;
         container.appendChild(divGrupo);
 
-        // Popula as opções existentes
         const containerOpcoes = divGrupo.querySelector('.edit-lista-opcoes-kit');
         if (grupo.opcoes && grupo.opcoes.length > 0) {
             grupo.opcoes.forEach(opcao => adicionarLinhaOpcaoKitEdit(containerOpcoes, opcao));
         }
 
-        // Adiciona listeners para os botões
         divGrupo.querySelector('.btn-remover-grupo-edit').addEventListener('click', function () { this.closest('.edit-grupo-kit-bloco').remove(); });
         divGrupo.querySelector('.btn-add-opcao-kit-edit').addEventListener('click', function () { adicionarLinhaOpcaoKitEdit(this.previousElementSibling); });
     }
@@ -52,10 +51,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
         let optionsHTML = '<option value="">Selecione um produto...</option>';
         todosOsProdutosParaSelecao.forEach(p => {
-            if (p.isMateriaPrima || p.isComplemento) {
-                const isSelected = opcao.produto && p.id == opcao.produto.id ? 'selected' : '';
-                optionsHTML += `<option value="${p.id}" ${isSelected}>${p.nome}</option>`;
-            }
+            // CORREÇÃO: Removemos o filtro 'if (p.isMateriaPrima || p.isComplemento)'
+            // para permitir que qualquer produto possa ser uma opção de kit.
+            const isSelected = opcao.produto && p.id == opcao.produto.id ? 'selected' : '';
+            optionsHTML += `<option value="${p.id}" ${isSelected}>${p.nome}</option>`;
         });
 
         divOpcao.innerHTML = `
@@ -71,7 +70,7 @@ document.addEventListener('DOMContentLoaded', function () {
         fetch('/api/produtos')
             .then(res => res.json())
             .then(data => {
-                todosOsProdutosParaSelecao = data; // Cache dos produtos para selects
+                todosOsProdutosParaSelecao = data; // Cache dos produtos (DTOs) para usar nos selects
                 if ($.fn.DataTable.isDataTable('#tabela-produtos')) {
                     tabela.clear().rows.add(data).draw();
                 } else {
@@ -81,17 +80,19 @@ document.addEventListener('DOMContentLoaded', function () {
                             {
                                 data: null, title: "Nome / Tipo",
                                 render: function (d, t, row) {
-                                    let tipo = '';
-                                    if (row.isKit) tipo = '<span class="badge bg-purple">Kit</span>';
-                                    else if (row.isMateriaPrima) tipo = '<span class="badge bg-success">Matéria-Prima</span>';
-                                    else if (row.isComplemento) tipo = '<span class="badge bg-info text-dark">Complemento</span>';
-                                    else if (row.receita && row.receita.length > 0) tipo = '<span class="badge bg-secondary">Composto</span>';
-                                    else tipo = '<span class="badge bg-primary">Venda Direta</span>';
-                                    return `${row.nome || 'N/A'} ${tipo}`;
+                                    let badgeColor = 'bg-primary'; // Cor padrão
+                                    if (row.tipo === 'Kit') badgeColor = 'bg-info'; // Usando uma cor diferente para Kit
+                                    if (row.tipo === 'Matéria-Prima') badgeColor = 'bg-success';
+                                    if (row.tipo === 'Complemento') badgeColor = 'bg-secondary';
+                                    if (row.tipo === 'Composto') badgeColor = 'bg-warning text-dark';
+                                    
+                                    const tipoBadge = `<span class="badge ${badgeColor}">${row.tipo}</span>`;
+                                    return `${row.nome || 'N/A'} ${tipoBadge}`;
                                 }
                             },
-                            { data: "preco", title: "Preço", render: (d) => `R$ ${d ? d.toFixed(2) : '0.00'}` },
-                            { data: "estoqueAtual", title: "Estoque", render: function(d) {
+                            { data: "preco", title: "Preço", render: (d) => `R$ ${d != null ? d.toFixed(2) : '0.00'}` },
+                            {
+                                data: "estoqueAtual", title: "Estoque", render: function (d) {
                                     const estoque = d != null ? parseFloat(d).toFixed(3) : 'N/A';
                                     const cor = estoque > 10 ? 'bg-success' : (estoque > 0 ? 'bg-warning text-dark' : 'bg-danger');
                                     return `<span class="badge ${cor}" style="font-size: 0.9em;">${estoque}</span>`;
@@ -115,22 +116,27 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // --- Event Listeners ---
     $('#tabela-produtos tbody').on('click', '.btn-editar', function () {
-        const row = $(this).closest('tr');
-        const id = tabela.row(row).data().id;
+        const rowData = tabela.row($(this).closest('tr')).data();
+        if (!rowData) return;
+        const id = rowData.id;
 
+        // Usamos o endpoint de ID para buscar os dados COMPLETOS do produto para edição
         fetch(`/api/produtos/${id}`).then(res => res.json()).then(p => {
-            // Preenche campos normais
             $('#edit-id').val(p.id);
             $('#edit-nome').val(p.nome || '');
             $('#edit-preco').val(p.preco || '');
             $('#edit-categoria').val(p.categoria || '');
-            // ... resto dos campos
+            $('#edit-qtdeMax').val(p.qtdeMax || 10);
+            $('#edit-codigoPdv').val(p.codPdv || '');
+            $('#edit-ordemVisualizacao').val(p.ordemVisualizacao || 0);
+            $('#edit-descricao').val(p.descricao || '');
+            $('#edit-imagem').val(p.imagem || '');
 
-            // Preenche checkboxes
+            $('#edit-isMateriaPrima').prop('checked', p.isMateriaPrima);
+            $('#edit-isComplemento').prop('checked', p.isComplemento);
+            $('#edit-permiteComplementos').prop('checked', p.permiteComplementos);
             $('#edit-isKit').prop('checked', p.isKit).trigger('change');
-            // ... resto dos checkboxes
 
-            // Limpa e preenche a configuração do Kit
             const containerKit = $('#edit-listaGruposKit');
             containerKit.empty();
             if (p.isKit && p.gruposKit) {
@@ -138,37 +144,31 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             new bootstrap.Modal($('#editModal')[0]).show();
-        }).catch(err => Swal.fire('Erro!', 'Não foi possível carregar dados do produto.', 'error'));
+        }).catch(err => Swal.fire('Erro!', 'Não foi possível carregar dados do produto para edição.', 'error'));
     });
 
-    // Mostra/Esconde container do Kit no modal
     $('#edit-isKit').on('change', function() {
         $('#edit-containerKit').toggle(this.checked);
     });
 
-    // Botão para adicionar novo grupo no modal
     $('#edit-btnAddGrupoKit').on('click', () => adicionarLinhaGrupoKitEdit());
 
-    // Submissão do formulário de edição
     $('#formEditProduto').on('submit', function (e) {
         e.preventDefault();
 
-        // --- COLETA DE DADOS DO KIT ---
         const gruposKit = [];
         if ($('#edit-isKit').is(':checked')) {
-            $('#edit-listaGruposKit .edit-grupo-kit-bloco').each(function() {
+            $('#edit-listaGruposKit .edit-grupo-kit-bloco').each(function () {
                 const nome = $(this).find('.edit-nome-grupo-kit').val();
                 const tipo = $(this).find('.edit-tipo-selecao-grupo-kit').val();
                 const qtde = parseInt($(this).find('.edit-qtde-max-grupo-kit').val());
-
                 const opcoes = [];
-                $(this).find('.edit-opcao-kit-bloco').each(function() {
+                $(this).find('.edit-opcao-kit-bloco').each(function () {
                     const prodId = $(this).find('.edit-produto-id-opcao-kit').val();
                     if (prodId) {
                         opcoes.push({ produto: { id: parseInt(prodId) } });
                     }
                 });
-
                 if (nome && tipo && opcoes.length > 0) {
                     gruposKit.push({ nome: nome, tipoSelecao: tipo, quantidadeMaxima: qtde, opcoes: opcoes });
                 }
@@ -179,10 +179,19 @@ document.addEventListener('DOMContentLoaded', function () {
             id: $('#edit-id').val(),
             nome: $('#edit-nome').val(),
             preco: parseFloat($('#edit-preco').val()),
-            // ... outros campos
+            categoria: $('#edit-categoria').val(),
+            qtdeMax: parseInt($('#edit-qtdeMax').val()),
+            codPdv: $('#edit-codigoPdv').val() ? parseInt($('#edit-codigoPdv').val()) : null,
+            ordemVisualizacao: $('#edit-ordemVisualizacao').val() ? parseInt($('#edit-ordemVisualizacao').val()) : 0,
+            descricao: $('#edit-descricao').val(),
+            imagem: $('#edit-imagem').val(),
+            isMateriaPrima: $('#edit-isMateriaPrima').is(':checked'),
+            isComplemento: $('#edit-isComplemento').is(':checked'),
+            permiteComplementos: $('#edit-permiteComplementos').is(':checked'),
             isKit: $('#edit-isKit').is(':checked'),
             gruposKit: gruposKit,
-            // ... outros campos booleanos e listas
+            receita: [], // Edição de receita não implementada neste modal
+            complementosDisponiveis: [] // Edição de complementos não implementada neste modal
         };
 
         fetch(`/api/produtos/${produto.id}`, {
@@ -190,12 +199,15 @@ document.addEventListener('DOMContentLoaded', function () {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(produto)
         }).then(res => {
-            if (!res.ok) return res.json().then(err => { throw new Error(err.message || 'Erro no servidor') });
+            if (!res.ok) {
+                return res.text().then(text => { throw new Error(text || 'Erro no servidor') });
+            }
             bootstrap.Modal.getInstance($('#editModal')[0]).hide();
             Swal.fire('Sucesso!', 'Produto atualizado!', 'success').then(() => carregarProdutos());
-        }).catch(err => Swal.fire('Erro!', `Não foi possível atualizar: ${err.message}`, 'error'));
+        }).catch(err => {
+            Swal.fire('Erro!', `Não foi possível atualizar: ${err.message}`, 'error');
+        });
     });
 
-    // Carga inicial
     carregarProdutos();
 });

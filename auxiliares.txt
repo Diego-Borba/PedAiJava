@@ -30,4 +30,9 @@ gcloud run deploy pedai-service \
     --set-env-vars SPRING_DATASOURCE_PASSWORD="borba1506" \
     --set-env-vars SPRING_JPA_HIBERNATE_DDL_AUTO="update"
 
+<<<<<<< HEAD
     --
+=======
+____________________________________________________________________________________________
+
+>>>>>>> 1efa1efee3995733de4176a47d5aa2aa1ac01268

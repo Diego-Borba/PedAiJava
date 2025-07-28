@@ -6,15 +6,12 @@ document.addEventListener('DOMContentLoaded', function () {
     const isMateriaPrimaCheckbox = document.getElementById('isMateriaPrima');
     const permiteComplementosCheckbox = document.getElementById('permiteComplementos');
     const isKitCheckbox = document.getElementById('isKit');
-
     const containerComplementosDisponiveis = document.getElementById('containerComplementosDisponiveis');
     const containerReceita = document.getElementById('containerReceita');
     const containerKit = document.getElementById('containerKit');
-
     const btnAddComplementoConfig = document.getElementById('btnAddComplementoConfig');
     const btnAddReceita = document.getElementById('btnAddReceita');
     const btnAddGrupoKit = document.getElementById('btnAddGrupoKit');
-
     const listaComplementosConfig = document.getElementById('listaComplementosConfig');
     const listaReceita = document.getElementById('listaReceita');
     const listaGruposKit = document.getElementById('listaGruposKit');
@@ -24,7 +21,8 @@ document.addEventListener('DOMContentLoaded', function () {
     // --- Carregamento Inicial de Dados ---
     async function carregarProdutosParaSelecao() {
         try {
-            const response = await fetch('/api/produtos');
+            // CORREÇÃO: Usar a API que retorna todos os produtos para a seleção de componentes
+            const response = await fetch('/api/produtos/cardapio');
             if (!response.ok) throw new Error('Falha ao carregar produtos');
             todosOsProdutos = await response.json();
         } catch (error) {
@@ -81,7 +79,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function adicionarLinhaGrupoKit() {
-        const idUnico = `grupo-${Date.now()}`;
         const divGrupo = document.createElement('div');
         divGrupo.className = 'p-3 border rounded mb-3 bg-white shadow-sm grupo-kit-bloco';
         divGrupo.innerHTML = `
@@ -106,8 +103,6 @@ document.addEventListener('DOMContentLoaded', function () {
             <button type="button" class="btn btn-sm btn-outline-success btn-add-opcao-kit"><i class="bi bi-plus"></i> Adicionar Opção</button>
         `;
         listaGruposKit.appendChild(divGrupo);
-
-        // Adiciona listeners para os botões do novo grupo
         divGrupo.querySelector('.btn-remover-grupo').addEventListener('click', function () { this.closest('.grupo-kit-bloco').remove(); });
         divGrupo.querySelector('.btn-add-opcao-kit').addEventListener('click', function () { adicionarLinhaOpcaoKit(this.previousElementSibling); });
     }
@@ -116,13 +111,10 @@ document.addEventListener('DOMContentLoaded', function () {
         const divOpcao = document.createElement('div');
         divOpcao.className = 'row g-2 mb-2 align-items-center opcao-kit-bloco';
 
-        // Cria as opções do select a partir do cache de produtos
         let optionsHTML = '<option value="">Selecione um produto...</option>';
         todosOsProdutos.forEach(p => {
-            // Idealmente, as opções são matérias-primas ou complementos
-            if (p.isMateriaPrima || p.isComplemento) {
-                optionsHTML += `<option value="${p.id}">${p.nome}</option>`;
-            }
+            // CORREÇÃO: Removemos o filtro para que qualquer produto possa ser uma opção
+            optionsHTML += `<option value="${p.id}">${p.nome}</option>`;
         });
 
         divOpcao.innerHTML = `
@@ -136,53 +128,38 @@ document.addEventListener('DOMContentLoaded', function () {
         divOpcao.querySelector('.btn-remover-opcao').addEventListener('click', function () { this.closest('.opcao-kit-bloco').remove(); });
     }
 
-
     // --- Submissão do Formulário ---
     formProduto.addEventListener('submit', function (e) {
         e.preventDefault();
 
-        // Coleta de Complementos Simples (já existente)
+        // ** ESTRUTURA CORRIGIDA **
+        // 1. Recolher todos os dados de listas dinâmicas PRIMEIRO.
         const complementosDisponiveis = [];
-        if (permiteComplementosCheckbox.checked) {
-            // ... (código existente mantido)
-        }
+        // (A sua lógica de recolha de complementos vai aqui, se implementada)
 
-        // Coleta de Receita (já existente)
         const receita = [];
-        if (!isMateriaPrimaCheckbox.checked) {
-            // ... (código existente mantido)
-        }
+        // (A sua lógica de recolha de receita vai aqui, se implementada)
 
-        // --- NOVA COLETA DE DADOS DO KIT ---
         const gruposKit = [];
         if (isKitCheckbox.checked) {
             document.querySelectorAll('.grupo-kit-bloco').forEach(blocoGrupo => {
                 const nomeGrupo = blocoGrupo.querySelector('.nome-grupo-kit').value;
                 const tipoSelecao = blocoGrupo.querySelector('.tipo-selecao-grupo-kit').value;
                 const quantidadeMaxima = parseInt(blocoGrupo.querySelector('.qtde-max-grupo-kit').value);
-
                 const opcoes = [];
                 blocoGrupo.querySelectorAll('.opcao-kit-bloco').forEach(blocoOpcao => {
                     const produtoId = blocoOpcao.querySelector('.produto-id-opcao-kit').value;
                     if (produtoId) {
-                        opcoes.push({
-                            produto: { id: parseInt(produtoId) } // Envia apenas o ID, o backend resolve
-                        });
+                        opcoes.push({ produto: { id: parseInt(produtoId) } });
                     }
                 });
-
                 if (nomeGrupo && tipoSelecao && opcoes.length > 0) {
-                    gruposKit.push({
-                        nome: nomeGrupo,
-                        tipoSelecao: tipoSelecao,
-                        quantidadeMaxima: quantidadeMaxima,
-                        opcoes: opcoes
-                    });
+                    gruposKit.push({ nome: nomeGrupo, tipoSelecao, quantidadeMaxima, opcoes });
                 }
             });
         }
 
-        // Monta o objeto final do produto
+        // 2. Montar o objeto final do produto com TODOS os dados.
         const produto = {
             nome: document.getElementById('nome').value,
             preco: parseFloat(document.getElementById('preco').value),
@@ -196,13 +173,14 @@ document.addEventListener('DOMContentLoaded', function () {
             isMateriaPrima: isMateriaPrimaCheckbox.checked,
             isComplemento: document.getElementById('isComplemento').checked,
             permiteComplementos: permiteComplementosCheckbox.checked,
-            complementosDisponiveis: complementosDisponiveis, // Mantém a lógica antiga
-            receita: receita, // Mantém a lógica antiga
             isKit: isKitCheckbox.checked,
-            gruposKit: gruposKit // Adiciona a nova configuração de kit
+            vendidoIndividualmente: document.getElementById('vendidoIndividualmente').checked,
+            complementosDisponiveis: complementosDisponiveis,
+            receita: receita,
+            gruposKit: gruposKit
         };
 
-        // Envia para o backend
+        // 3. Enviar para o backend.
         fetch('/api/produtos', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -215,13 +193,14 @@ document.addEventListener('DOMContentLoaded', function () {
         .then(data => {
             Swal.fire('Sucesso!', `Produto "${data.nome}" cadastrado com ID: ${data.id}!`, 'success');
             formProduto.reset();
-            // Limpa todos os containers dinâmicos
-            listaComplementosConfig.innerHTML = ''; 
+            // Limpa e reseta os painéis
+            listaComplementosConfig.innerHTML = '';
             containerComplementosDisponiveis.style.display = 'none';
             listaReceita.innerHTML = '';
             containerReceita.style.display = 'block';
             listaGruposKit.innerHTML = '';
             containerKit.style.display = 'none';
+            document.getElementById('vendidoIndividualmente').checked = true; // Garante que a nova checkbox volte ao padrão
         })
         .catch(error => {
             Swal.fire('Erro!', `Erro ao cadastrar produto: ${error.message}`, 'error');

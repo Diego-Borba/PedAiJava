@@ -107,33 +107,45 @@
           </div>
 
           <div class="form-check mb-2">
-              <input class="form-check-input" type="checkbox" id="isKit">
-              <label class="form-check-label" for="isKit">
-                  <strong>Este produto é um Kit</strong> (Ex: Kit Festa, Combo).
-              </label>
+            <input class="form-check-input" type="checkbox" id="isKit">
+            <label class="form-check-label" for="isKit">
+              <strong>Este produto é um Kit</strong> (Ex: Kit Festa, Combo).
+            </label>
           </div>
+          
+          <div class="form-check mb-3 p-3 border rounded bg-light">
+            <input class="form-check-input" type="checkbox" id="vendidoIndividualmente" checked>
+            <label class="form-check-label" for="vendidoIndividualmente">
+              <strong>Pode ser vendido individualmente no cardápio?</strong>
+              <small class="d-block text-muted">Se desmarcado, este produto só aparecerá como opção dentro de um Kit.</small>
+            </label>
+          </div>
+
+      
 
 
           <div id="containerComplementosDisponiveis" class="mb-3" style="display: none;">
             <label class="form-label">Complementos Disponíveis para este Produto:</label>
             <div id="listaComplementosConfig"></div>
-            <button type="button" class="btn btn-sm btn-outline-info mt-2" id="btnAddComplementoConfig">Adicionar Configuração de Complemento</button>
+            <button type="button" class="btn btn-sm btn-outline-info mt-2" id="btnAddComplementoConfig">Adicionar
+              Configuração de Complemento</button>
           </div>
 
           <div id="containerKit" class="p-3 border rounded bg-light" style="display: none;">
-              <h5 class="mb-3">Configuração do Kit</h5>
-              <div id="listaGruposKit">
-                  </div>
-              <button type="button" class="btn btn-info mt-2" id="btnAddGrupoKit">
-                  <i class="bi bi-plus-lg"></i> Adicionar Grupo ao Kit
-              </button>
+            <h5 class="mb-3">Configuração do Kit</h5>
+            <div id="listaGruposKit">
+            </div>
+            <button type="button" class="btn btn-info mt-2" id="btnAddGrupoKit">
+              <i class="bi bi-plus-lg"></i> Adicionar Grupo ao Kit
+            </button>
           </div>
 
 
           <div id="containerReceita">
             <hr class="my-4">
             <h5 class="mb-3">Composição / Receita do Produto</h5>
-            <p class="text-muted small">Use esta seção para produtos compostos (ex: um sanduíche). Ao vender, o sistema dará baixa no estoque dos ingredientes.</p>
+            <p class="text-muted small">Use esta seção para produtos compostos (ex: um sanduíche). Ao vender, o sistema
+              dará baixa no estoque dos ingredientes.</p>
             <div id="listaReceita"></div>
             <button type="button" class="btn btn-sm btn-outline-primary mt-2" id="btnAddReceita">
               <i class="bi bi-plus-circle"></i> Adicionar Ingrediente
@@ -162,4 +174,5 @@
   <script src="../js/global-admin.js"></script>
   <script src="../js/cadastro.js"></script>
 </body>
+
 </html>
