@@ -8,6 +8,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+
+import com.PedAi.PedAi.DTO.ProdutoListDTO;
+import com.PedAi.PedAi.DTO.GrupoCardapioDTO;
+import com.PedAi.PedAi.DTO.ProdutoCardapioDTO;
+import java.util.stream.Collectors;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,17 +24,41 @@ public class ProdutoController {
     private ProdutoRepository repository;
 
     @GetMapping
-    public List<Produto> getAll() {
-        return repository.findAll();
+    @Transactional(readOnly = true)
+    public List<ProdutoListDTO> getAll() {
+        List<Produto> produtos = repository.findAll();
+
+        // Converte a lista de entidades 'Produto' para uma lista de 'ProdutoListDTO'
+        return produtos.stream()
+                .map(ProdutoListDTO::new) // Para cada produto, cria um DTO
+                .collect(Collectors.toList());
     }
 
     @GetMapping("/{id}")
+    @Transactional(readOnly = true) // Adiciona a transação de apenas leitura
     public ResponseEntity<Produto> getById(@PathVariable Long id) {
-        return repository.findById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        // Busca o produto no repositório
+        Optional<Produto> produtoOpt = repository.findById(id);
+
+        // Se não encontrar, retorna 404 Not Found
+        if (produtoOpt.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Produto produto = produtoOpt.get();
+
+        // Se o produto for um Kit, força a inicialização das coleções "preguiçosas"
+        // para que elas sejam incluídas na resposta JSON para a tela de edição.
+        if (produto.isKit()) {
+            produto.getGruposKit().forEach(grupo -> {
+                grupo.getOpcoes().size(); // Esta chamada inicializa a lista de opções de cada grupo
+            });
+        }
+
+        // Retorna o produto com os dados completos
+        return ResponseEntity.ok(produto);
     }
-    // ... (imports e a anotação @RestController no topo da classe)
+
 
     @PostMapping
     @Transactional
@@ -62,20 +91,30 @@ public class ProdutoController {
     public ResponseEntity<Produto> update(@PathVariable Long id, @RequestBody Produto produtoDetails) {
         return repository.findById(id).map(produtoExistente -> {
 
-            // (Atualiza todos os seus campos normais: nome, preco, etc.)
+            // --- Mapeamento explícito de todos os campos ---
             produtoExistente.setNome(produtoDetails.getNome());
             produtoExistente.setPreco(produtoDetails.getPreco());
-            // ... e assim por diante para os outros campos.
+            produtoExistente.setCategoria(produtoDetails.getCategoria());
+            produtoExistente.setQtdeMax(produtoDetails.getQtdeMax());
+            produtoExistente.setCodPdv(produtoDetails.getCodPdv());
+            produtoExistente.setDescricao(produtoDetails.getDescricao());
+            produtoExistente.setOrdemVisualizacao(produtoDetails.getOrdemVisualizacao());
+            produtoExistente.setImagem(produtoDetails.getImagem());
 
-            // --- LÓGICA ATUALIZADA PARA KITS ---
+            // Booleans
+            produtoExistente.setMateriaPrima(produtoDetails.isMateriaPrima());
+            produtoExistente.setIsComplemento(produtoDetails.isComplemento());
+            produtoExistente.setPermiteComplementos(produtoDetails.isPermiteComplementos());
             produtoExistente.setKit(produtoDetails.isKit());
-            // Limpa a lista antiga para evitar duplicatas ou órfãos
-            produtoExistente.getGruposKit().clear();
+
+            // Lógica para atualizar a lista de grupos do Kit
+            produtoExistente.getGruposKit().clear(); // Limpa a lista antiga para evitar órfãos
             if (produtoDetails.isKit() && produtoDetails.getGruposKit() != null) {
                 produtoDetails.getGruposKit().forEach(grupoNovo -> {
                     grupoNovo.setProdutoKit(produtoExistente); // Link de volta para o produto
                     grupoNovo.getOpcoes().forEach(opcaoNova -> {
                         opcaoNova.setGrupo(grupoNovo); // Link de volta para o grupo
+                        // Garante que o produto da opção seja uma entidade gerenciada pelo JPA
                         if (opcaoNova.getProduto() != null && opcaoNova.getProduto().getId() != null) {
                             repository.findById(opcaoNova.getProduto().getId()).ifPresent(opcaoNova::setProduto);
                         }
@@ -84,7 +123,10 @@ public class ProdutoController {
                 });
             }
 
-            final Produto updatedProduto = repository.save(produtoExistente);
+            // OBS: A lógica para atualizar 'receita' e 'complementosDisponiveis' pode ser
+            // adicionada aqui se necessário
+
+            Produto updatedProduto = repository.save(produtoExistente);
             return ResponseEntity.ok(updatedProduto);
 
         }).orElse(ResponseEntity.notFound().build());
@@ -105,11 +147,14 @@ public class ProdutoController {
     }
 
     @GetMapping("/cardapio")
+    @Transactional(readOnly = true)
     public List<Produto> getProdutosParaCardapio() {
-        // Filtra produtos que não são matéria-prima nem complementos simples para
-        // aparecer no cardápio
+        // Regra final: A API envia TODOS os produtos ativos.
+        // Isto garante que o frontend sempre tenha a lista completa de opções
+        // para a montagem de kits. O frontend será responsável por filtrar o que mostrar.
         return repository.findAll().stream()
-                .filter(p -> p.isAtivo() && !p.isMateriaPrima() && !p.isComplemento())
-                .toList();
+                .filter(Produto::isAtivo)
+                .collect(Collectors.toList());
     }
+
 }
