@@ -29,3 +29,5 @@ gcloud run deploy pedai-service \
     --set-env-vars SPRING_DATASOURCE_USERNAME="postgres" \
     --set-env-vars SPRING_DATASOURCE_PASSWORD="borba1506" \
     --set-env-vars SPRING_JPA_HIBERNATE_DDL_AUTO="update"
+
+    --
