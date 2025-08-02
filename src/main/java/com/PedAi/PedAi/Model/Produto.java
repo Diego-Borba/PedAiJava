@@ -25,7 +25,7 @@ public class Produto {
     private String imagem;
     private Integer codPdv;
     private Integer ordemVisualizacao;
-    
+
     @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "produto_receita", joinColumns = @JoinColumn(name = "produto_final_id"))
     private List<ItemReceita> receita = new ArrayList<>();
@@ -38,7 +38,7 @@ public class Produto {
 
     @Column(name = "is_complemento", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
     private boolean isComplemento = false;
-    
+
     @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
     private boolean vendidoIndividualmente = false; // NOVO CAMPO
 
@@ -60,45 +60,165 @@ public class Produto {
     private List<GrupoComplemento> gruposKit = new ArrayList<>();
 
     // ... (todos os seus Getters e Setters permanecem inalterados)
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-    public String getNome() { return nome; }
-    public void setNome(String nome) { this.nome = nome; }
-    public Double getPreco() { return preco; }
-    public void setPreco(Double preco) { this.preco = preco; }
-    public String getCategoria() { return categoria; }
-    public void setCategoria(String categoria) { this.categoria = categoria; }
-    public Integer getQtdeMax() { return qtdeMax; }
-    public void setQtdeMax(Integer qtdeMax) { this.qtdeMax = qtdeMax; }
-    public String getDescricao() { return descricao; }
-    public void setDescricao(String descricao) { this.descricao = descricao; }
-    public String getImagem() { return imagem; }
-    public void setImagem(String imagem) { this.imagem = imagem; }
-    public Integer getCodPdv() { return codPdv; }
-    public void setCodPdv(Integer codPdv) { this.codPdv = codPdv; }
-    public Integer getOrdemVisualizacao() { return ordemVisualizacao; }
-    public void setOrdemVisualizacao(Integer ordemVisualizacao) { this.ordemVisualizacao = ordemVisualizacao; }
-    public List<ItemReceita> getReceita() { return receita; }
-    public void setReceita(List<ItemReceita> receita) { this.receita = receita; }
-    public java.math.BigDecimal getEstoqueAtual() { return estoqueAtual; }
-    public void setEstoqueAtual(java.math.BigDecimal estoqueAtual) { this.estoqueAtual = estoqueAtual; }
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getNome() {
+        return nome;
+    }
+
+    public void setNome(String nome) {
+        this.nome = nome;
+    }
+
+    public Double getPreco() {
+        return preco;
+    }
+
+    public void setPreco(Double preco) {
+        this.preco = preco;
+    }
+
+    public String getCategoria() {
+        return categoria;
+    }
+
+    public void setCategoria(String categoria) {
+        this.categoria = categoria;
+    }
+
+    public Integer getQtdeMax() {
+        return qtdeMax;
+    }
+
+    public void setQtdeMax(Integer qtdeMax) {
+        this.qtdeMax = qtdeMax;
+    }
+
+    public String getDescricao() {
+        return descricao;
+    }
+
+    public void setDescricao(String descricao) {
+        this.descricao = descricao;
+    }
+
+    public String getImagem() {
+        return imagem;
+    }
+
+    public void setImagem(String imagem) {
+        this.imagem = imagem;
+    }
+
+    public Integer getCodPdv() {
+        return codPdv;
+    }
+
+    public void setCodPdv(Integer codPdv) {
+        this.codPdv = codPdv;
+    }
+
+    public Integer getOrdemVisualizacao() {
+        return ordemVisualizacao;
+    }
+
+    public void setOrdemVisualizacao(Integer ordemVisualizacao) {
+        this.ordemVisualizacao = ordemVisualizacao;
+    }
+
+    public List<ItemReceita> getReceita() {
+        return receita;
+    }
+
+    public void setReceita(List<ItemReceita> receita) {
+        this.receita = receita;
+    }
+
+    public java.math.BigDecimal getEstoqueAtual() {
+        return estoqueAtual;
+    }
+
+    public void setEstoqueAtual(java.math.BigDecimal estoqueAtual) {
+        this.estoqueAtual = estoqueAtual;
+    }
+
     @JsonProperty("ativo")
-    public boolean isAtivo() { return ativo; }
-    public void setAtivo(boolean ativo) { this.ativo = ativo; }
+    public boolean isAtivo() {
+        return ativo;
+    }
+
+    public void setAtivo(boolean ativo) {
+        this.ativo = ativo;
+    }
+
     @JsonProperty("isComplemento")
-    public boolean isComplemento() { return isComplemento; }
-    public void setIsComplemento(boolean isComplemento) { this.isComplemento = isComplemento; }
+    public boolean isComplemento() {
+        return isComplemento;
+    }
+
+    public void setIsComplemento(boolean isComplemento) {
+        this.isComplemento = isComplemento;
+    }
+
     @JsonProperty("permiteComplementos")
-    public boolean isPermiteComplementos() { return permiteComplementos; }
-    public void setPermiteComplementos(boolean permiteComplementos) { this.permiteComplementos = permiteComplementos; }
-    public List<ComplementoConfig> getComplementosDisponiveis() { return complementosDisponiveis; }
-    public void setComplementosDisponiveis(List<ComplementoConfig> complementosDisponiveis) { this.complementosDisponiveis = complementosDisponiveis; }
+    public boolean isPermiteComplementos() {
+        return permiteComplementos;
+    }
+
+    public void setPermiteComplementos(boolean permiteComplementos) {
+        this.permiteComplementos = permiteComplementos;
+    }
+
+    public List<ComplementoConfig> getComplementosDisponiveis() {
+        return complementosDisponiveis;
+    }
+
+    public void setComplementosDisponiveis(List<ComplementoConfig> complementosDisponiveis) {
+        this.complementosDisponiveis = complementosDisponiveis;
+    }
+
     @JsonProperty("isMateriaPrima")
-    public boolean isMateriaPrima() { return isMateriaPrima; }
-    public void setMateriaPrima(boolean isMateriaPrima) { this.isMateriaPrima = isMateriaPrima; }
+    public boolean isMateriaPrima() {
+        return isMateriaPrima;
+    }
+
+    public void setMateriaPrima(boolean isMateriaPrima) {
+        this.isMateriaPrima = isMateriaPrima;
+    }
+
     @JsonProperty("isKit")
-    public boolean isKit() { return isKit; }
-    public void setKit(boolean kit) { isKit = kit; }
-    public List<GrupoComplemento> getGruposKit() { return gruposKit; }
-    public void setGruposKit(List<GrupoComplemento> gruposKit) { this.gruposKit = gruposKit; }
+    public boolean isKit() {
+        return isKit;
+    }
+
+    public void setKit(boolean kit) {
+        isKit = kit;
+    }
+
+    public List<GrupoComplemento> getGruposKit() {
+        return gruposKit;
+    }
+
+    public void setGruposKit(List<GrupoComplemento> gruposKit) {
+        this.gruposKit = gruposKit;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Produto produto = (Produto) o;
+        return id != null && id.equals(produto.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
 }

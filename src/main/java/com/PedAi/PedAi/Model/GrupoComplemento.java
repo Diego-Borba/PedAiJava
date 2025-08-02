@@ -45,4 +45,17 @@ public class GrupoComplemento {
     public void setOpcoes(List<OpcaoComplemento> opcoes) { this.opcoes = opcoes; }
     public Produto getProdutoKit() { return produtoKit; }
     public void setProdutoKit(Produto produtoKit) { this.produtoKit = produtoKit; }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        GrupoComplemento that = (GrupoComplemento) o;
+        return id != null && id.equals(that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
 }
