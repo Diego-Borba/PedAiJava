@@ -38,6 +38,9 @@ public class Produto {
 
     @Column(name = "is_complemento", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
     private boolean isComplemento = false;
+    
+    @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
+    private boolean vendidoIndividualmente = false; // NOVO CAMPO
 
     @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
     private boolean permiteComplementos = false;
