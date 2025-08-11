@@ -23,10 +23,42 @@ public class OpcaoComplemento {
     private GrupoComplemento grupo;
 
     // ... (seus Getters e Setters permanecem inalterados)
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-    public Produto getProduto() { return produto; }
-    public void setProduto(Produto produto) { this.produto = produto; }
-    public GrupoComplemento getGrupo() { return grupo; }
-    public void setGrupo(GrupoComplemento grupo) { this.grupo = grupo; }
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Produto getProduto() {
+        return produto;
+    }
+
+    public void setProduto(Produto produto) {
+        this.produto = produto;
+    }
+
+    public GrupoComplemento getGrupo() {
+        return grupo;
+    }
+
+    public void setGrupo(GrupoComplemento grupo) {
+        this.grupo = grupo;
+    }
+
+    // ADICIONE ESTES MÉTODOS NO FINAL DA CLASSE OPCAOCOMPLEMENTO
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        OpcaoComplemento that = (OpcaoComplemento) o;
+        return id != null && id.equals(that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
 }

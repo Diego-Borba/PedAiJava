@@ -41,6 +41,9 @@ public class Produto {
     private boolean isComplemento = false;
 
     @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
+    private boolean vendidoIndividualmente = false; // NOVO CAMPO
+
+    @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
     private boolean permiteComplementos = false;
 
     @ElementCollection(fetch = FetchType.LAZY)
@@ -57,6 +60,7 @@ public class Produto {
     @JsonManagedReference("kit-grupos")
     private List<GrupoComplemento> gruposKit = new ArrayList<>();
 
+<<<<<<< HEAD
     @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT TRUE")
     private boolean vendidoIndividualmente = true;
 
@@ -74,6 +78,9 @@ public class Produto {
         this.vendidoIndividualmente = vendidoIndividualmente;
     }
 
+=======
+    // ... (todos os seus Getters e Setters permanecem inalterados)
+>>>>>>> 619b7936e6020c55eea491fe08d7e589cba44ea8
     public Long getId() {
         return id;
     }
@@ -222,4 +229,20 @@ public class Produto {
     public void setGruposKit(List<GrupoComplemento> gruposKit) {
         this.gruposKit = gruposKit;
     }
+<<<<<<< HEAD
+=======
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Produto produto = (Produto) o;
+        return id != null && id.equals(produto.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
+>>>>>>> 619b7936e6020c55eea491fe08d7e589cba44ea8
 }

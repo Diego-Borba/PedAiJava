@@ -68,7 +68,12 @@ document.addEventListener('DOMContentLoaded', function () {
     // --- Carga Inicial e DataTable ---
     function carregarProdutos() {
         fetch('/api/produtos')
-            .then(res => res.json())
+            .then(res => {
+                if (!res.ok) {
+                    throw new Error(`Erro na rede: ${res.statusText}`);
+                }
+                return res.json();
+            })
             .then(data => {
                 todosOsProdutosParaSelecao = data; // Cache dos produtos (DTOs) para usar nos selects
                 if ($.fn.DataTable.isDataTable('#tabela-produtos')) {
@@ -78,6 +83,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         data: data,
                         columns: [
                             {
+<<<<<<< HEAD
                                 data: null, title: "Nome / Tipo",
                                 render: function (d, t, row) {
                                     let badgeColor = 'bg-primary'; // Cor padrão
@@ -94,49 +100,125 @@ document.addEventListener('DOMContentLoaded', function () {
                             {
                                 data: "estoqueAtual", title: "Estoque", render: function (d) {
                                     const estoque = d != null ? parseFloat(d).toFixed(3) : 'N/A';
-                                    const cor = estoque > 10 ? 'bg-success' : (estoque > 0 ? 'bg-warning text-dark' : 'bg-danger');
-                                    return `<span class="badge ${cor}" style="font-size: 0.9em;">${estoque}</span>`;
+=======
+                                data: null, // Usamos 'null' para poder acessar o objeto inteiro da linha (row)
+                                title: "Nome / Tipo",
+                                render: function (data, type, row) {
+                                    let tipoBadge = '';
+                                    if (row.isKit) {
+                                        tipoBadge = '<span class="badge bg-purple">Kit</span>';
+                                    } else if (row.isMateriaPrima) {
+                                        tipoBadge = '<span class="badge bg-success">Matéria-Prima</span>';
+                                    } else if (row.isComplemento) {
+                                        tipoBadge = '<span class="badge bg-info text-dark">Complemento</span>';
+                                    } else if (row.receita && row.receita.length > 0) {
+                                        tipoBadge = '<span class="badge bg-secondary">Composto</span>';
+                                    } else {
+                                        tipoBadge = '<span class="badge bg-primary">Venda Direta</span>';
+                                    }
+                                    // Adicionamos uma verificação para o nome do produto
+                                    const nomeProduto = row.nome || 'Nome não definido';
+                                    return `${nomeProduto} <br> ${tipoBadge}`;
                                 }
                             },
-                            { data: "categoria", title: "Categoria", defaultContent: "N/A" },
-                            { data: null, title: "Info Adicional", render: (d, t, row) => `CódPdv: ${row.codPdv || 'N/A'}` },
+                            { 
+                                data: "preco", 
+                                title: "Preço", 
+                                render: function(data) {
+                                    // Verifica se o preço é um número antes de formatar
+                                    return (typeof data === 'number') ? `R$ ${data.toFixed(2).replace('.', ',')}` : 'R$ 0,00';
+                                }
+                            },
+                            { 
+                                data: "estoqueAtual", 
+                                title: "Estoque", 
+                                render: function(data) {
+                                    // Verifica se o estoque não é nulo/indefinido
+                                    if (data == null) {
+                                        return `<span class="badge bg-danger">N/A</span>`;
+                                    }
+                                    const estoque = parseFloat(data);
+>>>>>>> 619b7936e6020c55eea491fe08d7e589cba44ea8
+                                    const cor = estoque > 10 ? 'bg-success' : (estoque > 0 ? 'bg-warning text-dark' : 'bg-danger');
+                                    return `<span class="badge ${cor}" style="font-size: 0.9em;">${estoque.toFixed(3).replace('.', ',')}</span>`;
+                                }
+                            },
+                            { 
+                                data: "categoria", 
+                                title: "Categoria", 
+                                // Se a categoria for nula, exibe "Sem categoria"
+                                defaultContent: "Sem categoria" 
+                            },
+                            { 
+                                data: "codPdv", 
+                                title: "Info Adicional", 
+                                render: function(data) {
+                                    return `CódPdv: ${data || 'N/A'}`;
+                                } 
+                            },
                             {
-                                data: "id", title: "Ações",
-                                render: () => `<button class="btn btn-sm btn-warning btn-editar" title="Editar"><i class="bi bi-pencil"></i></button> <button class="btn btn-sm btn-danger btn-excluir" title="Excluir"><i class="bi bi-trash"></i></button>`,
+                                data: "id", 
+                                title: "Ações",
+                                render: function(data) {
+                                    return `<button class="btn btn-sm btn-warning btn-editar" data-id="${data}" title="Editar"><i class="bi bi-pencil"></i></button>
+                                            <button class="btn btn-sm btn-danger btn-excluir" data-id="${data}" title="Excluir"><i class="bi bi-trash"></i></button>`;
+                                },
                                 orderable: false
                             }
                         ],
-                        createdRow: (row, data) => $(row).attr('data-id', data.id),
-                        language: { url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/pt-BR.json' },
+                        // CSS para uma cor de badge personalizada (para 'Kit')
+                        createdRow: (row, data, dataIndex) => {
+                            if (data.isKit) {
+                                $(row).find('.bg-purple').css({ 'background-color': '#6f42c1', 'color': 'white' });
+                            }
+                        },
+                        language: { 
+                            url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/pt-BR.json' 
+                        },
                         order: [[0, 'asc']]
                     });
                 }
-            }).catch(err => Swal.fire('Erro!', 'Não foi possível carregar os produtos.', 'error'));
+            }).catch(err => Swal.fire('Erro!', `Não foi possível carregar os produtos: ${err.message}`, 'error'));
     }
 
     // --- Event Listeners ---
     // Substitua toda a função de clique do .btn-editar por esta:
     $('#tabela-produtos tbody').on('click', '.btn-editar', function () {
+<<<<<<< HEAD
         const rowData = tabela.row($(this).closest('tr')).data();
         if (!rowData) return;
         const id = rowData.id;
+=======
+        const id = $(this).data('id');
+>>>>>>> 619b7936e6020c55eea491fe08d7e589cba44ea8
 
         // Usamos o endpoint de ID para buscar os dados COMPLETOS do produto para edição
         fetch(`/api/produtos/${id}`).then(res => res.json()).then(p => {
             $('#edit-id').val(p.id);
             $('#edit-nome').val(p.nome || '');
-            $('#edit-preco').val(p.preco || '');
+            $('#edit-preco').val(p.preco || 0);
             $('#edit-categoria').val(p.categoria || '');
             $('#edit-qtdeMax').val(p.qtdeMax || 10);
             $('#edit-codigoPdv').val(p.codPdv || '');
             $('#edit-ordemVisualizacao').val(p.ordemVisualizacao || 0);
             $('#edit-descricao').val(p.descricao || '');
             $('#edit-imagem').val(p.imagem || '');
+<<<<<<< HEAD
+=======
+
+>>>>>>> 619b7936e6020c55eea491fe08d7e589cba44ea8
 
             $('#edit-isMateriaPrima').prop('checked', p.isMateriaPrima);
             $('#edit-isComplemento').prop('checked', p.isComplemento);
             $('#edit-permiteComplementos').prop('checked', p.permiteComplementos);
             $('#edit-isKit').prop('checked', p.isKit).trigger('change');
+<<<<<<< HEAD
+=======
+            $('#edit-isMateriaPrima').prop('checked', p.isMateriaPrima);
+            $('#edit-isComplemento').prop('checked', p.isComplemento);
+            $('#edit-permiteComplementos').prop('checked', p.permiteComplementos);
+
+>>>>>>> 619b7936e6020c55eea491fe08d7e589cba44ea8
 
             // ================== LINHA ADICIONADA ==================
             // Esta linha garante que o checkbox "vendido individualmente"
@@ -193,6 +275,7 @@ document.addEventListener('DOMContentLoaded', function () {
             ordemVisualizacao: $('#edit-ordemVisualizacao').val() ? parseInt($('#edit-ordemVisualizacao').val()) : 0,
             descricao: $('#edit-descricao').val(),
             imagem: $('#edit-imagem').val(),
+<<<<<<< HEAD
             isMateriaPrima: $('#edit-isMateriaPrima').is(':checked'),
             isComplemento: $('#edit-isComplemento').is(':checked'),
             permiteComplementos: $('#edit-permiteComplementos').is(':checked'),
@@ -202,6 +285,17 @@ document.addEventListener('DOMContentLoaded', function () {
             gruposKit: gruposKit,
             receita: [], 
             complementosDisponiveis: [] 
+=======
+            ativo: true, // Assumindo que a edição mantém o produto ativo
+            isKit: $('#edit-isKit').is(':checked'),
+            isMateriaPrima: $('#edit-isMateriaPrima').is(':checked'),
+            isComplemento: $('#edit-isComplemento').is(':checked'),
+            permiteComplementos: $('#edit-permiteComplementos').is(':checked'),
+            gruposKit: gruposKit,
+            // As listas de receita e complementos simples não estão no modal de edição, então não são enviadas.
+            receita: [],
+            complementosDisponiveis: []
+>>>>>>> 619b7936e6020c55eea491fe08d7e589cba44ea8
         };
 
         fetch(`/api/produtos/${produto.id}`, {
@@ -209,14 +303,63 @@ document.addEventListener('DOMContentLoaded', function () {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(produto)
         }).then(res => {
+<<<<<<< HEAD
             if (!res.ok) {
                 return res.text().then(text => { throw new Error(text || 'Erro no servidor') });
             }
+=======
+            if (!res.ok) return res.text().then(text => { throw new Error(text || 'Erro no servidor') });
+>>>>>>> 619b7936e6020c55eea491fe08d7e589cba44ea8
             bootstrap.Modal.getInstance($('#editModal')[0]).hide();
             Swal.fire('Sucesso!', 'Produto atualizado!', 'success').then(() => carregarProdutos());
         }).catch(err => {
             Swal.fire('Erro!', `Não foi possível atualizar: ${err.message}`, 'error');
         });
     });
+<<<<<<< HEAD
+=======
+    
+    // Deleção de Produto
+    $('#tabela-produtos tbody').on('click', '.btn-excluir', function () {
+        const id = $(this).data('id');
+        const row = $(this).closest('tr');
+        const nomeProduto = tabela.row(row).data().nome;
+
+        Swal.fire({
+            title: `Tem certeza que deseja excluir "${nomeProduto}"?`,
+            text: "Esta ação não pode ser revertida!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Sim, excluir!',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch(`/api/produtos/${id}`, {
+                    method: 'DELETE'
+                }).then(res => {
+                    if (!res.ok) {
+                        throw new Error('Erro ao excluir o produto.');
+                    }
+                    Swal.fire(
+                        'Excluído!',
+                        'O produto foi removido.',
+                        'success'
+                    );
+                    carregarProdutos(); // Recarrega a tabela
+                }).catch(err => {
+                    Swal.fire(
+                        'Erro!',
+                        `Não foi possível excluir o produto. ${err.message}`,
+                        'error'
+                    );
+                });
+            }
+        });
+    });
+
+    // Carga inicial
+>>>>>>> 619b7936e6020c55eea491fe08d7e589cba44ea8
     carregarProdutos();
 });
