@@ -85,7 +85,7 @@ document.addEventListener('DOMContentLoaded', function () {
                                     if (row.tipo === 'Matéria-Prima') badgeColor = 'bg-success';
                                     if (row.tipo === 'Complemento') badgeColor = 'bg-secondary';
                                     if (row.tipo === 'Composto') badgeColor = 'bg-warning text-dark';
-                                    
+
                                     const tipoBadge = `<span class="badge ${badgeColor}">${row.tipo}</span>`;
                                     return `${row.nome || 'N/A'} ${tipoBadge}`;
                                 }
@@ -115,6 +115,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // --- Event Listeners ---
+    // Substitua toda a função de clique do .btn-editar por esta:
     $('#tabela-produtos tbody').on('click', '.btn-editar', function () {
         const rowData = tabela.row($(this).closest('tr')).data();
         if (!rowData) return;
@@ -137,6 +138,12 @@ document.addEventListener('DOMContentLoaded', function () {
             $('#edit-permiteComplementos').prop('checked', p.permiteComplementos);
             $('#edit-isKit').prop('checked', p.isKit).trigger('change');
 
+            // ================== LINHA ADICIONADA ==================
+            // Esta linha garante que o checkbox "vendido individualmente"
+            // seja marcado de acordo com o que está salvo no banco.
+            $('#edit-vendidoIndividualmente').prop('checked', p.vendidoIndividualmente);
+            // ======================================================
+
             const containerKit = $('#edit-listaGruposKit');
             containerKit.empty();
             if (p.isKit && p.gruposKit) {
@@ -147,12 +154,13 @@ document.addEventListener('DOMContentLoaded', function () {
         }).catch(err => Swal.fire('Erro!', 'Não foi possível carregar dados do produto para edição.', 'error'));
     });
 
-    $('#edit-isKit').on('change', function() {
+    $('#edit-isKit').on('change', function () {
         $('#edit-containerKit').toggle(this.checked);
     });
 
     $('#edit-btnAddGrupoKit').on('click', () => adicionarLinhaGrupoKitEdit());
 
+    // Substitua toda a função de submit do #formEditProduto por esta:
     $('#formEditProduto').on('submit', function (e) {
         e.preventDefault();
 
@@ -189,9 +197,11 @@ document.addEventListener('DOMContentLoaded', function () {
             isComplemento: $('#edit-isComplemento').is(':checked'),
             permiteComplementos: $('#edit-permiteComplementos').is(':checked'),
             isKit: $('#edit-isKit').is(':checked'),
+            vendidoIndividualmente: $('#edit-vendidoIndividualmente').is(':checked'),
+            
             gruposKit: gruposKit,
-            receita: [], // Edição de receita não implementada neste modal
-            complementosDisponiveis: [] // Edição de complementos não implementada neste modal
+            receita: [], 
+            complementosDisponiveis: [] 
         };
 
         fetch(`/api/produtos/${produto.id}`, {
@@ -208,6 +218,5 @@ document.addEventListener('DOMContentLoaded', function () {
             Swal.fire('Erro!', `Não foi possível atualizar: ${err.message}`, 'error');
         });
     });
-
     carregarProdutos();
 });

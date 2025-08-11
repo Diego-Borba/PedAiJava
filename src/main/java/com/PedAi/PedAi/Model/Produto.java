@@ -66,6 +66,10 @@ public class Produto {
         return vendidoIndividualmente;
     }
 
+    public boolean getVendidoIndividualmente(){
+        return vendidoIndividualmente;
+    }
+    
     public void setVendidoIndividualmente(boolean vendidoIndividualmente) {
         this.vendidoIndividualmente = vendidoIndividualmente;
     }

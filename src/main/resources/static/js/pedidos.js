@@ -50,7 +50,7 @@ async function carregarEProcessarProdutosAPI() {
         const response = await fetch('/api/produtos/cardapio');
         if (!response.ok) throw new Error('Falha ao carregar produtos');
         
-        // A variável `todosProdutos` agora contém TODOS os produtos ativos, incluindo os que são apenas para kits.
+        // A variável `todosProdutos` agora contém TODOS os produtos relevantes (graças à correção no backend).
         todosProdutos = (await response.json()).map(p => ({...p, id: String(p.id)}));
 
         await carregarCategoriasVisiveis();
@@ -95,18 +95,28 @@ async function carregarCategoriasVisiveis() {
     });
 }
 
+/**
+ * LÓGICA DE EXIBIÇÃO CORRETA:
+ * Esta função pega a lista COMPLETA de produtos e a filtra APENAS para
+ * a renderização dos cards na vitrine principal.
+ * A variável `todosProdutos` permanece intacta para ser usada na montagem dos kits.
+ */
 function filtrarEExibirProdutosCardapio(categoriaSelecionada) {
-    // AQUI ESTÁ A LÓGICA FINAL: Filtramos para mostrar nos "cards" apenas os produtos
-    // que estão marcados como `vendidoIndividualmente`.
-    const produtosParaCardapio = todosProdutos.filter(p => p.vendidoIndividualmente);
-    
-    let produtosFiltrados = produtosParaCardapio;
-    if (categoriaSelecionada !== 'todos') {
-        produtosFiltrados = produtosParaCardapio.filter(p => p.categoria === categoriaSelecionada);
-    }
-    produtosFiltrados.sort((a, b) => (a.ordemVisualizacao ?? Infinity) - (b.ordemVisualizacao ?? Infinity) || (a.nome || '').localeCompare(b.nome || ''));
+    // Começa com a lista completa para garantir que a montagem de kits funcione.
+    let produtosParaExibir = todosProdutos;
 
-    renderizarCardsProdutos(produtosFiltrados);
+    // FILTRO 1: Mostra nos cards apenas os produtos marcados como 'vendidoIndividualmente'.
+    produtosParaExibir = produtosParaExibir.filter(p => p.vendidoIndividualmente);
+
+    // FILTRO 2: Filtra por categoria, se uma for selecionada.
+    if (categoriaSelecionada !== 'todos') {
+        produtosParaExibir = produtosParaExibir.filter(p => p.categoria === categoriaSelecionada);
+    }
+    
+    produtosParaExibir.sort((a, b) => (a.ordemVisualizacao ?? Infinity) - (b.ordemVisualizacao ?? Infinity) || (a.nome || '').localeCompare(b.nome || ''));
+
+    // Renderiza os cards apenas com a lista filtrada para exibição.
+    renderizarCardsProdutos(produtosParaExibir);
 }
 
 function renderizarCardsProdutos(listaDeProdutos) {
@@ -156,6 +166,11 @@ function adicionarProdutoSimplesAoCarrinho(produto) {
     saveCartToStorage();
 }
 
+/**
+ * MONTAGEM DO KIT CORRETA:
+ * Esta função usa a lista `todosProdutos` (que agora está completa) para encontrar
+ * as opções do kit, resolvendo o erro.
+ */
 function abrirModalMontagemKit(produtoKit) {
     const modalElement = document.getElementById('kitModal');
     if (!modalElement) return;
@@ -165,7 +180,6 @@ function abrirModalMontagemKit(produtoKit) {
     const groupsContainer = document.getElementById('kitGroupsContainer');
     groupsContainer.innerHTML = '';
 
-    // Esta função agora funcionará, pois `todosProdutos` tem a lista completa.
     produtoKit.gruposKit.forEach((grupo, index) => {
         const grupoDiv = document.createElement('div');
         grupoDiv.className = 'p-3 border rounded mb-3 bg-light';
