@@ -5,9 +5,10 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import jakarta.persistence.*;
+
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Entity
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
@@ -17,7 +18,6 @@ public class Produto {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // ... (seus outros campos permanecem inalterados)
     private String nome;
     private Double preco;
     private String categoria;
@@ -32,23 +32,20 @@ public class Produto {
     private List<ItemReceita> receita = new ArrayList<>();
 
     @Column(nullable = false, precision = 10, scale = 3)
-    private java.math.BigDecimal estoqueAtual = java.math.BigDecimal.ZERO;
+    private BigDecimal estoqueAtual = BigDecimal.ZERO;
 
+    // Flags e configurações
     @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT TRUE")
     private boolean ativo = true;
 
     @Column(name = "is_complemento", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
     private boolean isComplemento = false;
 
-    @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
-    private boolean vendidoIndividualmente = false; // NOVO CAMPO
+    @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT TRUE")
+    private boolean vendidoIndividualmente = true;
 
     @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
     private boolean permiteComplementos = false;
-
-    @ElementCollection(fetch = FetchType.LAZY)
-    @CollectionTable(name = "produto_complemento_configs", joinColumns = @JoinColumn(name = "produto_principal_id"))
-    private List<ComplementoConfig> complementosDisponiveis = new ArrayList<>();
 
     @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
     private boolean isMateriaPrima = false;
@@ -56,31 +53,16 @@ public class Produto {
     @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
     private boolean isKit = false;
 
+    // Relacionamentos
+    @ElementCollection(fetch = FetchType.LAZY)
+    @CollectionTable(name = "produto_complemento_configs", joinColumns = @JoinColumn(name = "produto_principal_id"))
+    private List<ComplementoConfig> complementosDisponiveis = new ArrayList<>();
+
     @OneToMany(mappedBy = "produtoKit", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JsonManagedReference("kit-grupos")
     private List<GrupoComplemento> gruposKit = new ArrayList<>();
 
-<<<<<<< HEAD
-    @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT TRUE")
-    private boolean vendidoIndividualmente = true;
-
-    
-    @JsonProperty("vendidoIndividualmente")
-    public boolean isVendidoIndividualmente() {
-        return vendidoIndividualmente;
-    }
-
-    public boolean getVendidoIndividualmente(){
-        return vendidoIndividualmente;
-    }
-    
-    public void setVendidoIndividualmente(boolean vendidoIndividualmente) {
-        this.vendidoIndividualmente = vendidoIndividualmente;
-    }
-
-=======
-    // ... (todos os seus Getters e Setters permanecem inalterados)
->>>>>>> 619b7936e6020c55eea491fe08d7e589cba44ea8
+    // Getters e Setters
     public Long getId() {
         return id;
     }
@@ -161,11 +143,11 @@ public class Produto {
         this.receita = receita;
     }
 
-    public java.math.BigDecimal getEstoqueAtual() {
+    public BigDecimal getEstoqueAtual() {
         return estoqueAtual;
     }
 
-    public void setEstoqueAtual(java.math.BigDecimal estoqueAtual) {
+    public void setEstoqueAtual(BigDecimal estoqueAtual) {
         this.estoqueAtual = estoqueAtual;
     }
 
@@ -187,6 +169,15 @@ public class Produto {
         this.isComplemento = isComplemento;
     }
 
+    @JsonProperty("vendidoIndividualmente")
+    public boolean isVendidoIndividualmente() {
+        return vendidoIndividualmente;
+    }
+
+    public void setVendidoIndividualmente(boolean vendidoIndividualmente) {
+        this.vendidoIndividualmente = vendidoIndividualmente;
+    }
+
     @JsonProperty("permiteComplementos")
     public boolean isPermiteComplementos() {
         return permiteComplementos;
@@ -196,21 +187,13 @@ public class Produto {
         this.permiteComplementos = permiteComplementos;
     }
 
-    public List<ComplementoConfig> getComplementosDisponiveis() {
-        return complementosDisponiveis;
-    }
-
-    public void setComplementosDisponiveis(List<ComplementoConfig> complementosDisponiveis) {
-        this.complementosDisponiveis = complementosDisponiveis;
-    }
-
     @JsonProperty("isMateriaPrima")
     public boolean isMateriaPrima() {
         return isMateriaPrima;
     }
 
-    public void setMateriaPrima(boolean isMateriaPrima) {
-        this.isMateriaPrima = isMateriaPrima;
+    public void setMateriaPrima(boolean materiaPrima) {
+        isMateriaPrima = materiaPrima;
     }
 
     @JsonProperty("isKit")
@@ -222,6 +205,14 @@ public class Produto {
         isKit = kit;
     }
 
+    public List<ComplementoConfig> getComplementosDisponiveis() {
+        return complementosDisponiveis;
+    }
+
+    public void setComplementosDisponiveis(List<ComplementoConfig> complementosDisponiveis) {
+        this.complementosDisponiveis = complementosDisponiveis;
+    }
+
     public List<GrupoComplemento> getGruposKit() {
         return gruposKit;
     }
@@ -229,20 +220,4 @@ public class Produto {
     public void setGruposKit(List<GrupoComplemento> gruposKit) {
         this.gruposKit = gruposKit;
     }
-<<<<<<< HEAD
-=======
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Produto produto = (Produto) o;
-        return id != null && id.equals(produto.id);
-    }
-
-    @Override
-    public int hashCode() {
-        return getClass().hashCode();
-    }
->>>>>>> 619b7936e6020c55eea491fe08d7e589cba44ea8
 }
