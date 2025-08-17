@@ -75,8 +75,7 @@ async function carregarCategoriasVisiveis() {
     container.innerHTML = '';
 
     const produtosParaCategorias = todosProdutos.filter(p => p.vendidoIndividualmente);
-    const categoriasUnicas = [...new Set(produtosParaCategorias.map(p => p.categoria).filter(Boolean))];
-    categoriasUnicas.sort();
+    const categoriasUnicas = [...new Set(produtosParaCategorias.map(p => p.categoria).filter(Boolean))].sort();
 
     const todosBtn = document.createElement('button');
     todosBtn.className = 'btn active';
@@ -125,10 +124,16 @@ function renderizarCardsProdutos(listaDeProdutos) {
     listaDeProdutos.forEach(produto => {
         const cardWrapper = document.createElement('div');
         cardWrapper.className = 'col-12 col-sm-6 col-md-4 col-lg-3 mb-4';
+
+        let imagemSrc = PLACEHOLDER_IMAGE;
+        if (produto.imagem && produto.imagemTipo) {
+            imagemSrc = `data:${produto.imagemTipo};base64,${produto.imagem}`;
+        }
+
         cardWrapper.innerHTML = `
             <div class="produto-card h-100">
                 <div class="card-img-top-wrapper">
-                    <img src="${produto.imagem || PLACEHOLDER_IMAGE}" class="card-img-top" alt="${produto.nome || ''}">
+                    <img src="${imagemSrc}" class="card-img-top" alt="${produto.nome || ''}">
                 </div>
                 <div class="card-body d-flex flex-column">
                     <h5 class="card-title">${produto.nome || 'Nome Indefinido'}</h5>
@@ -233,7 +238,6 @@ function criarInputOpcao(produtoOpcao, grupo, groupIndex) {
         `;
         const input = div.querySelector('.kit-qty-input');
 
-        // Listener para os botões de + e -
         div.querySelectorAll('.kit-qty-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 let val = parseInt(input.value) || 0;
@@ -248,16 +252,12 @@ function criarInputOpcao(produtoOpcao, grupo, groupIndex) {
             });
         });
 
-        // --- NOVA LÓGICA ---
-        // Listener para quando o usuário digita no campo
         input.addEventListener('input', () => {
             let valorDigitado = parseInt(input.value) || 0;
-
-            if (valorDigitado < 0) { // Garante que não seja negativo
+            if (valorDigitado < 0) {
                 valorDigitado = 0;
             }
 
-            // Calcula o total dos OUTROS campos no mesmo grupo
             let totalOutrosCampos = 0;
             document.querySelectorAll(`input[data-group-index="${groupIndex}"]`).forEach(outroInput => {
                 if (outroInput !== input) {
@@ -265,15 +265,11 @@ function criarInputOpcao(produtoOpcao, grupo, groupIndex) {
                 }
             });
 
-            // Calcula o valor máximo que este campo pode assumir
             const maxPermitidoParaEsteCampo = grupo.quantidadeMaxima - totalOutrosCampos;
-
             if (valorDigitado > maxPermitidoParaEsteCampo) {
                 valorDigitado = maxPermitidoParaEsteCampo;
             }
-            
-            input.value = valorDigitado; // Atualiza o campo com o valor corrigido
-
+            input.value = valorDigitado;
             atualizarContadorGrupo(groupIndex, grupo.quantidadeMaxima);
         });
     }
@@ -304,7 +300,7 @@ function coletarEscolhasDoKit(produtoKit) {
             } else {
                 dados[grupo.nome] = [{ produtoId: checked.value, quantidade: 1 }];
             }
-        } else { // QUANTIDADE_TOTAL
+        } else {
             const opcoes = [];
             let total = 0;
             document.querySelectorAll(`input[data-group-index="${index}"]`).forEach(input => {
@@ -318,8 +314,7 @@ function coletarEscolhasDoKit(produtoKit) {
             } else if (opcoes.length === 0) {
                 Swal.fire('Atenção', `Você deve escolher os itens para "${grupo.nome}".`, 'warning');
                 valido = false;
-            }
-            else {
+            } else {
                 dados[grupo.nome] = opcoes;
             }
         }
@@ -334,7 +329,6 @@ function adicionarKitAoCarrinho(produtoKit, escolhas) {
     saveCartToStorage();
 }
 
-// --- INICIALIZAÇÃO ---
 document.addEventListener('DOMContentLoaded', () => {
     cart = getCartFromStorage();
     updateCartCountNavbar();

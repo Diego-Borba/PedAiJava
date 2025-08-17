@@ -1,7 +1,8 @@
-// Caminho: src/main/java/com/PedAi/PedAi/Controller/ProdutoController.java
+// src/main/java/com/PedAi/PedAi/Controller/ProdutoController.java
 package com.PedAi.PedAi.Controller;
 
 import com.PedAi.PedAi.Model.Produto;
+import com.PedAi.PedAi.DTO.ImagemDTO;
 import com.PedAi.PedAi.DTO.ProdutoListDTO;
 import com.PedAi.PedAi.DTO.ProdutoCardapioDTO;
 import com.PedAi.PedAi.repository.ProdutoRepository;
@@ -10,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -21,6 +23,7 @@ public class ProdutoController {
     @Autowired
     private ProdutoRepository repository;
 
+    // ... (Os métodos GET permanecem os mesmos que já corrigimos)
     @GetMapping
     @Transactional(readOnly = true)
     public List<ProdutoListDTO> getAll() {
@@ -28,27 +31,16 @@ public class ProdutoController {
                 .map(ProdutoListDTO::new)
                 .collect(Collectors.toList());
     }
-
-    /**
-     * MÉTODO CORRIGIDO PARA EVITAR O ERRO MultipleBagFetchException.
-     * A lógica agora busca os produtos em etapas para carregar corretamente as coleções aninhadas dos Kits.
-     */
+    
     @GetMapping("/cardapio")
     @Transactional(readOnly = true)
     public List<ProdutoCardapioDTO> getProdutosParaCardapio() {
-        // 1. Busca todos os produtos do cardápio, incluindo os kits (mas sem as opções dos kits totalmente carregadas).
         List<Produto> produtos = repository.findProdutosForCardapio();
-
-        // 2. Itera sobre os produtos. Se um produto for um kit, fazemos um carregamento explícito
-        //    das suas opções para garantir que todos os dados necessários sejam enviados ao frontend.
-        //    O @Transactional garante que a sessão do Hibernate permaneça aberta para isso.
         for (Produto p : produtos) {
             if (p.isKit()) {
-                p.getGruposKit().forEach(grupo -> grupo.getOpcoes().size()); // Força o carregamento das opções
+                p.getGruposKit().forEach(grupo -> grupo.getOpcoes().size()); 
             }
         }
-
-        // 3. Mapeia a lista completa e corrigida para DTOs.
         return produtos.stream()
                 .map(ProdutoCardapioDTO::new)
                 .collect(Collectors.toList());
@@ -60,16 +52,18 @@ public class ProdutoController {
         return repository.findById(id)
                 .map(produto -> {
                     if (produto.isKit()) {
-                        produto.getGruposKit().forEach(grupo -> grupo.getOpcoes().size()); // Força o carregamento
+                        produto.getGruposKit().forEach(grupo -> grupo.getOpcoes().size());
                     }
                     return ResponseEntity.ok(produto);
                 })
                 .orElse(ResponseEntity.notFound().build());
     }
 
+
     @PostMapping
     @Transactional
     public ResponseEntity<?> create(@RequestBody Produto produto) {
+        // A imagem não é mais tratada aqui, apenas os dados do produto
         if (produto.getNome() == null || produto.getNome().trim().isEmpty()) {
             return ResponseEntity.badRequest().body("O nome do produto é obrigatório.");
         }
@@ -92,18 +86,44 @@ public class ProdutoController {
         }
     }
 
+    // --- NOVO ENDPOINT PARA UPLOAD DE IMAGEM ---
+    @PostMapping("/{id}/imagem")
+    @Transactional
+    public ResponseEntity<?> uploadImagem(@PathVariable Long id, @RequestBody ImagemDTO imagemDTO) {
+        if (imagemDTO.getImagemBase64() == null || imagemDTO.getImagemTipo() == null) {
+            return ResponseEntity.badRequest().body("Dados da imagem inválidos.");
+        }
+
+        return repository.findById(id).map(produto -> {
+            try {
+                // Remove o prefixo "data:image/jpeg;base64," se ele existir
+                String base64Data = imagemDTO.getImagemBase64().substring(imagemDTO.getImagemBase64().indexOf(",") + 1);
+                byte[] imagemBytes = Base64.getDecoder().decode(base64Data);
+                
+                produto.setImagemDados(imagemBytes);
+                produto.setImagemTipo(imagemDTO.getImagemTipo());
+                repository.save(produto);
+                return ResponseEntity.ok().body(java.util.Map.of("message", "Imagem salva com sucesso."));
+            } catch (IllegalArgumentException e) {
+                return ResponseEntity.badRequest().body("Formato de imagem Base64 inválido.");
+            }
+        }).orElse(ResponseEntity.notFound().build());
+    }
+
+
     @PutMapping("/{id}")
     @Transactional
     public ResponseEntity<?> update(@PathVariable Long id, @RequestBody Produto produtoDetails) {
+        // A imagem não é mais tratada aqui
         return repository.findById(id).map(produtoExistente -> {
             produtoExistente.setNome(produtoDetails.getNome());
+            // ... (copiar todos os outros campos como estava antes, exceto a imagem)
             produtoExistente.setPreco(produtoDetails.getPreco());
             produtoExistente.setCategoria(produtoDetails.getCategoria());
             produtoExistente.setQtdeMax(produtoDetails.getQtdeMax());
             produtoExistente.setCodPdv(produtoDetails.getCodPdv());
             produtoExistente.setDescricao(produtoDetails.getDescricao());
             produtoExistente.setOrdemVisualizacao(produtoDetails.getOrdemVisualizacao());
-            produtoExistente.setImagem(produtoDetails.getImagem());
             produtoExistente.setMateriaPrima(produtoDetails.isMateriaPrima());
             produtoExistente.setIsComplemento(produtoDetails.isComplemento());
             produtoExistente.setPermiteComplementos(produtoDetails.isPermiteComplementos());
@@ -114,6 +134,7 @@ public class ProdutoController {
             if (produtoDetails.isKit() && produtoDetails.getGruposKit() != null) {
                 produtoDetails.getGruposKit().forEach(grupoNovo -> {
                     grupoNovo.setProdutoKit(produtoExistente);
+                    // ... (lógica dos grupos e opções como estava antes)
                     grupoNovo.getOpcoes().forEach(opcaoNova -> {
                         opcaoNova.setGrupo(grupoNovo);
                         if (opcaoNova.getProduto() != null && opcaoNova.getProduto().getId() != null) {
