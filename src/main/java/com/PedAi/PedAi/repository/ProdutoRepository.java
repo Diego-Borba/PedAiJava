@@ -8,10 +8,10 @@ import com.PedAi.PedAi.Model.Produto;
 
 public interface ProdutoRepository extends JpaRepository<Produto, Long> {
 
-    @Query("SELECT DISTINCT p FROM Produto p LEFT JOIN FETCH p.receita ORDER BY p.nome ASC")
+    @Query("SELECT DISTINCT p FROM Produto p ORDER BY p.nome ASC")
     List<Produto> findAllForAdminList();
 
-    @Query("SELECT DISTINCT p FROM Produto p LEFT JOIN FETCH p.gruposKit gk LEFT JOIN FETCH gk.opcoes WHERE p.ativo = true AND p.isMateriaPrima = false")
+    @Query("SELECT DISTINCT p FROM Produto p LEFT JOIN FETCH p.gruposKit WHERE p.ativo = true AND p.vendidoIndividualmente = true")
     List<Produto> findProdutosForCardapio();
 
     @Query("SELECT DISTINCT p.categoria FROM Produto p WHERE p.categoria IS NOT NULL AND p.categoria != '' ORDER BY p.categoria ASC")

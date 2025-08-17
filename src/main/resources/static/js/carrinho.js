@@ -182,24 +182,121 @@ function updateFinalizeButtonState() {
 async function handleRegister() {
     const { value: formValues, isConfirmed } = await Swal.fire({
         title: 'Cadastro Rápido',
+        // --- MELHORIA 1: Aumenta a largura do modal e reorganiza o HTML com Bootstrap Grid ---
+        width: '800px',
         html: `
-            <input id="swal-nome" class="swal2-input" placeholder="Nome Completo" required>
-            <input id="swal-email" type="email" class="swal2-input" placeholder="E-mail" required>
-            <input id="swal-senha" type="password" class="swal2-input" placeholder="Senha" required>
-            <input id="swal-telefone" type="tel" class="swal2-input" placeholder="Telefone / WhatsApp" required>
-            <hr>
-            <input id="swal-cep" class="swal2-input" placeholder="CEP">
-            <input id="swal-logradouro" class="swal2-input" placeholder="Rua / Avenida">
-            <input id="swal-numero" class="swal2-input" placeholder="Número">
-            <input id="swal-bairro" class="swal2-input" placeholder="Bairro">
-            <input id="swal-cidade" class="swal2-input" placeholder="Cidade">
-            <input id="swal-estado" class="swal2-input" placeholder="Estado (UF)">
-            <input id="swal-complemento" class="swal2-input" placeholder="Complemento (opcional)">
+            <style>
+              .swal2-html-container { overflow: visible !important; }
+              .swal-label { text-align: left !important; font-size: 0.9rem; margin-bottom: 0.2rem; }
+              #cep-status { font-size: 0.8rem; height: 1.2rem; }
+            </style>
+            <div class="container-fluid">
+              <h6 class="text-start">Dados Pessoais</h6>
+              <hr class="mt-1">
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <p class="swal-label">Nome Completo</p>
+                  <input id="swal-nome" class="form-control" placeholder="Nome Completo" required>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <p class="swal-label">E-mail</p>
+                  <input id="swal-email" type="email" class="form-control" placeholder="E-mail" required>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <p class="swal-label">Senha</p>
+                  <input id="swal-senha" type="password" class="form-control" placeholder="Senha" required>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <p class="swal-label">Telefone / WhatsApp</p>
+                  <input id="swal-telefone" type="tel" class="form-control" placeholder="Telefone / WhatsApp" required>
+                </div>
+              </div>
+
+              <h6 class="text-start mt-3">Endereço de Entrega</h6>
+              <hr class="mt-1">
+              <div class="row">
+                <div class="col-md-4 mb-3">
+                  <p class="swal-label">CEP</p>
+                  <input id="swal-cep" class="form-control" placeholder="Apenas números">
+                  <div id="cep-status" class="text-muted mt-1"></div>
+                </div>
+                <div class="col-md-8 mb-3">
+                  <p class="swal-label">Rua / Avenida</p>
+                  <input id="swal-logradouro" class="form-control" placeholder="Rua / Avenida">
+                </div>
+                 <div class="col-md-4 mb-3">
+                  <p class="swal-label">Número</p>
+                  <input id="swal-numero" class="form-control" placeholder="Número">
+                </div>
+                <div class="col-md-8 mb-3">
+                  <p class="swal-label">Bairro</p>
+                  <input id="swal-bairro" class="form-control" placeholder="Bairro">
+                </div>
+                <div class="col-md-6 mb-3">
+                  <p class="swal-label">Cidade</p>
+                  <input id="swal-cidade" class="form-control" placeholder="Cidade">
+                </div>
+                <div class="col-md-6 mb-3">
+                  <p class="swal-label">Estado (UF)</p>
+                  <input id="swal-estado" class="form-control" placeholder="Estado (UF)">
+                </div>
+                 <div class="col-12">
+                  <p class="swal-label">Complemento (opcional)</p>
+                  <input id="swal-complemento" class="form-control" placeholder="Apto, Bloco, etc.">
+                </div>
+              </div>
+            </div>
         `,
         focusConfirm: false,
         showCancelButton: true,
         confirmButtonText: 'Cadastrar e Entrar',
         cancelButtonText: 'Cancelar',
+        // --- MELHORIA 2: Lógica para buscar o CEP ---
+        didOpen: () => {
+            const cepInput = document.getElementById('swal-cep');
+            const statusDiv = document.getElementById('cep-status');
+
+            const logradouroInput = document.getElementById('swal-logradouro');
+            const bairroInput = document.getElementById('swal-bairro');
+            const cidadeInput = document.getElementById('swal-cidade');
+            const estadoInput = document.getElementById('swal-estado');
+            const numeroInput = document.getElementById('swal-numero');
+
+            cepInput.addEventListener('blur', async (e) => {
+                const cep = e.target.value.replace(/\D/g, ''); // Remove tudo que não for número
+                if (cep.length !== 8) {
+                    statusDiv.textContent = '';
+                    return;
+                }
+
+                statusDiv.textContent = 'Buscando...';
+                try {
+                    const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+                    if (!response.ok) throw new Error('CEP não encontrado.');
+                    
+                    const data = await response.json();
+                    if (data.erro) {
+                        throw new Error('CEP inválido.');
+                    }
+
+                    logradouroInput.value = data.logradouro;
+                    bairroInput.value = data.bairro;
+                    cidadeInput.value = data.localidade;
+                    estadoInput.value = data.uf;
+
+                    statusDiv.textContent = 'Endereço encontrado!';
+                    statusDiv.classList.remove('text-danger');
+                    statusDiv.classList.add('text-success');
+                    
+                    numeroInput.focus(); // Foca no campo de número após preencher o endereço
+
+                } catch (error) {
+                    statusDiv.textContent = error.message;
+                    statusDiv.classList.remove('text-success');
+                    statusDiv.classList.add('text-danger');
+                }
+            });
+        },
         preConfirm: () => {
             return {
                 nome: document.getElementById('swal-nome').value,
@@ -221,22 +318,30 @@ async function handleRegister() {
 
     if (isConfirmed && formValues) {
         try {
+            // Validação simples
+            if(!formValues.nome || !formValues.email || !formValues.senha) {
+                throw new Error('Nome, e-mail e senha são obrigatórios.');
+            }
             const response = await fetch('/api/clientes/cadastro', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formValues)
             });
-            if (!response.ok) throw new Error('Falha no cadastro.');
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Falha no cadastro.');
+            }
             const customer = await response.json();
             loggedInCustomerData = customer;
             saveCustomerToStorageCarrinho(customer);
             Swal.fire('Sucesso!', 'Cadastro realizado e login efetuado!', 'success');
             updateCustomerUI();
         } catch (error) {
-            Swal.fire('Erro!', 'Não foi possível realizar o cadastro.', 'error');
+            Swal.fire('Erro!', `Não foi possível realizar o cadastro: ${error.message}`, 'error');
         }
     }
 }
+
 
 async function handleLogin() {
     const { value: formValues } = await Swal.fire({
@@ -293,15 +398,12 @@ async function finalizeOrder() {
     for (const cartId in cartData) {
         const item = cartData[cartId];
         
-        // 1. Adiciona o item principal (seja um produto simples ou um kit)
         pedidoItensPayload.push({
             produtoId: parseInt(item.id),
             quantidade: item.qtde,
             precoUnitario: item.preco
         });
 
-        // 2. Se for um kit, adiciona suas opções como itens separados com preço 0
-        // A baixa de estoque será feita pelo backend com base nesses itens.
         if (item.type === 'kit' && item.escolhas) {
             for (const nomeGrupo in item.escolhas) {
                 item.escolhas[nomeGrupo].forEach(opcao => {
@@ -309,10 +411,7 @@ async function finalizeOrder() {
                     if (produtoOpcao) {
                          pedidoItensPayload.push({
                             produtoId: parseInt(opcao.produtoId),
-                            // Multiplica a quantidade da opção pela quantidade de kits pedidos
                             quantidade: opcao.quantidade * item.qtde,
-                            // O preço unitário aqui é 0, pois o valor já está no preço do Kit principal.
-                            // O backend usará isso para saber que é um sub-item.
                             precoUnitario: 0 
                         });
                     }
@@ -331,15 +430,23 @@ async function finalizeOrder() {
     Swal.fire({ title: 'Confirmando seu pedido...', text: 'Aguarde um momento.', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
     
     try {
-        const response = await axios.post('/api/pedidos', payload);
-        Swal.fire('Pedido Enviado!', `Seu pedido nº ${response.data.id} foi registrado com sucesso!`, 'success').then(() => {
+        const response = await fetch('/api/pedidos', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(payload)
+        });
+        if(!response.ok) {
+            const err = await response.json();
+            throw new Error(err.message || 'Erro desconhecido');
+        }
+        const data = await response.json();
+        Swal.fire('Pedido Enviado!', `Seu pedido nº ${data.id} foi registrado com sucesso!`, 'success').then(() => {
             cartData = {};
             saveCartToStorageCarrinho();
             window.location.href = 'meus-pedidos.html';
         });
     } catch (err) {
-        const errorMsg = err.response?.data?.message || err.message || 'Ocorreu um erro desconhecido.';
-        Swal.fire('Ops! Algo deu errado', `Não foi possível registrar seu pedido: ${errorMsg}`, 'error');
+        Swal.fire('Ops! Algo deu errado', `Não foi possível registrar seu pedido: ${err.message}`, 'error');
     }
 }
 

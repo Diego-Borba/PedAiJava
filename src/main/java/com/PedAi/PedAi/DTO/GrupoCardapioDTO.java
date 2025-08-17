@@ -19,6 +19,7 @@ public class GrupoCardapioDTO {
         this.tipoSelecao = grupo.getTipoSelecao();
         this.quantidadeMaxima = grupo.getQuantidadeMaxima();
         this.opcoes = grupo.getOpcoes().stream()
+                            .filter(opcao -> opcao.getProduto() != null) // Garante que o produto da opção não é nulo
                             .map(OpcaoCardapioDTO::new)
                             .collect(Collectors.toList());
     }

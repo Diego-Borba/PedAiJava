@@ -1,8 +1,6 @@
 // Caminho: src/main/java/com/PedAi/PedAi/Controller/ProdutoController.java
 package com.PedAi.PedAi.Controller;
 
-import com.PedAi.PedAi.Model.GrupoComplemento;
-import com.PedAi.PedAi.Model.OpcaoComplemento;
 import com.PedAi.PedAi.Model.Produto;
 import com.PedAi.PedAi.DTO.ProdutoListDTO;
 import com.PedAi.PedAi.DTO.ProdutoCardapioDTO;
@@ -31,10 +29,27 @@ public class ProdutoController {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * MÉTODO CORRIGIDO PARA EVITAR O ERRO MultipleBagFetchException.
+     * A lógica agora busca os produtos em etapas para carregar corretamente as coleções aninhadas dos Kits.
+     */
     @GetMapping("/cardapio")
     @Transactional(readOnly = true)
     public List<ProdutoCardapioDTO> getProdutosParaCardapio() {
-        return repository.findProdutosForCardapio().stream()
+        // 1. Busca todos os produtos do cardápio, incluindo os kits (mas sem as opções dos kits totalmente carregadas).
+        List<Produto> produtos = repository.findProdutosForCardapio();
+
+        // 2. Itera sobre os produtos. Se um produto for um kit, fazemos um carregamento explícito
+        //    das suas opções para garantir que todos os dados necessários sejam enviados ao frontend.
+        //    O @Transactional garante que a sessão do Hibernate permaneça aberta para isso.
+        for (Produto p : produtos) {
+            if (p.isKit()) {
+                p.getGruposKit().forEach(grupo -> grupo.getOpcoes().size()); // Força o carregamento das opções
+            }
+        }
+
+        // 3. Mapeia a lista completa e corrigida para DTOs.
+        return produtos.stream()
                 .map(ProdutoCardapioDTO::new)
                 .collect(Collectors.toList());
     }
@@ -42,15 +57,14 @@ public class ProdutoController {
     @GetMapping("/{id}")
     @Transactional(readOnly = true)
     public ResponseEntity<Produto> getById(@PathVariable Long id) {
-        Optional<Produto> produtoOpt = repository.findById(id);
-        if (produtoOpt.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-        Produto produto = produtoOpt.get();
-        if (produto.isKit()) {
-            produto.getGruposKit().forEach(grupo -> grupo.getOpcoes().size());
-        }
-        return ResponseEntity.ok(produto);
+        return repository.findById(id)
+                .map(produto -> {
+                    if (produto.isKit()) {
+                        produto.getGruposKit().forEach(grupo -> grupo.getOpcoes().size()); // Força o carregamento
+                    }
+                    return ResponseEntity.ok(produto);
+                })
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping

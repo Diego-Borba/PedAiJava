@@ -1,4 +1,4 @@
-// Caminho do arquivo: src/main/resources/static/js/pedidos.js
+// src/main/resources/static/js/pedidos.js
 let todosProdutos = [];
 let cart = {};
 
@@ -55,8 +55,7 @@ async function carregarEProcessarProdutosAPI() {
         if (!response.ok) {
             throw new Error('Falha ao carregar produtos do servidor.');
         }
-        // Converte todos os produtos para o formato esperado pelo frontend
-        todosProdutos = (await response.json()).map(p => ({...p, id: String(p.id)}));
+        todosProdutos = await response.json();
         
         await carregarCategoriasVisiveis();
         filtrarEExibirProdutosCardapio('todos');
@@ -124,24 +123,24 @@ function renderizarCardsProdutos(listaDeProdutos) {
     }
 
     listaDeProdutos.forEach(produto => {
-        const card = document.createElement('div');
-        card.className = 'col-12 col-sm-6 col-md-4 col-lg-3 mb-4';
-        card.innerHTML = `
-            <div class="produto-card">
-                <div class="produto-card .card-img-top-wrapper">
-                    <img src="${produto.imagem || PLACEHOLDER_IMAGE}" class="card-img-top" alt="${produto.nome}">
+        const cardWrapper = document.createElement('div');
+        cardWrapper.className = 'col-12 col-sm-6 col-md-4 col-lg-3 mb-4';
+        cardWrapper.innerHTML = `
+            <div class="produto-card h-100">
+                <div class="card-img-top-wrapper">
+                    <img src="${produto.imagem || PLACEHOLDER_IMAGE}" class="card-img-top" alt="${produto.nome || ''}">
                 </div>
-                <div class="card-body">
+                <div class="card-body d-flex flex-column">
                     <h5 class="card-title">${produto.nome || 'Nome Indefinido'}</h5>
-                    <p class="card-text descricao">${produto.descricao || ''}</p>
-                    <p class="preco">R$ ${(produto.preco || 0).toFixed(2)}</p>
-                    <button class="btn btn-add-carrinho w-100">
+                    <p class="card-text descricao flex-grow-1">${produto.descricao || ''}</p>
+                    <p class="preco">R$ ${(produto.preco || 0).toFixed(2).replace('.', ',')}</p>
+                    <button class="btn btn-add-carrinho w-100 mt-auto">
                         <i class="bi bi-cart-plus"></i> Adicionar
                     </button>
                 </div>
             </div>`;
-        card.querySelector('.btn-add-carrinho').addEventListener('click', () => handleProdutoClick(produto));
-        container.appendChild(card);
+        cardWrapper.querySelector('.btn-add-carrinho').addEventListener('click', () => handleProdutoClick(produto));
+        container.appendChild(cardWrapper);
     });
 }
 
@@ -166,32 +165,38 @@ function adicionarProdutoSimplesAoCarrinho(produto) {
 
 function abrirModalMontagemKit(produtoKit) {
     const modalElement = document.getElementById('kitModal');
-    if (!modalElement) return;
-    const modal = new bootstrap.Modal(modalElement);
+    if (!modalElement) {
+        console.error('Elemento do modal #kitModal não encontrado!');
+        return;
+    }
+    const modal = bootstrap.Modal.getOrCreateInstance(modalElement);
 
     document.getElementById('kitProductNameModal').textContent = produtoKit.nome;
     const groupsContainer = document.getElementById('kitGroupsContainer');
-    groupsContainer.innerHTML = '';
+    groupsContainer.innerHTML = ''; 
 
-    produtoKit.gruposKit.forEach((grupo, index) => {
-        const grupoDiv = document.createElement('div');
-        grupoDiv.className = 'p-3 border rounded mb-3';
-        grupoDiv.innerHTML = `
-            <h5>${grupo.nome.toUpperCase()}</h5>
-            <p class="text-muted small">${grupo.tipoSelecao === 'ESCOLHA_UNICA' ? 'Escolha 1 opção.' : `Escolha exatamente ${grupo.quantidadeMaxima} itens.`}</p>
-            <div id="group-options-${index}" class="list-group"></div>
-            ${grupo.tipoSelecao === 'QUANTIDADE_TOTAL' ? `<div class="text-end fw-bold mt-2" id="group-counter-${index}">0 / ${grupo.quantidadeMaxima}</div>` : ''}
-        `;
-        groupsContainer.appendChild(grupoDiv);
+    if (produtoKit.gruposKit && produtoKit.gruposKit.length > 0) {
+        produtoKit.gruposKit.forEach((grupo, index) => {
+            const grupoDiv = document.createElement('div');
+            grupoDiv.className = 'p-3 border rounded mb-3';
+            grupoDiv.innerHTML = `
+                <h5>${grupo.nome.toUpperCase()}</h5>
+                <p class="text-muted small">${grupo.tipoSelecao === 'ESCOLHA_UNICA' ? 'Escolha 1 opção.' : `Escolha exatamente ${grupo.quantidadeMaxima} itens.`}</p>
+                <div id="group-options-${index}" class="list-group"></div>
+                ${grupo.tipoSelecao === 'QUANTIDADE_TOTAL' ? `<div class="text-end fw-bold mt-2" id="group-counter-${index}">0 / ${grupo.quantidadeMaxima}</div>` : ''}
+            `;
+            groupsContainer.appendChild(grupoDiv);
 
-        const optionsContainer = document.getElementById(`group-options-${index}`);
-        grupo.opcoes.forEach(opcao => {
-            const produtoOpcaoCompleto = todosProdutos.find(p => p.id === String(opcao.produto.id));
-            if (produtoOpcaoCompleto) {
-                optionsContainer.appendChild(criarInputOpcao(produtoOpcaoCompleto, grupo, index));
+            const optionsContainer = document.getElementById(`group-options-${index}`);
+            if (grupo.opcoes) {
+                grupo.opcoes.forEach(opcao => {
+                    if (opcao.produto) {
+                        optionsContainer.appendChild(criarInputOpcao(opcao.produto, grupo, index));
+                    }
+                });
             }
         });
-    });
+    }
 
     const btnConfirmar = document.getElementById('btnConfirmarKit');
     const novoBtn = btnConfirmar.cloneNode(true);
@@ -207,6 +212,7 @@ function abrirModalMontagemKit(produtoKit) {
     modal.show();
 }
 
+
 function criarInputOpcao(produtoOpcao, grupo, groupIndex) {
     const div = document.createElement('div');
     if (grupo.tipoSelecao === 'ESCOLHA_UNICA') {
@@ -221,11 +227,13 @@ function criarInputOpcao(produtoOpcao, grupo, groupIndex) {
             <span>${produtoOpcao.nome}</span>
             <div class="d-flex align-items-center">
                 <button type="button" class="btn btn-outline-secondary btn-sm kit-qty-btn" data-action="decrease">-</button>
-                <input type="number" class="form-control form-control-sm text-center mx-1 kit-qty-input" data-group-index="${groupIndex}" data-prod-id="${produtoOpcao.id}" value="0" min="0" max="${grupo.quantidadeMaxima}" style="width: 55px;" readonly>
+                <input type="number" class="form-control form-control-sm text-center mx-1 kit-qty-input" data-group-index="${groupIndex}" data-prod-id="${produtoOpcao.id}" value="0" min="0" max="${grupo.quantidadeMaxima}" style="width: 55px;">
                 <button type="button" class="btn btn-outline-secondary btn-sm kit-qty-btn" data-action="increase">+</button>
             </div>
         `;
-        const input = div.querySelector('input');
+        const input = div.querySelector('.kit-qty-input');
+
+        // Listener para os botões de + e -
         div.querySelectorAll('.kit-qty-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 let val = parseInt(input.value) || 0;
@@ -238,6 +246,35 @@ function criarInputOpcao(produtoOpcao, grupo, groupIndex) {
                 }
                 atualizarContadorGrupo(groupIndex, grupo.quantidadeMaxima);
             });
+        });
+
+        // --- NOVA LÓGICA ---
+        // Listener para quando o usuário digita no campo
+        input.addEventListener('input', () => {
+            let valorDigitado = parseInt(input.value) || 0;
+
+            if (valorDigitado < 0) { // Garante que não seja negativo
+                valorDigitado = 0;
+            }
+
+            // Calcula o total dos OUTROS campos no mesmo grupo
+            let totalOutrosCampos = 0;
+            document.querySelectorAll(`input[data-group-index="${groupIndex}"]`).forEach(outroInput => {
+                if (outroInput !== input) {
+                    totalOutrosCampos += parseInt(outroInput.value) || 0;
+                }
+            });
+
+            // Calcula o valor máximo que este campo pode assumir
+            const maxPermitidoParaEsteCampo = grupo.quantidadeMaxima - totalOutrosCampos;
+
+            if (valorDigitado > maxPermitidoParaEsteCampo) {
+                valorDigitado = maxPermitidoParaEsteCampo;
+            }
+            
+            input.value = valorDigitado; // Atualiza o campo com o valor corrigido
+
+            atualizarContadorGrupo(groupIndex, grupo.quantidadeMaxima);
         });
     }
     return div;
@@ -278,7 +315,11 @@ function coletarEscolhasDoKit(produtoKit) {
             if (total !== grupo.quantidadeMaxima) {
                 Swal.fire('Atenção', `A soma das quantidades para "${grupo.nome}" deve ser exatamente ${grupo.quantidadeMaxima}. Você selecionou ${total}.`, 'warning');
                 valido = false;
-            } else {
+            } else if (opcoes.length === 0) {
+                Swal.fire('Atenção', `Você deve escolher os itens para "${grupo.nome}".`, 'warning');
+                valido = false;
+            }
+            else {
                 dados[grupo.nome] = opcoes;
             }
         }

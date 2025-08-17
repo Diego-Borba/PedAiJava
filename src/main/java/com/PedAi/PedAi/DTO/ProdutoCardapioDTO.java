@@ -1,6 +1,7 @@
 package com.PedAi.PedAi.DTO;
 
 import com.PedAi.PedAi.Model.Produto;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -38,14 +39,17 @@ public class ProdutoCardapioDTO {
         }
     }
 
-    // Getters
+    
     public Long getId() { return id; }
     public String getNome() { return nome; }
     public Double getPreco() { return preco; }
     public String getDescricao() { return descricao; }
     public String getImagem() { return imagem; }
     public String getCategoria() { return categoria; }
-    public boolean isKit() { return isKit; }
+    
+    @JsonProperty("isKit")
+    public boolean isKit() { return isKit; } 
+
     public Integer getOrdemVisualizacao() { return ordemVisualizacao; }
     public boolean isVendidoIndividualmente() { return vendidoIndividualmente; }
     public List<GrupoCardapioDTO> getGruposKit() { return gruposKit; }

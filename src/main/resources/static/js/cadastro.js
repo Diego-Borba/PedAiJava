@@ -1,3 +1,4 @@
+// src/main/resources/static/js/cadastro.js
 document.addEventListener('DOMContentLoaded', function () {
     const formProduto = document.getElementById('formProduto');
     if (!formProduto) return;
@@ -9,10 +10,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const containerComplementosDisponiveis = document.getElementById('containerComplementosDisponiveis');
     const containerReceita = document.getElementById('containerReceita');
     const containerKit = document.getElementById('containerKit');
-    const btnAddComplementoConfig = document.getElementById('btnAddComplementoConfig');
     const btnAddReceita = document.getElementById('btnAddReceita');
     const btnAddGrupoKit = document.getElementById('btnAddGrupoKit');
-    const listaComplementosConfig = document.getElementById('listaComplementosConfig');
     const listaReceita = document.getElementById('listaReceita');
     const listaGruposKit = document.getElementById('listaGruposKit');
 
@@ -21,8 +20,9 @@ document.addEventListener('DOMContentLoaded', function () {
     // --- Carregamento Inicial de Dados ---
     async function carregarProdutosParaSelecao() {
         try {
-            // CORREÇÃO: Usar a API que retorna todos os produtos para a seleção de componentes
-            const response = await fetch('/api/produtos/cardapio');
+            // CORREÇÃO: Usar a API que retorna TODOS os produtos para a seleção de componentes,
+            // não apenas os produtos do cardápio.
+            const response = await fetch('/api/produtos');
             if (!response.ok) throw new Error('Falha ao carregar produtos');
             todosOsProdutos = await response.json();
         } catch (error) {
@@ -39,9 +39,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
     permiteComplementosCheckbox.addEventListener('change', function () {
         containerComplementosDisponiveis.style.display = this.checked ? 'block' : 'none';
-        if (this.checked && listaComplementosConfig.children.length === 0) {
-            adicionarLinhaComplementoConfig();
-        }
     });
 
     isKitCheckbox.addEventListener('change', function () {
@@ -52,20 +49,8 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     // --- Funções para Adicionar Linhas Dinâmicas ---
-    btnAddComplementoConfig?.addEventListener('click', () => adicionarLinhaComplementoConfig());
     btnAddReceita?.addEventListener('click', () => adicionarLinhaReceita());
     btnAddGrupoKit?.addEventListener('click', () => adicionarLinhaGrupoKit());
-
-    function adicionarLinhaComplementoConfig() {
-        const div = document.createElement('div');
-        div.className = 'row g-2 mb-2 align-items-center';
-        div.innerHTML = `
-            <div class="col-md-6"><input type="number" class="form-control form-control-sm complemento-id-input" placeholder="ID do Produto Complemento" required></div>
-            <div class="col-md-4"><input type="number" class="form-control form-control-sm complemento-qtde-max-input" placeholder="Qtde Máx." value="1" min="1" required></div>
-            <div class="col-md-2"><button type="button" class="btn btn-sm btn-danger w-100 btn-remover"><i class="bi bi-trash"></i></button></div>`;
-        listaComplementosConfig.appendChild(div);
-        div.querySelector('.btn-remover').addEventListener('click', function () { this.closest('.row').remove(); });
-    }
 
     function adicionarLinhaReceita() {
         const div = document.createElement('div');
@@ -113,7 +98,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
         let optionsHTML = '<option value="">Selecione um produto...</option>';
         todosOsProdutos.forEach(p => {
-            // CORREÇÃO: Removemos o filtro para que qualquer produto possa ser uma opção
             optionsHTML += `<option value="${p.id}">${p.nome}</option>`;
         });
 
@@ -132,13 +116,8 @@ document.addEventListener('DOMContentLoaded', function () {
     formProduto.addEventListener('submit', function (e) {
         e.preventDefault();
 
-        // ** ESTRUTURA CORRIGIDA **
-        // 1. Recolher todos os dados de listas dinâmicas PRIMEIRO.
-        const complementosDisponiveis = [];
-        // (A sua lógica de recolha de complementos vai aqui, se implementada)
-
         const receita = [];
-        // (A sua lógica de recolha de receita vai aqui, se implementada)
+        // (Lógica de recolha de receita aqui, se necessário)
 
         const gruposKit = [];
         if (isKitCheckbox.checked) {
@@ -159,13 +138,12 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         }
 
-        // 2. Montar o objeto final do produto com TODOS os dados.
         const produto = {
             nome: document.getElementById('nome').value,
             preco: parseFloat(document.getElementById('preco').value),
             qtdeMax: parseInt(document.getElementById('qtdeMax').value),
             categoria: document.getElementById('categoria').value,
-            codPdv: document.getElementById('codigoPdv').value ? parseInt(document.getElementById('codigoPdv').value) : null,
+            codPdv: document.getElementById('codigoPdv').value ? document.getElementById('codigoPdv').value : null,
             descricao: document.getElementById('descricao').value,
             ordemVisualizacao: document.getElementById('ordemVisualizacao').value ? parseInt(document.getElementById('ordemVisualizacao').value) : 0,
             imagem: document.getElementById('imagem').value,
@@ -175,12 +153,11 @@ document.addEventListener('DOMContentLoaded', function () {
             permiteComplementos: permiteComplementosCheckbox.checked,
             isKit: isKitCheckbox.checked,
             vendidoIndividualmente: document.getElementById('vendidoIndividualmente').checked,
-            complementosDisponiveis: complementosDisponiveis,
             receita: receita,
-            gruposKit: gruposKit
+            gruposKit: gruposKit,
+            complementosDisponiveis: []
         };
 
-        // 3. Enviar para o backend.
         fetch('/api/produtos', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -193,20 +170,16 @@ document.addEventListener('DOMContentLoaded', function () {
         .then(data => {
             Swal.fire('Sucesso!', `Produto "${data.nome}" cadastrado com ID: ${data.id}!`, 'success');
             formProduto.reset();
-            // Limpa e reseta os painéis
-            listaComplementosConfig.innerHTML = '';
-            containerComplementosDisponiveis.style.display = 'none';
             listaReceita.innerHTML = '';
             containerReceita.style.display = 'block';
             listaGruposKit.innerHTML = '';
             containerKit.style.display = 'none';
-            document.getElementById('vendidoIndividualmente').checked = true; // Garante que a nova checkbox volte ao padrão
+            document.getElementById('vendidoIndividualmente').checked = true;
         })
         .catch(error => {
             Swal.fire('Erro!', `Erro ao cadastrar produto: ${error.message}`, 'error');
         });
     });
 
-    // Inicia o carregamento dos produtos ao carregar a página
     carregarProdutosParaSelecao();
 });

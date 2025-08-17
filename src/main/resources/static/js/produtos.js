@@ -1,11 +1,10 @@
+// src/main/resources/static/js/produtos.js
 document.addEventListener('DOMContentLoaded', function () {
     let tabela;
-    // Esta variável vai guardar a lista de produtos (no formato DTO) para usar nos selects.
     let todosOsProdutosParaSelecao = [];
 
     // --- Funções de Manipulação do Modal de Edição ---
 
-    // Adiciona uma linha de grupo de kit no modal de edição
     function adicionarLinhaGrupoKitEdit(grupo = {}) {
         const container = document.getElementById('edit-listaGruposKit');
         if (!container) return;
@@ -44,15 +43,12 @@ document.addEventListener('DOMContentLoaded', function () {
         divGrupo.querySelector('.btn-add-opcao-kit-edit').addEventListener('click', function () { adicionarLinhaOpcaoKitEdit(this.previousElementSibling); });
     }
 
-    // Adiciona uma linha de opção/sabor dentro de um grupo no modal de edição
     function adicionarLinhaOpcaoKitEdit(containerOpcoes, opcao = {}) {
         const divOpcao = document.createElement('div');
         divOpcao.className = 'row g-2 mb-2 align-items-center edit-opcao-kit-bloco';
 
         let optionsHTML = '<option value="">Selecione um produto...</option>';
         todosOsProdutosParaSelecao.forEach(p => {
-            // CORREÇÃO: Removemos o filtro 'if (p.isMateriaPrima || p.isComplemento)'
-            // para permitir que qualquer produto possa ser uma opção de kit.
             const isSelected = opcao.produto && p.id == opcao.produto.id ? 'selected' : '';
             optionsHTML += `<option value="${p.id}" ${isSelected}>${p.nome}</option>`;
         });
@@ -64,18 +60,15 @@ document.addEventListener('DOMContentLoaded', function () {
         divOpcao.querySelector('.btn-remover-opcao-edit').addEventListener('click', function () { this.closest('.edit-opcao-kit-bloco').remove(); });
     }
 
-
     // --- Carga Inicial e DataTable ---
     function carregarProdutos() {
         fetch('/api/produtos')
             .then(res => {
-                if (!res.ok) {
-                    throw new Error(`Erro na rede: ${res.statusText}`);
-                }
+                if (!res.ok) throw new Error(`Erro na rede: ${res.statusText}`);
                 return res.json();
             })
             .then(data => {
-                todosOsProdutosParaSelecao = data; // Cache dos produtos (DTOs) para usar nos selects
+                todosOsProdutosParaSelecao = data;
                 if ($.fn.DataTable.isDataTable('#tabela-produtos')) {
                     tabela.clear().rows.add(data).draw();
                 } else {
@@ -83,81 +76,49 @@ document.addEventListener('DOMContentLoaded', function () {
                         data: data,
                         columns: [
                             {
-<<<<<<< HEAD
-                                data: null, title: "Nome / Tipo",
-                                render: function (d, t, row) {
-                                    let badgeColor = 'bg-primary'; // Cor padrão
-                                    if (row.tipo === 'Kit') badgeColor = 'bg-info'; // Usando uma cor diferente para Kit
+                                data: null,
+                                title: "Nome / Tipo",
+                                render: function (data, type, row) {
+                                    let badgeColor = 'bg-primary'; // Cor padrão para Venda Direta
+                                    if (row.tipo === 'Kit') badgeColor = 'bg-info text-dark';
                                     if (row.tipo === 'Matéria-Prima') badgeColor = 'bg-success';
                                     if (row.tipo === 'Complemento') badgeColor = 'bg-secondary';
                                     if (row.tipo === 'Composto') badgeColor = 'bg-warning text-dark';
 
                                     const tipoBadge = `<span class="badge ${badgeColor}">${row.tipo}</span>`;
-                                    return `${row.nome || 'N/A'} ${tipoBadge}`;
-                                }
-                            },
-                            { data: "preco", title: "Preço", render: (d) => `R$ ${d != null ? d.toFixed(2) : '0.00'}` },
-                            {
-                                data: "estoqueAtual", title: "Estoque", render: function (d) {
-                                    const estoque = d != null ? parseFloat(d).toFixed(3) : 'N/A';
-=======
-                                data: null, // Usamos 'null' para poder acessar o objeto inteiro da linha (row)
-                                title: "Nome / Tipo",
-                                render: function (data, type, row) {
-                                    let tipoBadge = '';
-                                    if (row.isKit) {
-                                        tipoBadge = '<span class="badge bg-purple">Kit</span>';
-                                    } else if (row.isMateriaPrima) {
-                                        tipoBadge = '<span class="badge bg-success">Matéria-Prima</span>';
-                                    } else if (row.isComplemento) {
-                                        tipoBadge = '<span class="badge bg-info text-dark">Complemento</span>';
-                                    } else if (row.receita && row.receita.length > 0) {
-                                        tipoBadge = '<span class="badge bg-secondary">Composto</span>';
-                                    } else {
-                                        tipoBadge = '<span class="badge bg-primary">Venda Direta</span>';
-                                    }
-                                    // Adicionamos uma verificação para o nome do produto
-                                    const nomeProduto = row.nome || 'Nome não definido';
+                                    const nomeProduto = row.nome || 'N/A';
                                     return `${nomeProduto} <br> ${tipoBadge}`;
                                 }
                             },
-                            { 
-                                data: "preco", 
-                                title: "Preço", 
-                                render: function(data) {
-                                    // Verifica se o preço é um número antes de formatar
-                                    return (typeof data === 'number') ? `R$ ${data.toFixed(2).replace('.', ',')}` : 'R$ 0,00';
+                            {
+                                data: "preco",
+                                title: "Preço",
+                                render: function(d) {
+                                    return (typeof d === 'number') ? `R$ ${d.toFixed(2).replace('.', ',')}` : 'R$ 0,00';
                                 }
                             },
-                            { 
-                                data: "estoqueAtual", 
-                                title: "Estoque", 
-                                render: function(data) {
-                                    // Verifica se o estoque não é nulo/indefinido
-                                    if (data == null) {
-                                        return `<span class="badge bg-danger">N/A</span>`;
-                                    }
-                                    const estoque = parseFloat(data);
->>>>>>> 619b7936e6020c55eea491fe08d7e589cba44ea8
+                            {
+                                data: "estoqueAtual",
+                                title: "Estoque",
+                                render: function (d) {
+                                    if (d == null) return `<span class="badge bg-secondary">N/A</span>`;
+                                    const estoque = parseFloat(d);
                                     const cor = estoque > 10 ? 'bg-success' : (estoque > 0 ? 'bg-warning text-dark' : 'bg-danger');
                                     return `<span class="badge ${cor}" style="font-size: 0.9em;">${estoque.toFixed(3).replace('.', ',')}</span>`;
                                 }
                             },
-                            { 
-                                data: "categoria", 
-                                title: "Categoria", 
-                                // Se a categoria for nula, exibe "Sem categoria"
-                                defaultContent: "Sem categoria" 
-                            },
-                            { 
-                                data: "codPdv", 
-                                title: "Info Adicional", 
-                                render: function(data) {
-                                    return `CódPdv: ${data || 'N/A'}`;
-                                } 
+                            {
+                                data: "categoria",
+                                title: "Categoria",
+                                defaultContent: "Sem categoria"
                             },
                             {
-                                data: "id", 
+                                data: "codPdv",
+                                title: "Cód. PDV",
+                                render: (d) => d || 'N/A'
+                            },
+                            {
+                                data: "id",
                                 title: "Ações",
                                 render: function(data) {
                                     return `<button class="btn btn-sm btn-warning btn-editar" data-id="${data}" title="Editar"><i class="bi bi-pencil"></i></button>
@@ -166,14 +127,8 @@ document.addEventListener('DOMContentLoaded', function () {
                                 orderable: false
                             }
                         ],
-                        // CSS para uma cor de badge personalizada (para 'Kit')
-                        createdRow: (row, data, dataIndex) => {
-                            if (data.isKit) {
-                                $(row).find('.bg-purple').css({ 'background-color': '#6f42c1', 'color': 'white' });
-                            }
-                        },
-                        language: { 
-                            url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/pt-BR.json' 
+                        language: {
+                            url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/pt-BR.json'
                         },
                         order: [[0, 'asc']]
                     });
@@ -182,17 +137,8 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // --- Event Listeners ---
-    // Substitua toda a função de clique do .btn-editar por esta:
     $('#tabela-produtos tbody').on('click', '.btn-editar', function () {
-<<<<<<< HEAD
-        const rowData = tabela.row($(this).closest('tr')).data();
-        if (!rowData) return;
-        const id = rowData.id;
-=======
         const id = $(this).data('id');
->>>>>>> 619b7936e6020c55eea491fe08d7e589cba44ea8
-
-        // Usamos o endpoint de ID para buscar os dados COMPLETOS do produto para edição
         fetch(`/api/produtos/${id}`).then(res => res.json()).then(p => {
             $('#edit-id').val(p.id);
             $('#edit-nome').val(p.nome || '');
@@ -203,28 +149,12 @@ document.addEventListener('DOMContentLoaded', function () {
             $('#edit-ordemVisualizacao').val(p.ordemVisualizacao || 0);
             $('#edit-descricao').val(p.descricao || '');
             $('#edit-imagem').val(p.imagem || '');
-<<<<<<< HEAD
-=======
-
->>>>>>> 619b7936e6020c55eea491fe08d7e589cba44ea8
 
             $('#edit-isMateriaPrima').prop('checked', p.isMateriaPrima);
             $('#edit-isComplemento').prop('checked', p.isComplemento);
             $('#edit-permiteComplementos').prop('checked', p.permiteComplementos);
             $('#edit-isKit').prop('checked', p.isKit).trigger('change');
-<<<<<<< HEAD
-=======
-            $('#edit-isMateriaPrima').prop('checked', p.isMateriaPrima);
-            $('#edit-isComplemento').prop('checked', p.isComplemento);
-            $('#edit-permiteComplementos').prop('checked', p.permiteComplementos);
-
->>>>>>> 619b7936e6020c55eea491fe08d7e589cba44ea8
-
-            // ================== LINHA ADICIONADA ==================
-            // Esta linha garante que o checkbox "vendido individualmente"
-            // seja marcado de acordo com o que está salvo no banco.
             $('#edit-vendidoIndividualmente').prop('checked', p.vendidoIndividualmente);
-            // ======================================================
 
             const containerKit = $('#edit-listaGruposKit');
             containerKit.empty();
@@ -242,7 +172,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
     $('#edit-btnAddGrupoKit').on('click', () => adicionarLinhaGrupoKitEdit());
 
-    // Substitua toda a função de submit do #formEditProduto por esta:
     $('#formEditProduto').on('submit', function (e) {
         e.preventDefault();
 
@@ -271,31 +200,18 @@ document.addEventListener('DOMContentLoaded', function () {
             preco: parseFloat($('#edit-preco').val()),
             categoria: $('#edit-categoria').val(),
             qtdeMax: parseInt($('#edit-qtdeMax').val()),
-            codPdv: $('#edit-codigoPdv').val() ? parseInt($('#edit-codigoPdv').val()) : null,
+            codPdv: $('#edit-codigoPdv').val() ? $('#edit-codigoPdv').val() : null,
             ordemVisualizacao: $('#edit-ordemVisualizacao').val() ? parseInt($('#edit-ordemVisualizacao').val()) : 0,
             descricao: $('#edit-descricao').val(),
             imagem: $('#edit-imagem').val(),
-<<<<<<< HEAD
             isMateriaPrima: $('#edit-isMateriaPrima').is(':checked'),
             isComplemento: $('#edit-isComplemento').is(':checked'),
             permiteComplementos: $('#edit-permiteComplementos').is(':checked'),
             isKit: $('#edit-isKit').is(':checked'),
             vendidoIndividualmente: $('#edit-vendidoIndividualmente').is(':checked'),
-            
             gruposKit: gruposKit,
-            receita: [], 
-            complementosDisponiveis: [] 
-=======
-            ativo: true, // Assumindo que a edição mantém o produto ativo
-            isKit: $('#edit-isKit').is(':checked'),
-            isMateriaPrima: $('#edit-isMateriaPrima').is(':checked'),
-            isComplemento: $('#edit-isComplemento').is(':checked'),
-            permiteComplementos: $('#edit-permiteComplementos').is(':checked'),
-            gruposKit: gruposKit,
-            // As listas de receita e complementos simples não estão no modal de edição, então não são enviadas.
             receita: [],
             complementosDisponiveis: []
->>>>>>> 619b7936e6020c55eea491fe08d7e589cba44ea8
         };
 
         fetch(`/api/produtos/${produto.id}`, {
@@ -303,23 +219,16 @@ document.addEventListener('DOMContentLoaded', function () {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(produto)
         }).then(res => {
-<<<<<<< HEAD
             if (!res.ok) {
                 return res.text().then(text => { throw new Error(text || 'Erro no servidor') });
             }
-=======
-            if (!res.ok) return res.text().then(text => { throw new Error(text || 'Erro no servidor') });
->>>>>>> 619b7936e6020c55eea491fe08d7e589cba44ea8
             bootstrap.Modal.getInstance($('#editModal')[0]).hide();
             Swal.fire('Sucesso!', 'Produto atualizado!', 'success').then(() => carregarProdutos());
         }).catch(err => {
             Swal.fire('Erro!', `Não foi possível atualizar: ${err.message}`, 'error');
         });
     });
-<<<<<<< HEAD
-=======
-    
-    // Deleção de Produto
+
     $('#tabela-produtos tbody').on('click', '.btn-excluir', function () {
         const id = $(this).data('id');
         const row = $(this).closest('tr');
@@ -342,24 +251,14 @@ document.addEventListener('DOMContentLoaded', function () {
                     if (!res.ok) {
                         throw new Error('Erro ao excluir o produto.');
                     }
-                    Swal.fire(
-                        'Excluído!',
-                        'O produto foi removido.',
-                        'success'
-                    );
-                    carregarProdutos(); // Recarrega a tabela
+                    Swal.fire('Excluído!', 'O produto foi removido.', 'success');
+                    carregarProdutos();
                 }).catch(err => {
-                    Swal.fire(
-                        'Erro!',
-                        `Não foi possível excluir o produto. ${err.message}`,
-                        'error'
-                    );
+                    Swal.fire('Erro!', `Não foi possível excluir o produto. ${err.message}`, 'error');
                 });
             }
         });
     });
 
-    // Carga inicial
->>>>>>> 619b7936e6020c55eea491fe08d7e589cba44ea8
     carregarProdutos();
 });

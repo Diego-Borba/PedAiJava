@@ -11,7 +11,6 @@
     <link rel="stylesheet" href="../css/pedidos.css">
 </head>
 
-
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark shadow-sm sticky-top">
         <div class="container-fluid">
@@ -43,41 +42,19 @@
         <h2 class="mb-4 text-center page-title">Nosso Cardápio <i class="bi bi-stars"></i></h2>
 
         <div class="category-buttons mb-4" id="categoryButtons">
-        </div>
+            </div>
 
-
-        <div class="row g-3" id="produtosContainer"></div>
-        <div class="col-12 text-center" id="loadingIndicator">
+        <div class="row g-3" id="produtosContainer">
+            </div>
+        
+        <div class="col-12 text-center" id="loadingIndicator" style="display: none;">
             <div class="spinner-border" role="status">
                 <span class="visually-hidden">Carregando produtos...</span>
             </div>
             <p class="mt-2">Carregando produtos...</p>
         </div>
     </div>
-    </div>
 
-    <div class="modal fade" id="complementosModal" tabindex="-1" aria-labelledby="complementosModalLabel"
-        aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-scrollable">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="complementosModalLabel">Adicionar Complementos</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <p>Para: <strong id="principalProductNameModal"></strong></p>
-                    <hr>
-                    <div id="complementosListContainer">
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-primary" id="btnSalvarComplementos">Adicionar
-                        Selecionados</button>
-                </div>
-            </div>
-        </div>
-    </div>
     <div class="modal fade" id="kitModal" tabindex="-1" aria-labelledby="kitModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-scrollable">
             <div class="modal-content">
@@ -86,21 +63,19 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <h4 id="kitProductNameModal" class="mb-3 text-primary"></h4>
+                    <h4 id="kitProductNameModal" class="mb-3 text-center"></h4>
                     <div id="kitGroupsContainer">
-                    </div>
+                        </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-success" id="btnConfirmarKit">Adicionar Kit ao
-                        Carrinho</button>
+                    <button type="button" class="btn btn-success" id="btnConfirmarKit">Adicionar Kit ao Carrinho</button>
                 </div>
             </div>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="../js/pedidos.js"></script>
 </body>
