@@ -12,6 +12,10 @@ COPY .mvn/ .mvn
 COPY mvnw pom.xml ./
 COPY src ./src
 
+# --- NOVA LINHA ADICIONADA AQUI ---
+# Dá permissão de execução ao script do Maven Wrapper
+RUN chmod +x ./mvnw
+
 # Executa o comando de build do Maven para gerar o arquivo .jar
 # O -DskipTests acelera o processo por não rodar os testes
 RUN ./mvnw clean package -DskipTests
@@ -19,7 +23,7 @@ RUN ./mvnw clean package -DskipTests
 
 # =======================================================
 # ESTÁGIO 2: A IMAGEM FINAL
-# Usa uma imagem leve, apenas com o Java Runtime, para rodar a aplicação
+# (Esta parte não precisa de alteração)
 # =======================================================
 FROM eclipse-temurin:17-jre-jammy
 
