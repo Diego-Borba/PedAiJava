@@ -28,6 +28,7 @@ public class Produto {
 
     // --- CORREÇÃO: A anotação @Lob foi REMOVIDA ---
     // Apenas @Column é necessário para forçar o tipo bytea.
+    @Basic(fetch = FetchType.EAGER)
     @Column(name = "imagem_dados", columnDefinition = "BYTEA")
     private byte[] imagemDados;
 
