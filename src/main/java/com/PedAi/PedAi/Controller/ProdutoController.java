@@ -6,6 +6,8 @@ import com.PedAi.PedAi.DTO.ImagemDTO;
 import com.PedAi.PedAi.DTO.ProdutoListDTO;
 import com.PedAi.PedAi.DTO.ProdutoCardapioDTO;
 import com.PedAi.PedAi.repository.ProdutoRepository;
+import com.PedAi.PedAi.services.ProdutoService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +23,9 @@ import java.util.stream.Collectors;
 public class ProdutoController {
 
     @Autowired
+    private ProdutoService produtoService;
+
+    @Autowired
     private ProdutoRepository repository;
 
     // ... (Os métodos GET permanecem os mesmos que já corrigimos)
@@ -31,14 +36,14 @@ public class ProdutoController {
                 .map(ProdutoListDTO::new)
                 .collect(Collectors.toList());
     }
-    
+
     @GetMapping("/cardapio")
     @Transactional(readOnly = true)
     public List<ProdutoCardapioDTO> getProdutosParaCardapio() {
         List<Produto> produtos = repository.findProdutosForCardapio();
         for (Produto p : produtos) {
             if (p.isKit()) {
-                p.getGruposKit().forEach(grupo -> grupo.getOpcoes().size()); 
+                p.getGruposKit().forEach(grupo -> grupo.getOpcoes().size());
             }
         }
         return produtos.stream()
@@ -58,7 +63,6 @@ public class ProdutoController {
                 })
                 .orElse(ResponseEntity.notFound().build());
     }
-
 
     @PostMapping
     @Transactional
@@ -82,7 +86,8 @@ public class ProdutoController {
             Produto savedProduto = repository.save(produto);
             return ResponseEntity.status(HttpStatus.CREATED).body(savedProduto);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro ao salvar produto: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Erro ao salvar produto: " + e.getMessage());
         }
     }
 
@@ -99,7 +104,7 @@ public class ProdutoController {
                 // Remove o prefixo "data:image/jpeg;base64," se ele existir
                 String base64Data = imagemDTO.getImagemBase64().substring(imagemDTO.getImagemBase64().indexOf(",") + 1);
                 byte[] imagemBytes = Base64.getDecoder().decode(base64Data);
-                
+
                 produto.setImagemDados(imagemBytes);
                 produto.setImagemTipo(imagemDTO.getImagemTipo());
                 repository.save(produto);
@@ -109,7 +114,6 @@ public class ProdutoController {
             }
         }).orElse(ResponseEntity.notFound().build());
     }
-
 
     @PutMapping("/{id}")
     @Transactional
