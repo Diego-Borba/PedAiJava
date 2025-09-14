@@ -57,7 +57,7 @@
                                 <th>Preço</th>
                                 <th>Estoque</th>
                                 <th>Categoria</th>
-                                <th>Info Adicional</th>
+                                <th>Cód. PDV</th>
                                 <th>Ações</th>
                             </tr>
                         </thead>
@@ -129,16 +129,8 @@
                             <div class="form-check mb-3"><input class="form-check-input" type="checkbox"
                                     id="edit-isKit"><label class="form-check-label" for="edit-isKit"><strong>Este
                                         produto é um Kit</strong></label></div>
-
-                            <div id="edit-containerComplementosDisponiveis" class="mb-3" style="display: none;">
-                                <label class="form-label">Complementos Disponíveis:</label>
-                                <div id="edit-listaComplementosConfig"></div>
-                                <button type="button" class="btn btn-sm btn-outline-info mt-2"
-                                    id="edit-btnAddComplementoConfig"><i class="bi bi-plus-circle"></i> Adicionar
-                                    Configuração</button>
-                            </div>
-
-                            <div id="edit-containerKit" class="p-3 border rounded bg-light" style="display: none;">
+                            
+                            <div id="edit-containerKit" class="p-3 border rounded bg-light mb-3" style="display: none;">
                                 <h5 class="mb-3">Configuração do Kit</h5>
                                 <div id="edit-listaGruposKit"></div>
                                 <button type="button" class="btn btn-info mt-2" id="edit-btnAddGrupoKit"><i
@@ -152,15 +144,7 @@
                                         opção dentro de um Kit.</small>
                                 </label>
                             </div>
-                            <div id="edit-containerReceita">
-                                <hr class="my-4">
-                                <h5 class="mb-3">Composição / Receita do Produto</h5>
-                                <div id="edit-listaReceita"></div>
-                                <button type="button" class="btn btn-sm btn-outline-primary mt-2"
-                                    id="edit-btnAddReceita"><i class="bi bi-plus-circle"></i> Adicionar
-                                    Ingrediente</button>
-                            </div>
-
+                            
                             <div class="d-flex justify-content-end mt-4">
                                 <button type="button" class="btn btn-secondary me-2"
                                     data-bs-dismiss="modal">Cancelar</button>
