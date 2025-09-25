@@ -1,0 +1,15 @@
+/* static/css/financeiro.css */
+.status-badge { padding: 0.4em 0.7em; font-size: 0.8em; font-weight: 600; border-radius: 50rem; color: #fff; text-transform: uppercase; }
+.status-areceber { background-color: #dc3545; }
+.status-parcial { background-color: #ffc107; color: #000; }
+.status-recebido { background-color: #198754; }
+.status-apagar { background-color: #fd7e14; } /* Laranja para Contas a Pagar */
+.status-pago { background-color: #0dcaf0; } /* Ciano para Contas a Pagar */
+
+.card-total { color: #fff; border: none; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+.card-total .card-title { font-weight: 300; }
+.card-areceber { background: linear-gradient(45deg, #0d6efd, #0a58ca); }
+.card-recebido { background: linear-gradient(45deg, #198754, #146c43); }
+.card-vencido { background: linear-gradient(45deg, #dc3545, #b02a37); }
+.card-apagar { background: linear-gradient(45deg, #fd7e14, #d86600); }
+.card-pago { background: linear-gradient(45deg, #0dcaf0, #0aa3be); }

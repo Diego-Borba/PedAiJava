@@ -15,27 +15,32 @@
     <div class="wrapper">
         <div class="main">
             <div class="sidebar collapsed" id="sidebar">
-                <button class="toggle-btn" onclick="toggleSidebar()" aria-label="Abrir menu de navegação">
-                    <i class="bi bi-list"></i>
-                </button>
+                <button class="toggle-btn" onclick="toggleSidebar()" aria-label="Abrir menu de navegação"><i
+                        class="bi bi-list"></i></button>
                 <div class="dropdown">
-                    <a class="dropdown-toggle text-decoration-none" href="#" role="button" id="cadastroMenu"
-                        data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="bi bi-plus-circle"></i><span class="menu-text">Cadastro</span>
-                    </a>
-                    <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="cadastroMenu">
+                    <a class="dropdown-toggle text-decoration-none" href="#" role="button" data-bs-toggle="dropdown"
+                        aria-expanded="false"><i class="bi bi-plus-circle"></i><span
+                            class="menu-text">Cadastro</span></a>
+                    <ul class="dropdown-menu dropdown-menu-dark">
                         <li><a class="dropdown-item" href="cadastro.html">Produtos</a></li>
                         <li><a class="dropdown-item" href="fornecedor.html">Fornecedores</a></li>
                     </ul>
                 </div>
-
                 <a href="Pedidos.html"><i class="bi bi-cart4"></i><span class="menu-text">Pedidos</span></a>
                 <a href="entrada.html"><i class="bi bi-box-arrow-in-down"></i><span
                         class="menu-text">Entradas</span></a>
                 <a href="admin-pedidos.html"><i class="bi bi-speedometer2"></i><span class="menu-text">Painel
                         Pedidos</span></a>
-                <a href="Produtos.html" class="active"><i class="bi bi-box-seam"></i><span class="menu-text">Listar
-                        Produtos</span></a>
+                <a href="Produtos.html"><i class="bi bi-box-seam"></i><span class="menu-text">Listar Produtos</span></a>
+                <div class="dropdown">
+                    <a class="dropdown-toggle text-decoration-none active" href="#" role="button"
+                        data-bs-toggle="dropdown" aria-expanded="false"><i class="bi bi-cash-coin"></i><span
+                            class="menu-text">Financeiro</span></a>
+                    <ul class="dropdown-menu dropdown-menu-dark">
+                        <li><a class="dropdown-item active" href="financeiro.html">Contas a Receber</a></li>
+                        <li><a class="dropdown-item" href="contas-a-pagar.html">Contas a Pagar</a></li>
+                    </ul>
+                </div>
             </div>
             <div class="content collapsed" id="content">
                 <h2 class="mb-4">Cadastrar Fornecedor</h2>

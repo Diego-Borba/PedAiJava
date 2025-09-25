@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Financeiro - Contas a Pagar - PedAi</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="../css/global-admin.css">
+    <link rel="stylesheet" href="../css/financeiro.css">
+</head>
+
+<body>
+    <div class="wrapper">
+        <div class="main">
+            <div class="sidebar collapsed" id="sidebar">
+                <button class="toggle-btn" onclick="toggleSidebar()" aria-label="Abrir menu de navegação"><i
+                        class="bi bi-list"></i></button>
+                <div class="dropdown">
+                    <a class="dropdown-toggle text-decoration-none" href="#" role="button" data-bs-toggle="dropdown"
+                        aria-expanded="false"><i class="bi bi-plus-circle"></i><span
+                            class="menu-text">Cadastro</span></a>
+                    <ul class="dropdown-menu dropdown-menu-dark">
+                        <li><a class="dropdown-item" href="cadastro.html">Produtos</a></li>
+                        <li><a class="dropdown-item" href="fornecedor.html">Fornecedores</a></li>
+                    </ul>
+                </div>
+                <a href="Pedidos.html"><i class="bi bi-cart4"></i><span class="menu-text">Pedidos</span></a>
+                <a href="entrada.html"><i class="bi bi-box-arrow-in-down"></i><span
+                        class="menu-text">Entradas</span></a>
+                <a href="admin-pedidos.html"><i class="bi bi-speedometer2"></i><span class="menu-text">Painel
+                        Pedidos</span></a>
+                <a href="Produtos.html"><i class="bi bi-box-seam"></i><span class="menu-text">Listar Produtos</span></a>
+                <div class="dropdown">
+                    <a class="dropdown-toggle text-decoration-none active" href="#" role="button"
+                        data-bs-toggle="dropdown" aria-expanded="false"><i class="bi bi-cash-coin"></i><span
+                            class="menu-text">Financeiro</span></a>
+                    <ul class="dropdown-menu dropdown-menu-dark">
+                        <li><a class="dropdown-item active" href="financeiro.html">Contas a Receber</a></li>
+                        <li><a class="dropdown-item" href="contas-a-pagar.html">Contas a Pagar</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="content collapsed" id="content">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2 class="mb-0">Contas a Pagar</h2>
+                    <button class="btn btn-primary" id="btnNovaContaPagar">
+                        <i class="bi bi-plus-circle"></i> Cadastrar Despesa
+                    </button>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-md-6 mb-3">
+                        <div class="card card-total card-apagar">
+                            <div class="card-body">
+                                <h5 class="card-title">Total a Pagar</h5>
+                                <p class="card-text fs-4 fw-bold" id="totalAPagar">R$ 0,00</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="card card-total card-pago">
+                            <div class="card-body">
+                                <h5 class="card-title">Pago (Mês Atual)</h5>
+                                <p class="card-text fs-4 fw-bold" id="totalPagoMes">R$ 0,00</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table id="tabela-contas-pagar" class="table table-striped table-hover w-100">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Fornecedor/Descrição</th>
+                                <th>Valor Restante</th>
+                                <th>Status</th>
+                                <th>Vencimento</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="contaPagarModal" tabindex="-1" aria-labelledby="contaPagarModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="contaPagarModalLabel">Nova Despesa</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="formContaPagar">
+                            <input type="hidden" id="contaPagarIdForm">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="contaFornecedorId" class="form-label">Fornecedor (Opcional)</label>
+                                    <select class="form-select" id="contaFornecedorId">
+                                        <option value="">-- Selecione um fornecedor --</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="contaDescricao" class="form-label">Ou Digite a Descrição</label>
+                                    <input type="text" class="form-control" id="contaDescricao"
+                                        placeholder="Ex: Aluguel, Conta de Luz" required>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="contaPagarValor" class="form-label">Valor Total</label>
+                                    <input type="number" step="0.01" class="form-control" id="contaPagarValor" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="contaPagarVencimento" class="form-label">Data de Vencimento</label>
+                                    <input type="date" class="form-control" id="contaPagarVencimento" required>
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-end">
+                                <button type="button" class="btn btn-secondary me-2"
+                                    data-bs-dismiss="modal">Cancelar</button>
+                                <button type="submit" class="btn btn-success">Salvar Despesa</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="pagamentoPagarModal" tabindex="-1" aria-labelledby="pagamentoPagarModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="pagamentoPagarModalLabel">Registrar Pagamento</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="formPagamentoPagar">
+                            <input type="hidden" id="pagamentoContaId">
+                            <p><strong>Fornecedor/Descrição:</strong> <span id="modalPagarDescricao"></span></p>
+                            <p><strong>Valor Restante:</strong> <span id="modalPagarValorRestante"
+                                    class="fw-bold text-danger"></span></p>
+                            <div class="mb-3">
+                                <label for="valorAPagar" class="form-label">Valor Pago</label>
+                                <input type="number" step="0.01" class="form-control" id="valorAPagar" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="dataPagamentoPagar" class="form-label">Data do Pagamento</label>
+                                <input type="date" class="form-control" id="dataPagamentoPagar" required>
+                            </div>
+                            <div class="d-flex justify-content-end">
+                                <button type="button" class="btn btn-secondary me-2"
+                                    data-bs-dismiss="modal">Cancelar</button>
+                                <button type="submit" class="btn btn-success">Confirmar Pagamento</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer class="mt-auto">
+            &copy; 2025 PedAi | Todos os direitos reservados
+        </footer>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="../js/global-admin.js"></script>
+    <script src="../js/contas-a-pagar.js"></script>
+</body>
+
+</html>
