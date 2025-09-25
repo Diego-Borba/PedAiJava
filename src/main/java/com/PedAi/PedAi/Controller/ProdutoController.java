@@ -4,6 +4,7 @@ package com.PedAi.PedAi.Controller;
 import com.PedAi.PedAi.Model.Produto;
 import com.PedAi.PedAi.DTO.ImagemDTO;
 import com.PedAi.PedAi.DTO.ProdutoListDTO;
+import com.PedAi.PedAi.DTO.ProdutoSearchDTO;
 import com.PedAi.PedAi.DTO.ProdutoCardapioDTO;
 import com.PedAi.PedAi.repository.ProdutoRepository;
 import com.PedAi.PedAi.services.ProdutoService;
@@ -28,7 +29,6 @@ public class ProdutoController {
     @Autowired
     private ProdutoRepository repository;
 
-    // ... (Os métodos GET permanecem os mesmos que já corrigimos)
     @GetMapping
     @Transactional(readOnly = true)
     public List<ProdutoListDTO> getAll() {
@@ -67,7 +67,7 @@ public class ProdutoController {
     @PostMapping
     @Transactional
     public ResponseEntity<?> create(@RequestBody Produto produto) {
-        // A imagem não é mais tratada aqui, apenas os dados do produto
+        
         if (produto.getNome() == null || produto.getNome().trim().isEmpty()) {
             return ResponseEntity.badRequest().body("O nome do produto é obrigatório.");
         }
@@ -91,7 +91,6 @@ public class ProdutoController {
         }
     }
 
-    // --- NOVO ENDPOINT PARA UPLOAD DE IMAGEM ---
     @PostMapping("/{id}/imagem")
     @Transactional
     public ResponseEntity<?> uploadImagem(@PathVariable Long id, @RequestBody ImagemDTO imagemDTO) {
@@ -166,5 +165,12 @@ public class ProdutoController {
     @GetMapping("/categorias")
     public ResponseEntity<List<String>> getCategorias() {
         return ResponseEntity.ok(repository.findDistinctCategorias());
+    }
+
+    @GetMapping("/search")
+    public List<ProdutoSearchDTO> searchProdutos(@RequestParam("q") String termo) {
+        return repository.searchByNomeOrCodigoPdv(termo).stream()
+                .map(ProdutoSearchDTO::new)
+                .collect(Collectors.toList());
     }
 }

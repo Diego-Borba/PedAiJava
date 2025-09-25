@@ -1,6 +1,8 @@
 package com.PedAi.PedAi.Model;
 
 import jakarta.persistence.*;
+
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -22,7 +24,10 @@ public class Entrada {
     @OneToMany(mappedBy = "entrada", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<EntradaItem> itens;
 
-    // Getters e Setters
+    @Column(precision = 10, scale = 2)
+    private BigDecimal valorTotalDocumento;
+
+    private String formaPagamento;
 
     public Long getId() {
         return id;
@@ -62,5 +67,21 @@ public class Entrada {
 
     public void setItens(List<EntradaItem> itens) {
         this.itens = itens;
+    }
+
+    public BigDecimal getValorTotalDocumento() {
+        return valorTotalDocumento;
+    }
+
+    public void setValorTotalDocumento(BigDecimal valorTotalDocumento) {
+        this.valorTotalDocumento = valorTotalDocumento;
+    }
+
+    public String getFormaPagamento() {
+        return formaPagamento;
+    }
+
+    public void setFormaPagamento(String formaPagamento) {
+        this.formaPagamento = formaPagamento;
     }
 }

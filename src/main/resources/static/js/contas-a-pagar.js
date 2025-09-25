@@ -2,86 +2,180 @@ document.addEventListener('DOMContentLoaded', function () {
     let tabelaContasPagar;
     const contaPagarModal = new bootstrap.Modal(document.getElementById('contaPagarModal'));
     const pagamentoPagarModal = new bootstrap.Modal(document.getElementById('pagamentoPagarModal'));
+    const filtroModal = new bootstrap.Modal(document.getElementById('filtroModal'));
 
     let todosOsDados = [];
 
     const formatarMoeda = (valor) => `R$ ${parseFloat(valor || 0).toFixed(2).replace('.', ',')}`;
-    const formatarData = (data) => data ? new Date(data + 'T00:00:00').toLocaleDateString('pt-BR') : 'N/A';
+    const formatarData = (data) => data ? new Date(data).toLocaleDateString('pt-BR', { timeZone: 'UTC' }) : 'N/A';
+    const formatarDataParaInput = (data) => data ? new Date(data).toISOString().split('T')[0] : '';
 
-    function carregarContas() {
-        // Mock de dados para Contas a Pagar
-        const dadosMock = [
-            { id: 201, fornecedorId: 1, fornecedorNome: 'Distribuidora Alimentos & Cia', valorTotal: 850.00, valorPago: 0, status: 'A PAGAR', vencimento: '2025-09-25' },
-            { id: 202, fornecedorId: null, fornecedorNome: 'Conta de Energia', valorTotal: 430.25, valorPago: 430.25, status: 'PAGO', vencimento: '2025-09-10' },
-            { id: 203, fornecedorId: null, fornecedorNome: 'Aluguel', valorTotal: 1500.00, valorPago: 750.00, status: 'PARCIALMENTE PAGO', vencimento: '2025-10-05' }
-        ];
-        todosOsDados = dadosMock;
-        inicializarTabela(todosOsDados);
-        atualizarDashboard(todosOsDados);
+    const fornecedorSelect = $('#contaFornecedorSelect').select2({
+        theme: 'bootstrap-5',
+        dropdownParent: $('#contaPagarModal'),
+        placeholder: 'Busque por um fornecedor',
+        allowClear: true,
+        ajax: {
+            url: '/api/fornecedores/search',
+            dataType: 'json',
+            delay: 250,
+            data: (params) => ({ q: params.term }),
+            processResults: (data) => ({ results: data }),
+            cache: true
+        }
+    });
+
+    async function carregarContas() {
+        try {
+            const response = await fetch('/api/contas-a-pagar');
+            if (!response.ok) throw new Error('Falha ao buscar dados do servidor.');
+            todosOsDados = await response.json();
+            inicializarTabela(todosOsDados);
+            atualizarDashboard(todosOsDados);
+        } catch (error) {
+            Swal.fire('Erro!', `Não foi possível carregar as contas: ${error.message}`, 'error');
+        }
     }
 
     function inicializarTabela(dados) {
+        const dadosMapeados = dados.map(item => ({
+            id: item.id,
+            // A coluna de descrição agora mostra o nome do fornecedor se existir, senão mostra a descrição manual.
+            fornecedorDescricao: item.fornecedorNome ? `${item.fornecedorNome} (${item.descricao})` : item.descricao,
+            valorRestante: item.valorRestante,
+            status: item.status.replace('_', ' '),
+            vencimento: item.dataVencimento,
+            dadosCompletos: item
+        }));
+
         if ($.fn.DataTable.isDataTable('#tabela-contas-pagar')) {
-            tabelaContasPagar.clear().rows.add(dados).draw();
+            tabelaContasPagar.clear().rows.add(dadosMapeados).draw();
         } else {
             tabelaContasPagar = $('#tabela-contas-pagar').DataTable({
-                data: dados,
+                data: dadosMapeados,
                 columns: [
-                    { data: "id" },
-                    { data: "fornecedorNome" },
-                    { data: null, render: (data, type, row) => formatarMoeda(row.valorTotal - row.valorPago) },
+                    { data: "id" }, 
+                    { data: "fornecedorDescricao" }, 
+                    { data: "valorRestante", render: formatarMoeda },
                     { data: "status", render: function (data) {
                         const statusMap = { 'A PAGAR': 'status-apagar', 'PARCIALMENTE PAGO': 'status-parcial', 'PAGO': 'status-pago' };
-                        return `<span class="status-badge ${statusMap[data] || ''}">${data.replace('_', ' ')}</span>`;
+                        return `<span class="status-badge ${statusMap[data] || ''}">${data}</span>`;
                     }},
                     { data: "vencimento", render: formatarData },
-                    { data: "id", title: "Ações", render: function (data, type, row) {
-                        let btnPagar = row.status !== 'PAGO' ? `<button class="btn btn-sm btn-success btn-pagar" data-id="${data}" title="Registrar Pagamento"><i class="bi bi-currency-dollar"></i></button>` : '';
-                        return `<div class="btn-group">${btnPagar}<button class="btn btn-sm btn-warning btn-editar" data-id="${data}" title="Editar"><i class="bi bi-pencil"></i></button><button class="btn btn-sm btn-danger btn-excluir" data-id="${data}" title="Excluir"><i class="bi bi-trash"></i></button></div>`;
+                    { data: null, title: "Ações", render: function (data, type, row) {
+                        let btnPagar = row.dadosCompletos.status !== 'PAGO' ? `<button class="btn btn-sm btn-success btn-pagar" data-id="${row.id}" title="Registrar Pagamento"><i class="bi bi-currency-dollar"></i></button>` : '';
+                        return `<div class="btn-group">${btnPagar}<button class="btn btn-sm btn-warning btn-editar" data-id="${row.id}" title="Editar"><i class="bi bi-pencil"></i></button><button class="btn btn-sm btn-danger btn-excluir" data-id="${row.id}" title="Excluir"><i class="bi bi-trash"></i></button></div>`;
                     }, orderable: false, width: "120px" }
                 ],
                 language: { url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/pt-BR.json' },
                 order: [[4, 'asc']]
             });
+
+            tabelaContasPagar.on('draw.dt', function() {
+                atualizarTotalFiltrado();
+            });
         }
+        aplicarFiltros(false);
     }
 
     function atualizarDashboard(dados) {
-        let totalAPagar = dados.filter(c => c.status !== 'PAGO').reduce((acc, c) => acc + (c.valorTotal - c.valorPago), 0);
-        let totalPagoMes = dados.filter(c => c.status === 'PAGO' /* Lógica de data futura */).reduce((acc, c) => acc + c.valorPago, 0);
+        const hoje = new Date();
+        hoje.setUTCHours(0, 0, 0, 0);
+        let totalAPagar = dados.filter(c => c.status !== 'PAGO').reduce((acc, c) => acc + c.valorRestante, 0);
+        let totalPagoMes = dados.filter(c => c.status === 'PAGO').reduce((acc, c) => acc + c.valorPago, 0);
+        let totalVencido = dados.filter(c => c.status !== 'PAGO' && new Date(c.dataVencimento) < hoje).reduce((acc, c) => acc + c.valorRestante, 0);
+
         $('#totalAPagar').text(formatarMoeda(totalAPagar));
         $('#totalPagoMes').text(formatarMoeda(totalPagoMes));
+        $('#totalVencido').text(formatarMoeda(totalVencido));
     }
 
-    // --- Lógica de Ações e Modais ---
+    function aplicarFiltros(fecharModal = true) {
+        const texto = $('#filtroTexto').val().toLowerCase();
+        const dataInicio = $('#filtroDataInicio').val();
+        const dataFim = $('#filtroDataFim').val();
+        const status = $('#filtroStatus').val();
+
+        $.fn.dataTable.ext.search.pop();
+        $.fn.dataTable.ext.search.push(
+            function(settings, data, dataIndex) {
+                const descricao = data[1].toLowerCase();
+                const statusTabela = data[3];
+                const vencimento = tabelaContasPagar.row(dataIndex).data().vencimento;
+                
+                const textoValido = !texto || descricao.includes(texto);
+                const dataValida = (!dataInicio || vencimento >= dataInicio) && (!dataFim || vencimento <= dataFim);
+                const statusValido = !status || statusTabela === status;
+
+                return textoValido && dataValida && statusValido;
+            }
+        );
+        tabelaContasPagar.draw();
+        if (fecharModal) {
+            filtroModal.hide();
+        }
+    }
+
+    function atualizarTotalFiltrado() {
+        const container = $('#totalFiltradoContainer');
+        const valorSpan = $('#totalFiltradoValor');
+        const isFiltroAtivo = $('#filtroTexto').val() || $('#filtroDataInicio').val() || $('#filtroDataFim').val() || $('#filtroStatus').val();
+
+        if (!isFiltroAtivo) {
+            container.hide();
+            return;
+        }
+
+        const dadosFiltrados = tabelaContasPagar.rows({ search: 'applied' }).data().toArray();
+        const total = dadosFiltrados.reduce((sum, item) => sum + (item.valorRestante || 0), 0);
+        
+        valorSpan.text(formatarMoeda(total));
+        container.show();
+    }
+
+    // --- EVENT LISTENERS ---
+    $('#btnAbrirFiltros').on('click', () => filtroModal.show());
+    $('#btnAplicarFiltros').on('click', () => aplicarFiltros(true));
+    $('#btnLimparFiltros').on('click', () => {
+        $('#formFiltro')[0].reset();
+        aplicarFiltros(true);
+    });
 
     $('#btnNovaContaPagar').on('click', function() {
         $('#formContaPagar')[0].reset();
         $('#contaPagarIdForm').val('');
+        fornecedorSelect.val(null).trigger('change');
         $('#contaPagarModalLabel').text('Nova Despesa');
         contaPagarModal.show();
     });
 
     $('#tabela-contas-pagar tbody').on('click', 'button', function () {
         const id = $(this).data('id');
-        const dadosLinha = tabelaContasPagar.row($(this).parents('tr')).data();
+        const dadosLinha = todosOsDados.find(d => d.id == id);
+        if (!dadosLinha) return;
 
         if ($(this).hasClass('btn-pagar')) {
-            const valorRestante = dadosLinha.valorTotal - dadosLinha.valorPago;
             $('#pagamentoContaId').val(id);
-            $('#modalPagarDescricao').text(dadosLinha.fornecedorNome);
-            $('#modalPagarValorRestante').text(formatarMoeda(valorRestante));
-            $('#valorAPagar').val(valorRestante.toFixed(2));
+            $('#modalPagarDescricao').text(dadosLinha.fornecedorNome || dadosLinha.descricao);
+            $('#modalPagarValorRestante').text(formatarMoeda(dadosLinha.valorRestante));
+            $('#valorAPagar').val(dadosLinha.valorRestante.toFixed(2));
             $('#dataPagamentoPagar').val(new Date().toISOString().slice(0, 10));
             pagamentoPagarModal.show();
         } else if ($(this).hasClass('btn-editar')) {
             $('#formContaPagar')[0].reset();
             $('#contaPagarIdForm').val(dadosLinha.id);
             $('#contaPagarModalLabel').text(`Editar Despesa #${dadosLinha.id}`);
-            $('#contaFornecedorId').val(dadosLinha.fornecedorId || '');
-            $('#contaDescricao').val(dadosLinha.fornecedorNome);
+            
+            if (dadosLinha.fornecedorId) {
+                const option = new Option(dadosLinha.fornecedorNome, dadosLinha.fornecedorId, true, true);
+                fornecedorSelect.append(option).trigger('change');
+            } else {
+                fornecedorSelect.val(null).trigger('change');
+            }
+
+            $('#contaDescricao').val(dadosLinha.descricao);
             $('#contaPagarValor').val(dadosLinha.valorTotal.toFixed(2));
-            $('#contaPagarVencimento').val(dadosLinha.vencimento);
+            $('#contaPagarVencimento').val(formatarDataParaInput(dadosLinha.dataVencimento));
             contaPagarModal.show();
         } else if ($(this).hasClass('btn-excluir')) {
             Swal.fire({
@@ -92,29 +186,68 @@ document.addEventListener('DOMContentLoaded', function () {
                 confirmButtonColor: '#d33',
                 cancelButtonText: 'Cancelar',
                 confirmButtonText: 'Sim, excluir!'
-            }).then((result) => {
+            }).then(async (result) => {
                 if (result.isConfirmed) {
-                    console.log(`Excluindo despesa ${id}`);
-                    Swal.fire('Excluído!', 'A despesa foi removida. (Simulado)', 'success');
-                    carregarContas();
+                    try {
+                        const response = await fetch(`/api/contas-a-pagar/${id}`, { method: 'DELETE' });
+                        if (!response.ok) throw new Error('Falha ao excluir.');
+                        Swal.fire('Excluído!', 'A despesa foi removida.', 'success');
+                        carregarContas();
+                    } catch(err) {
+                        Swal.fire('Erro!', 'Não foi possível excluir a despesa.', 'error');
+                    }
                 }
             });
         }
     });
     
-    // Simulação de submit dos formulários
-    $('#formContaPagar').on('submit', (e) => {
+    $('#formContaPagar').on('submit', async (e) => {
         e.preventDefault();
-        contaPagarModal.hide();
-        Swal.fire('Sucesso!', 'Despesa salva com sucesso! (Simulado)', 'success');
+        const id = $('#contaPagarIdForm').val();
+        const url = id ? `/api/contas-a-pagar/${id}` : '/api/contas-a-pagar';
+        const method = id ? 'PUT' : 'POST';
+
+        const payload = {
+            fornecedorId: $('#contaFornecedorSelect').val() ? parseInt($('#contaFornecedorSelect').val()) : null,
+            descricao: $('#contaDescricao').val(),
+            valorTotal: parseFloat($('#contaPagarValor').val()),
+            dataVencimento: $('#contaPagarVencimento').val()
+        };
+
+        if (!payload.descricao || !payload.valorTotal || !payload.dataVencimento) {
+            Swal.fire('Atenção!', 'Preencha os campos de Descrição, Valor e Vencimento.', 'warning');
+            return;
+        }
+
+        try {
+            const response = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+            if (!response.ok) throw new Error('Falha ao salvar despesa.');
+            contaPagarModal.hide();
+            Swal.fire('Sucesso!', 'Despesa salva com sucesso!', 'success');
+            carregarContas();
+        } catch(error) {
+            Swal.fire('Erro!', error.message, 'error');
+        }
     });
 
-    $('#formPagamentoPagar').on('submit', (e) => {
+    $('#formPagamentoPagar').on('submit', async (e) => {
         e.preventDefault();
-        pagamentoPagarModal.hide();
-        Swal.fire('Sucesso!', 'Pagamento registrado com sucesso! (Simulado)', 'success');
+        const contaId = $('#pagamentoContaId').val();
+        const payload = {
+            valor: parseFloat($('#valorAPagar').val()),
+            dataPagamento: $('#dataPagamentoPagar').val()
+        };
+
+        try {
+            const response = await fetch(`/api/contas-a-pagar/${contaId}/registrar-pagamento`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+            if (!response.ok) throw new Error('Falha ao registrar pagamento.');
+            pagamentoPagarModal.hide();
+            Swal.fire('Sucesso!', 'Pagamento registrado com sucesso!', 'success');
+            carregarContas();
+        } catch(error) {
+            Swal.fire('Erro!', error.message, 'error');
+        }
     });
 
-    // Carga inicial
     carregarContas();
 });

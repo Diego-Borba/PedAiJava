@@ -3,6 +3,7 @@ package com.PedAi.PedAi.Controller;
 import com.PedAi.PedAi.Model.Pedido;
 import com.PedAi.PedAi.repository.ClienteRepository;
 import com.PedAi.PedAi.repository.PedidoRepository;
+import com.PedAi.PedAi.services.FinanceiroService;
 import com.PedAi.PedAi.services.PedidoService;
 import com.PedAi.PedAi.DTO.PedidoDTO;
 import com.PedAi.PedAi.DTO.StatusDTO;
@@ -10,7 +11,6 @@ import com.PedAi.PedAi.DTO.StatusDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-// import org.springframework.transaction.annotation.Transactional; // <-- REMOVIDO
 import org.springframework.web.bind.annotation.*;
 import org.springframework.data.domain.Sort;
 
@@ -32,19 +32,18 @@ public class PedidoController {
     @Autowired
     private ClienteRepository clienteRepository;
 
+    @Autowired
+    private FinanceiroService financeiroService;
+
     @PostMapping
-    // @Transactional <-- ESTA ANOTAÇÃO FOI REMOVIDA DAQUI.
     public ResponseEntity<?> criarPedido(@RequestBody PedidoDTO pedidoDTO) {
         try {
             Pedido novoPedido = pedidoService.criarPedido(pedidoDTO);
             return ResponseEntity.ok(Map.of("id", novoPedido.getId()));
         
-        // Captura erros de validação (ex: cliente não encontrado)
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         
-        // Captura erros de execução (ex: estoque insuficiente) e retorna um erro 400 (Bad Request)
-        // que faz mais sentido para o cliente do que um erro 500 (Erro de Servidor).
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", e.getMessage()));
         }
@@ -116,9 +115,16 @@ public class PedidoController {
             if (dto.getNovoStatus() == null || dto.getNovoStatus().isBlank()) {
                 return ResponseEntity.badRequest().body("O novo status é obrigatório.");
             }
-            pedido.setStatus(dto.getNovoStatus());
-            pedidoRepository.save(pedido);
-            return ResponseEntity.ok(Map.of("id", pedido.getId(), "status", pedido.getStatus()));
+            
+            String novoStatus = dto.getNovoStatus();
+            pedido.setStatus(novoStatus);
+            Pedido pedidoSalvo = pedidoRepository.save(pedido);
+
+            if ("Entregue".equalsIgnoreCase(novoStatus)) {
+                financeiroService.criarContaAReceberDePedido(pedidoSalvo);
+            }
+
+            return ResponseEntity.ok(Map.of("id", pedidoSalvo.getId(), "status", pedidoSalvo.getStatus()));
         }).orElse(ResponseEntity.notFound().build());
     }
 }

@@ -4,8 +4,12 @@ import com.PedAi.PedAi.Model.Cliente;
 import com.PedAi.PedAi.repository.ClienteRepository;
 import com.PedAi.PedAi.DTO.LoginRequestDTO;
 import com.PedAi.PedAi.DTO.ClienteResponseDTO;
+import com.PedAi.PedAi.DTO.ClienteSearchDTO;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -44,6 +48,14 @@ public class ClienteController {
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("E-mail ou senha inválidos.");
         }
+    }
+
+    @GetMapping("/search")
+    public List<ClienteSearchDTO> searchClientes(@RequestParam(value = "q", required = false, defaultValue = "") String query) {
+        List<Cliente> clientes = clienteRepository.findByNomeContainingIgnoreCase(query);
+        return clientes.stream()
+                       .map(ClienteSearchDTO::new)
+                       .collect(Collectors.toList());
     }
 
 }
