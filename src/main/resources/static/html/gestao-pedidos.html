@@ -18,25 +18,13 @@
         <div class="main">
             <div class="sidebar collapsed" id="sidebar">
                 <button class="toggle-btn" onclick="toggleSidebar()" aria-label="Abrir menu de navegação"><i class="bi bi-list"></i></button>
-                <div class="dropdown">
-                    <a class="dropdown-toggle text-decoration-none" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi bi-plus-circle"></i><span class="menu-text">Cadastro</span></a>
-                    <ul class="dropdown-menu dropdown-menu-dark">
-                        <li><a class="dropdown-item" href="cadastro.html">Produtos</a></li>
-                        <li><a class="dropdown-item" href="fornecedor.html">Fornecedores</a></li>
-                    </ul>
-                </div>
+                <div class="dropdown"><a class="dropdown-toggle text-decoration-none" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi bi-plus-circle"></i><span class="menu-text">Cadastro</span></a><ul class="dropdown-menu dropdown-menu-dark"><li><a class="dropdown-item" href="cadastro.html">Produtos</a></li><li><a class="dropdown-item" href="fornecedor.html">Fornecedores</a></li></ul></div>
                 <a href="Pedidos.html"><i class="bi bi-cart4"></i><span class="menu-text">Pedidos</span></a>
                 <a href="entrada.html"><i class="bi bi-box-arrow-in-down"></i><span class="menu-text">Entradas</span></a>
                 <a href="gestao-pedidos.html" class="active"><i class="bi bi-card-list"></i><span class="menu-text">Gestão de Pedidos</span></a>
                 <a href="admin-pedidos.html"><i class="bi bi-speedometer2"></i><span class="menu-text">KDS</span></a>
                 <a href="Produtos.html"><i class="bi bi-box-seam"></i><span class="menu-text">Listar Produtos</span></a>
-                <div class="dropdown">
-                    <a class="dropdown-toggle text-decoration-none" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi bi-cash-coin"></i><span class="menu-text">Financeiro</span></a>
-                    <ul class="dropdown-menu dropdown-menu-dark">
-                        <li><a class="dropdown-item" href="financeiro.html">Contas a Receber</a></li>
-                        <li><a class="dropdown-item" href="contas-a-pagar.html">Contas a Pagar</a></li>
-                    </ul>
-                </div>
+                <div class="dropdown"><a class="dropdown-toggle text-decoration-none" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi bi-cash-coin"></i><span class="menu-text">Financeiro</span></a><ul class="dropdown-menu dropdown-menu-dark"><li><a class="dropdown-item" href="financeiro.html">Contas a Receber</a></li><li><a class="dropdown-item" href="contas-a-pagar.html">Contas a Pagar</a></li></ul></div>
             </div>
 
             <div class="content collapsed" id="content">
@@ -61,47 +49,22 @@
         <footer class="mt-auto">&copy; 2025 PedAi | Todos os direitos reservados</footer>
     </div>
     
-    <div class="modal fade" id="filtroModal" tabindex="-1">
-        <div class="modal-dialog"><div class="modal-content">
-            <div class="modal-header"><h5 class="modal-title">Filtrar Pedidos</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
-            <div class="modal-body"><form id="formFiltro">
-                <div class="mb-3"><label for="filtroCliente" class="form-label">Nome do Cliente</label><input type="text" class="form-control" id="filtroCliente"></div>
-                <div class="row">
-                    <div class="col-md-6 mb-3"><label for="filtroDataInicial" class="form-label">Data (De)</label><input type="date" class="form-control" id="filtroDataInicial"></div>
-                    <div class="col-md-6 mb-3"><label for="filtroDataFinal" class="form-label">Data (Até)</label><input type="date" class="form-control" id="filtroDataFinal"></div>
-                </div>
-                <div class="mb-3"><label for="filtroStatus" class="form-label">Status</label><select class="form-select" id="filtroStatus"><option value="">Todos</option><option value="Recebido">Recebido</option><option value="Em Preparo">Em Preparo</option><option value="Pronto para Retirada">Pronto para Retirada</option><option value="Saiu para Entrega">Saiu para Entrega</option><option value="Entregue">Entregue</option><option value="Concluido">Concluído</option><option value="Cancelado">Cancelado</option></select></div>
-            </form></div>
-            <div class="modal-footer"><button type="button" class="btn btn-secondary" id="btnLimparFiltros">Limpar</button><button type="button" class="btn btn-primary" id="btnAplicarFiltros">Aplicar</button></div>
-        </div></div>
-    </div>
-    
-    <div class="modal fade" id="contaReceberModal" tabindex="-1">
-      <div class="modal-dialog modal-lg"><div class="modal-content">
-        <div class="modal-header"><h5 class="modal-title">Gerar Conta a Receber</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
-        <div class="modal-body"><form id="formContaReceber">
-            <div class="mb-3"><label for="contaClienteSelect" class="form-label">Cliente</label><select class="form-select" id="contaClienteSelect" style="width: 100%;" disabled></select></div>
-            <div class="row">
-                <div class="col-md-6 mb-3"><label for="contaValor" class="form-label">Valor Total</label><input type="number" step="0.01" class="form-control" id="contaValor" required readonly></div>
-                <div class="col-md-6 mb-3"><label for="contaVencimento" class="form-label">Vencimento</label><input type="date" class="form-control" id="contaVencimento" required></div>
-            </div>
-            <div class="mb-3"><label for="contaOrigem" class="form-label">Origem/Descrição</label><input type="text" class="form-control" id="contaOrigem" required readonly></div>
-            <div class="d-flex justify-content-end"><button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Cancelar</button><button type="submit" class="btn btn-success">Gerar Conta</button></div>
-        </form></div>
-      </div></div>
-    </div>
+    <div class="modal fade" id="filtroModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">Filtrar Pedidos</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><form id="formFiltro"><div class="mb-3"><label for="filtroCliente" class="form-label">Nome do Cliente</label><input type="text" class="form-control" id="filtroCliente"></div><div class="row"><div class="col-md-6 mb-3"><label for="filtroDataInicial" class="form-label">Data (De)</label><input type="date" class="form-control" id="filtroDataInicial"></div><div class="col-md-6 mb-3"><label for="filtroDataFinal" class="form-label">Data (Até)</label><input type="date" class="form-control" id="filtroDataFinal"></div></div><div class="mb-3"><label for="filtroStatus" class="form-label">Status</label><select class="form-select" id="filtroStatus"><option value="">Todos</option><option value="Recebido">Recebido</option><option value="Em Preparo">Em Preparo</option><option value="Pronto para Retirada">Pronto para Retirada</option><option value="Saiu para Entrega">Saiu para Entrega</option><option value="Entregue">Entregue</option><option value="Concluido">Concluído</option><option value="Cancelado">Cancelado</option></select></div></form></div><div class="modal-footer"><button type="button" class="btn btn-secondary" id="btnLimparFiltros">Limpar</button><button type="button" class="btn btn-primary" id="btnAplicarFiltros">Aplicar</button></div></div></div></div>
+    <div class="modal fade" id="contaReceberModal" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">Gerar Conta a Receber</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><form id="formContaReceber"><div class="mb-3"><label for="contaClienteSelect" class="form-label">Cliente</label><select class="form-select" id="contaClienteSelect" style="width: 100%;" disabled></select></div><div class="row"><div class="col-md-6 mb-3"><label for="contaValor" class="form-label">Valor Total</label><input type="number" step="0.01" class="form-control" id="contaValor" required readonly></div><div class="col-md-6 mb-3"><label for="contaVencimento" class="form-label">Vencimento</label><input type="date" class="form-control" id="contaVencimento" required></div></div><div class="mb-3"><label for="contaOrigem" class="form-label">Origem/Descrição</label><input type="text" class="form-control" id="contaOrigem" required readonly></div><div class="d-flex justify-content-end"><button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Cancelar</button><button type="submit" class="btn btn-success">Gerar Conta</button></div></form></div></div></div></div>
 
     <div class="modal fade" id="visualizacaoModal" tabindex="-1">
       <div class="modal-dialog modal-lg">
         <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="visualizacaoModalLabel">Visualizar Pedido</h5>
+          <div class="modal-header border-0">
+            <h5 class="modal-title" id="visualizacaoModalLabel">Detalhes do Pedido</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
           </div>
-          <div class="modal-body" id="visualizacao-content"></div>
-          <div class="modal-footer justify-content-between">
+          <div class="modal-body" id="visualizacao-content">
+            </div>
+          <div class="modal-footer border-0">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
-            <div id="botoes-impressao"></div>
+            <div id="botoes-impressao">
+                </div>
           </div>
         </div>
       </div>

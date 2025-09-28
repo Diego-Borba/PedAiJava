@@ -1,6 +1,21 @@
-// static/js/admin-pedidos.js
+
 const statusList = ['Recebido', 'Pendente', 'Em Preparo', 'Saiu para Entrega'];
-const KDS_UPDATE_INTERVAL = 30000; // Atualiza a cada 30 segundos
+const KDS_UPDATE_INTERVAL = 30000;
+
+function calcularTempoDecorrido(dataPedido) {
+    const agora = new Date();
+    const pedidoDate = new Date(dataPedido);
+    const diffMs = agora - pedidoDate;
+    const diffMins = Math.round(diffMs / 60000);
+
+    let status = { text: `${diffMins} min`, className: 'normal' };
+    if (diffMins > 15) {
+        status.className = 'danger';
+    } else if (diffMins > 7) {
+        status.className = 'warning';
+    }
+    return status;
+}
 
 async function carregarPedidos() {
     try {
@@ -8,18 +23,17 @@ async function carregarPedidos() {
         const pedidos = res.data;
         const board = document.getElementById('kdsBoard');
         if (!board) return;
-        board.innerHTML = ''; // Limpa o board
+        board.innerHTML = '';
 
-        // Cria colunas dinamicamente
         statusList.forEach(status => {
             const col = document.createElement('div');
-            col.className = 'col-md-3 mb-3'; // Adiciona margem inferior para responsividade
+            col.className = 'col-md-3 mb-3';
             col.innerHTML = `
-                <div class="column h-100" id="coluna-${status.replace(/\s+/g, '-')}" 
-                    ondragover="permitirSoltar(event)" 
+                <div class="column h-100" id="coluna-${status.replace(/\s+/g, '-')}"
+                    ondragover="permitirSoltar(event)"
                     ondragleave="removerHover(event)"
                     ondrop="soltar(event, '${status}')">
-                    <h4 class="sticky-top bg-dark py-2">${status} (<span id="contador-${status.replace(/\s+/g, '-')}">0</span>)</h4>
+                    <h4 class="sticky-top">${status} (<span id="contador-${status.replace(/\s+/g, '-')}">0</span>)</h4>
                     <div class="cards-container"></div>
                 </div>`;
             board.appendChild(col);
@@ -27,39 +41,39 @@ async function carregarPedidos() {
 
         const contadores = {};
         statusList.forEach(status => contadores[status] = 0);
-
-        // Filtra e ordena os pedidos: Primeiro os mais antigos
         const pedidosFiltrados = pedidos
-            .filter(p => p.status && statusList.includes(p.status)) // Garante que o status é válido e existe
+            .filter(p => p.status && statusList.includes(p.status))
             .sort((a, b) => new Date(a.dataPedido) - new Date(b.dataPedido));
 
 
         pedidosFiltrados.forEach(p => {
             const card = document.createElement('div');
-            card.className = 'card mb-3 text-white shadow-sm'; // Adicionado shadow
+            card.className = 'card mb-3 shadow-sm';
             card.setAttribute('draggable', true);
             card.setAttribute('id', 'pedido-' + p.id);
             card.ondragstart = arrastar;
 
             const itensHtml = p.itens.map(i => `
-                <li class="list-group-item bg-dark text-white border-secondary">
-                    ${i.quantidade}x ${i.produto || 'Produto desconhecido'} 
-                    ${i.precoUnitario !== undefined ? `- R$ ${(i.quantidade * i.precoUnitario).toFixed(2)}` : ''}
+                <li class="list-group-item">
+                    <strong>${i.quantidade}x</strong> ${i.produto || 'Produto desconhecido'}
                 </li>`).join('');
-            
-            const dataFormatada = p.dataPedido ? new Date(p.dataPedido).toLocaleString('pt-BR', {
-                day: '2-digit', month: '2-digit', year: 'numeric',
+
+            const dataFormatada = p.dataPedido ? new Date(p.dataPedido).toLocaleTimeString('pt-BR', {
                 hour: '2-digit', minute: '2-digit'
             }) : 'Data indisponível';
-
+            
+            // --- CÁLCULO E APLICAÇÃO DO TEMPO DECORRIDO ---
+            const tempoStatus = calcularTempoDecorrido(p.dataPedido);
+            card.style.borderLeftColor = tempoStatus.className === 'danger' ? '#dc3545' : (tempoStatus.className === 'warning' ? '#ffc107' : '#0d6efd');
 
             card.innerHTML = `
                 <div class="card-header">
-                    Pedido #${p.id} - ${dataFormatada}
+                    <span><strong>#${p.id}</strong> - ${dataFormatada}</span>
+                    <span class="time-indicator ${tempoStatus.className}">${tempoStatus.text}</span>
                 </div>
                 <ul class="list-group list-group-flush">${itensHtml}</ul>
-                <div class="card-footer text-end small">
-                    <button class="btn btn-sm btn-primary ms-2" onclick="imprimirPedido(${p.id})"><i class="bi bi-printer"></i> Imprimir</button>
+                <div class="card-footer text-end">
+                    <button class="btn btn-sm btn-outline-secondary" onclick="imprimirPedido(${p.id})"><i class="bi bi-printer"></i> Imprimir</button>
                     ${p.status === 'Saiu para Entrega' ? `<button class="btn btn-sm btn-success ms-2" onclick="concluirPedido(${p.id})"><i class="bi bi-check-circle"></i> Concluir</button>` : ''}
                 </div>`;
 
@@ -80,7 +94,6 @@ async function carregarPedidos() {
 
     } catch (err) {
         console.error("Erro ao carregar pedidos:", err);
-        // alert("Erro ao carregar pedidos.");
     }
 }
 
@@ -110,7 +123,7 @@ function soltar(ev, novoStatus) {
     if (targetColumn) {
         targetColumn.classList.remove('drag-over');
     }
-    
+
     const idElemento = ev.dataTransfer.getData("text");
     const card = document.getElementById(idElemento);
     if (card) {
@@ -128,21 +141,19 @@ async function atualizarStatus(id, novoStatus) {
         await axios.put(`/api/pedidos/${id}/status`, { novoStatus }, {
             headers: { 'Content-Type': 'application/json' }
         });
-        // Opcional: feedback visual imediato antes do reload completo
-        const cardFooter = document.querySelector(`#pedido-${id} .card-footer strong`);
-        if (cardFooter) cardFooter.textContent = novoStatus;
-        carregarPedidos(); // Recarrega para garantir consistência e atualizar contadores
+        carregarPedidos();
     } catch (err) {
         console.error('Erro ao atualizar status:', err);
         alert('Erro ao atualizar status.');
-        carregarPedidos(); // Recarrega para reverter visualmente em caso de erro
+        carregarPedidos();
     }
 }
 
 function formatarPedidoParaImpressao(pedido) {
     let texto = `Pedido #${pedido.id}\n`;
     texto += `Data: ${new Date(pedido.dataPedido).toLocaleString('pt-BR')}\n`;
-    texto += `Status: ${pedido.status}\n\n`;
+    texto += `\n--------------------------\n\n`;
+    //texto += `Status: ${pedido.status}\n\n`;
     texto += `Itens:\n`;
     let totalPedido = 0;
 
@@ -152,9 +163,9 @@ function formatarPedidoParaImpressao(pedido) {
         totalPedido += totalItem;
         texto += `${item.quantidade}x ${nomeProduto.padEnd(30, ' ')} R$ ${totalItem.toFixed(2)}\n`;
     });
-
+    texto += `\n--------------------------\n`;
     texto += `\nTotal do Pedido: R$ ${totalPedido.toFixed(2)}\n`;
-    texto += `\n--------------------------------\n`;
+    texto += `\n--------------------------\n`;
     return texto;
 }
 
@@ -163,7 +174,7 @@ async function imprimirPedido(idPedido) {
         const res = await axios.get(`/api/pedidos/${idPedido}`);
         const pedido = res.data;
         const textoImpressao = formatarPedidoParaImpressao(pedido);
-        const janelaImpressao = window.open('', '_blank', 'width=400,height=600'); // Janela menor para cupom
+        const janelaImpressao = window.open('', '_blank', 'width=400,height=600');
         if (janelaImpressao) {
             janelaImpressao.document.write(`
                 <!DOCTYPE html>
@@ -181,20 +192,19 @@ async function imprimirPedido(idPedido) {
                     <script>
                         window.onload = function() {
                             window.print();
-                            // window.close(); // Descomente se quiser fechar a janela automaticamente após imprimir
+                            // window.close();
                         }
                     </script>
                 </body>
                 </html>
             `);
             janelaImpressao.document.close();
-            // janelaImpressao.focus(); // O foco pode ser desnecessário dependendo do navegador
         } else {
-            alert('Não foi possível abrir a janela de impressão. Verifique as configurações do navegador (bloqueador de pop-ups).');
+            alert('Não foi possível abrir a janela de impressão. Verifique o bloqueador de pop-ups.');
         }
     } catch (err) {
-        console.error('Erro ao carregar os dados do pedido para impressão:', err);
-        alert('Erro ao carregar os dados do pedido para impressão.');
+        console.error('Erro ao carregar dados para impressão:', err);
+        alert('Erro ao carregar dados do pedido para impressão.');
     }
 }
 
@@ -203,8 +213,7 @@ async function concluirPedido(idPedido) {
         await axios.put(`/api/pedidos/${idPedido}/status`, { novoStatus: 'Entregue' }, {
             headers: { 'Content-Type': 'application/json' }
         });
-        // alert('Pedido concluído com sucesso!'); // Pode ser substituído por feedback menos intrusivo
-        carregarPedidos(); // Recarrega para remover o card da tela KDS
+        carregarPedidos();
     } catch (err) {
         console.error('Erro ao concluir o pedido:', err);
         alert('Erro ao concluir o pedido.');
@@ -213,10 +222,9 @@ async function concluirPedido(idPedido) {
 
 window.onload = () => {
     carregarPedidos();
-    setInterval(carregarPedidos, KDS_UPDATE_INTERVAL); // Atualiza o KDS periodicamente
+    setInterval(carregarPedidos, KDS_UPDATE_INTERVAL);
 };
 
-// Adiciona listener para o evento dragend para limpar a classe 'dragging'
 document.addEventListener('dragend', (event) => {
     if (event.target.classList.contains('dragging')) {
         event.target.classList.remove('dragging');

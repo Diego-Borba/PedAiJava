@@ -1,15 +1,66 @@
-/* static/css/financeiro.css */
-.status-badge { padding: 0.4em 0.7em; font-size: 0.8em; font-weight: 600; border-radius: 50rem; color: #fff; text-transform: uppercase; }
-.status-areceber { background-color: #dc3545; }
-.status-parcial { background-color: #ffc107; color: #000; }
-.status-recebido { background-color: #198754; }
+/* --- Estilos para Badges de Status --- */
+.status-badge { padding: 0.4em 0.8em; font-size: 0.75rem; font-weight: 600; border-radius: 50rem; color: #fff; text-transform: uppercase; letter-spacing: 0.5px; }
+.status-areceber { background-color: #ffc107; color: #000; } /* Amarelo */
+.status-parcial { background-color: #0d6efd; } /* Azul */
+.status-recebido { background-color: #198754; } /* Verde */
 .status-apagar { background-color: #fd7e14; } /* Laranja para Contas a Pagar */
-.status-pago { background-color: #0dcaf0; } /* Ciano para Contas a Pagar */
+.status-pago { background-color: #0dcaf0; color: #000; } /* Ciano para Contas a Pagar */
 
-.card-total { color: #fff; border: none; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
-.card-total .card-title { font-weight: 300; }
-.card-areceber { background: linear-gradient(45deg, #0d6efd, #0a58ca); }
-.card-recebido { background: linear-gradient(45deg, #198754, #146c43); }
-.card-vencido { background: linear-gradient(45deg, #dc3545, #b02a37); }
-.card-apagar { background: linear-gradient(45deg, #fd7e14, #d86600); }
-.card-pago { background: linear-gradient(45deg, #0dcaf0, #0aa3be); }
+/* --- Estilos para o Dashboard --- */
+.dashboard-card {
+    background-color: #fff;
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    border-left: 5px solid;
+    transition: transform 0.2s ease;
+}
+.dashboard-card:hover {
+    transform: translateY(-5px);
+}
+.dashboard-card .card-icon {
+    font-size: 2.5rem;
+    color: #fff;
+    background-color: var(--card-color, #6c757d);
+    height: 60px;
+    width: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.dashboard-card .card-content h6 {
+    font-size: 0.9rem;
+    color: #6c757d;
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+}
+.dashboard-card .card-content h4 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #212529;
+    margin: 0;
+}
+
+.card-areceber { border-color: #ffc107; --card-color: #ffc107; }
+.card-recebido { border-color: #198754; --card-color: #198754; }
+.card-vencido { border-color: #dc3545; --card-color: #dc3545; }
+.card-apagar { border-color: #fd7e14; --card-color: #fd7e14; } /* Cor para card A Pagar */
+.card-pago { border-color: #0dcaf0; --card-color: #0dcaf0; } /* Cor para card Pago */
+
+/* --- Estilos da Tabela --- */
+.table-hover tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+/* Indicador de conta vencida (opcional, mantido para consistência) */
+.table tr.vencida {
+    background-color: #fff5f5 !important;
+    font-weight: 500;
+}
+.table tr.vencida td {
+    color: #721c24;
+}

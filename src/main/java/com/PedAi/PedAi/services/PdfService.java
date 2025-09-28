@@ -1,5 +1,6 @@
 package com.PedAi.PedAi.services;
 
+import com.PedAi.PedAi.Model.Endereco;
 import com.PedAi.PedAi.Model.ItemPedido;
 import com.PedAi.PedAi.Model.Pedido;
 import com.lowagie.text.*;
@@ -23,7 +24,6 @@ public class PdfService {
 
         document.open();
 
-        // Título Principal
         Font fontTitle = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 24);
         Paragraph title = new Paragraph("PedAi", fontTitle);
         title.setAlignment(Element.ALIGN_CENTER);
@@ -35,22 +35,41 @@ public class PdfService {
         document.add(subtitle);
         document.add(Chunk.NEWLINE);
 
-        // Informações do Pedido
+        // --- SEÇÃO DE INFORMAÇÕES (ATUALIZADA) ---
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy 'às' HH:mm", new Locale("pt", "BR"));
         document.add(new Paragraph("Pedido: #" + pedido.getId()));
         document.add(new Paragraph("Data: " + pedido.getDataPedido().format(formatter)));
-        if (pedido.getCliente() != null) {
-            document.add(new Paragraph("Cliente: " + pedido.getCliente().getNome()));
-        }
-        document.add(new Paragraph("Status: " + pedido.getStatus()));
+        
+        // ADICIONADO: Tipo do pedido
+        String tipoPedido = pedido.getTipo().toString().substring(0, 1).toUpperCase() + pedido.getTipo().toString().substring(1).toLowerCase();
+        document.add(new Paragraph("Tipo do Pedido: " + tipoPedido));
+
+        // REMOVIDO: Status do pedido
+        // document.add(new Paragraph("Status: " + pedido.getStatus()));
         document.add(Chunk.NEWLINE);
 
-        // Tabela de Itens
+        // --- ADICIONADO: SEÇÃO DE DADOS DO CLIENTE E ENTREGA ---
+        if (pedido.getCliente() != null) {
+            Font fontHeaderCliente = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12);
+            Paragraph clienteHeader = new Paragraph("Dados do Cliente", fontHeaderCliente);
+            document.add(clienteHeader);
+            document.add(new Paragraph("Nome: " + pedido.getCliente().getNome()));
+            
+            Endereco endereco = pedido.getEnderecoEntrega();
+            if (endereco != null) {
+                document.add(new Paragraph("Endereço de Entrega:"));
+                String enderecoCompleto = String.format("%s, %s - %s, %s - %s",
+                        endereco.getLogradouro(), endereco.getNumero(), endereco.getBairro(),
+                        endereco.getCidade(), endereco.getEstado());
+                document.add(new Paragraph(enderecoCompleto));
+            }
+             document.add(Chunk.NEWLINE);
+        }
+
+
         PdfPTable table = new PdfPTable(3);
         table.setWidthPercentage(100);
         table.setWidths(new float[]{1.5f, 7f, 2.5f});
-
-        // Cabeçalho da Tabela
         Font fontHeader = FontFactory.getFont(FontFactory.HELVETICA_BOLD);
         table.addCell(new PdfPCell(new Phrase("Qtd.", fontHeader)));
         table.addCell(new PdfPCell(new Phrase("Produto", fontHeader)));
@@ -58,7 +77,6 @@ public class PdfService {
         headerCell3.setHorizontalAlignment(Element.ALIGN_RIGHT);
         table.addCell(headerCell3);
 
-        // Itens
         for (ItemPedido item : pedido.getItens()) {
             table.addCell(String.valueOf(item.getQuantidade()));
             table.addCell(item.getProduto().getNome());
@@ -68,7 +86,6 @@ public class PdfService {
         }
         document.add(table);
 
-        // Total
         Font fontTotal = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 14);
         Paragraph total = new Paragraph(String.format("Total: R$ %.2f", pedido.getTotal()), fontTotal);
         total.setAlignment(Element.ALIGN_RIGHT);

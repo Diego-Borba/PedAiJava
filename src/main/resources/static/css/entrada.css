@@ -1,5 +1,18 @@
 /* static/css/entrada.css */
-/* Estilos específicos para a página de entrada de nota, se houver. */
 .item-bloco {
     align-items: flex-end; /* Alinha o botão remover com a base dos inputs */
+}
+
+/* --- ESTILO PARA O MODAL DE PARCELAS --- */
+/* Garante que os labels e inputs dentro do SweetAlert fiquem bem formatados */
+.swal2-html-container .form-label {
+    text-align: left;
+    display: block;
+    margin-bottom: 0.25rem;
+    font-size: 0.9rem;
+    color: #495057;
+}
+
+.swal2-html-container .form-group {
+    margin-bottom: 1rem;
 }

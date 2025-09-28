@@ -1,11 +1,11 @@
-document.addEventListener("DOMContentLoaded", function() {
-    
+document.addEventListener("DOMContentLoaded", function () {
+
     // Inicializa o Select2 para fornecedores
     $('#fornecedorId').select2({
         theme: 'bootstrap-5',
         placeholder: 'Selecione um fornecedor'
     });
-    
+
     carregarFornecedores();
     adicionarItem();
 
@@ -15,13 +15,13 @@ document.addEventListener("DOMContentLoaded", function() {
     document.getElementById('entradaForm').addEventListener('submit', registrarEntrada);
 
     // Listener para o container de itens para recalcular totais
-    // Usamos 'change' para pegar alterações de campos number e select
-    document.getElementById('itensContainer').addEventListener('change', function(e) {
-        if (e.target.matches('.item-quantidade, .item-preco-unitario')) {
+    // Usamos 'change' e 'input' para capturar todas as alterações nos campos relevantes
+    document.getElementById('itensContainer').addEventListener('input', function (e) {
+        if (e.target.matches('.item-quantidade, .item-preco-unitario, .item-fator-entrada')) {
             calcularTotalItens();
         }
     });
-    
+
     document.getElementById('btnGerarParcelas').addEventListener('click', gerarParcelasManualmente);
 
 });
@@ -39,7 +39,7 @@ async function carregarFornecedores() {
             const option = new Option(f.nome, f.id);
             select.appendChild(option);
         });
-        
+
         $(select).trigger('change'); // Notifica o Select2 das mudanças
     } catch (error) {
         Swal.fire('Erro!', 'Não foi possível carregar os fornecedores.', 'error');
@@ -57,16 +57,16 @@ function adicionarItem() {
             <input type="hidden" class="produto-id">
         </div>
         <div class="col-md-2">
-            <label class="form-label small">Quantidade</label>
+            <label class="form-label small">Quantidade (Ex: Caixas)</label>
             <input type="number" step="0.001" class="form-control form-control-sm item-quantidade" placeholder="Qtde" required>
         </div>
         <div class="col-md-2">
-            <label class="form-label small">Preço Unit.</label>
-            <input type="number" step="0.01" class="form-control form-control-sm item-preco-unitario" placeholder="Preço" required>
+            <label class="form-label small">Fator Entrada (Unid.)</label>
+            <input type="number" step="0.01" class="form-control form-control-sm item-fator-entrada" placeholder="Fator" value="1" required>
         </div>
         <div class="col-md-2">
-            <label class="form-label small">Fator Entrada</label>
-            <input type="number" step="0.01" class="form-control form-control-sm item-fator-entrada" placeholder="Fator" value="1" required>
+            <label class="form-label small">Preço por Unidade</label>
+            <input type="number" step="0.01" class="form-control form-control-sm item-preco-unitario" placeholder="Preço" required>
         </div>
         <div class="col-md-1 d-flex align-items-end">
             <button type="button" class="btn btn-danger btn-sm w-100 btn-remover-item">
@@ -77,7 +77,7 @@ function adicionarItem() {
     container.appendChild(div);
 
     // Adiciona o listener para o botão de remover
-    div.querySelector('.btn-remover-item').addEventListener('click', function() {
+    div.querySelector('.btn-remover-item').addEventListener('click', function () {
         removerItem(this);
     });
 
@@ -95,7 +95,7 @@ function adicionarItem() {
             processResults: (data) => ({ results: data }),
             cache: true
         }
-    }).on('select2:select', function(e) {
+    }).on('select2:select', function (e) {
         const data = e.params.data;
         const bloco = this.closest('.item-bloco');
         bloco.querySelector('.produto-id').value = data.id;
@@ -110,24 +110,39 @@ function removerItem(button) {
     }
 }
 
+// --- FUNÇÃO DE CÁLCULO CORRIGIDA ---
 function calcularTotalItens() {
-    let total = 0;
+    let totalMonetario = 0;
     document.querySelectorAll('.item-bloco').forEach(bloco => {
         const qtde = parseFloat(bloco.querySelector('.item-quantidade').value) || 0;
-        const preco = parseFloat(bloco.querySelector('.item-preco-unitario').value) || 0;
-        total += qtde * preco;
+        const fator = parseFloat(bloco.querySelector('.item-fator-entrada').value) || 1; // Assume 1 se vazio
+        const precoUnitario = parseFloat(bloco.querySelector('.item-preco-unitario').value) || 0;
+
+        // Lógica corrigida: O valor total do item é a quantidade total de unidades (qtde * fator) multiplicada pelo preço de cada unidade.
+        totalMonetario += (qtde * fator) * precoUnitario;
     });
-    document.getElementById('totalItens').textContent = `R$ ${total.toFixed(2).replace('.', ',')}`;
-    // Atualiza o valor total do documento para refletir a soma dos itens
-    document.getElementById('valorTotalDocumento').value = total.toFixed(2); 
+
+    // Atualiza o campo "Total dos Itens" com o valor monetário calculado
+    document.getElementById('totalItens').textContent = `R$ ${totalMonetario.toFixed(2).replace('.', ',')}`;
+
+    // Sugere o valor calculado no campo "Valor Total do Documento", mas permite que o usuário edite se houver impostos, etc.
+    document.getElementById('valorTotalDocumento').value = totalMonetario.toFixed(2);
 }
+
 
 function gerarParcelasManualmente() {
     Swal.fire({
         title: 'Gerar Parcelas',
+        // HTML foi reestruturado com classes do Bootstrap para melhor aparência
         html: `
-            <div class="mb-2"><input type="number" id="swal-num-parcelas" class="swal2-input" placeholder="Número de parcelas"></div>
-            <div><input type="number" id="swal-dias-intervalo" class="swal2-input" placeholder="Dias entre parcelas (ex: 30)"></div>
+            <div class="form-group">
+                <label for="swal-num-parcelas" class="form-label">Número de parcelas</label>
+                <input type="number" id="swal-num-parcelas" class="form-control" placeholder="Ex: 3">
+            </div>
+            <div class="form-group">
+                <label for="swal-dias-intervalo" class="form-label">Dias entre parcelas</label>
+                <input type="number" id="swal-dias-intervalo" class="form-control" placeholder="Ex: 30">
+            </div>
         `,
         confirmButtonText: 'Gerar',
         focusConfirm: false,
@@ -139,39 +154,27 @@ function gerarParcelasManualmente() {
         if (result.isConfirmed && result.value) {
             const { numParcelas, diasIntervalo } = result.value;
             const total = parseFloat(document.getElementById('valorTotalDocumento').value);
-
             if (!numParcelas || numParcelas <= 0 || !diasIntervalo || diasIntervalo < 0 || !total || total <= 0) {
-                Swal.fire('Atenção!', 'Preencha um número de parcelas, o intervalo e o valor total do documento para gerar as parcelas.', 'warning');
+                Swal.fire('Atenção!', 'Preencha o valor total do documento, o número de parcelas e o intervalo de dias para continuar.', 'warning');
                 return;
             }
-
             const valorParcela = (total / numParcelas);
             const container = document.getElementById('parcelasContainer');
-            container.innerHTML = ''; // Limpa parcelas anteriores
+            container.innerHTML = '';
             let dataVencimento = new Date();
-
             for (let i = 1; i <= numParcelas; i++) {
-                // Para a primeira parcela, usa a data de hoje. Para as demais, soma o intervalo.
                 if (i > 1) {
                     dataVencimento.setDate(dataVencimento.getDate() + parseInt(diasIntervalo));
                 }
                 const div = document.createElement('div');
                 div.className = 'row gx-2 mb-2 align-items-center parcela-bloco';
-                
-                // Distribui a diferença do arredondamento na última parcela
-                const valorFinalParcela = (i === parseInt(numParcelas)) 
+                const valorFinalParcela = (i === parseInt(numParcelas))
                     ? (total - (valorParcela.toFixed(2) * (numParcelas - 1))).toFixed(2)
                     : valorParcela.toFixed(2);
-
                 div.innerHTML = `
                     <div class="col-auto"><strong>${i}ª Parcela:</strong></div>
-                    <div class="col-md-4">
-                        <input type="number" step="0.01" class="form-control form-control-sm parcela-valor" value="${valorFinalParcela}" required>
-                    </div>
-                    <div class="col-md-4">
-                        <input type="date" class="form-control form-control-sm parcela-vencimento" value="${dataVencimento.toISOString().split('T')[0]}" required>
-                    </div>
-                `;
+                    <div class="col-md-4"><input type="number" step="0.01" class="form-control form-control-sm parcela-valor" value="${valorFinalParcela}" required></div>
+                    <div class="col-md-4"><input type="date" class="form-control form-control-sm parcela-vencimento" value="${dataVencimento.toISOString().split('T')[0]}" required></div>`;
                 container.appendChild(div);
             }
         }
@@ -180,7 +183,7 @@ function gerarParcelasManualmente() {
 
 async function registrarEntrada(event) {
     event.preventDefault();
-    
+
     const payload = {
         fornecedorId: document.getElementById('fornecedorId').value,
         tipoDocumento: document.getElementById('tipoDocumento').value,
@@ -191,14 +194,12 @@ async function registrarEntrada(event) {
     };
 
     let formValido = true;
-    
-    // Validações
+
     if (!payload.fornecedorId || !payload.tipoDocumento || !payload.valorTotalDocumento || !payload.formaPagamento) {
         Swal.fire('Atenção!', 'Preencha todos os dados do cabeçalho do documento e do financeiro.', 'warning');
         return;
     }
 
-    // Coleta dos Itens
     document.querySelectorAll('.item-bloco').forEach(bloco => {
         const item = {
             produtoId: bloco.querySelector('.produto-id').value,
@@ -206,7 +207,7 @@ async function registrarEntrada(event) {
             precoUnitario: bloco.querySelector('.item-preco-unitario').value,
             fatorEntrada: bloco.querySelector('.item-fator-entrada').value,
         };
-        if(!item.produtoId || !item.quantidade || !item.precoUnitario || !item.fatorEntrada) {
+        if (!item.produtoId || !item.quantidade || !item.precoUnitario || !item.fatorEntrada) {
             formValido = false;
         }
         payload.itens.push(item);
@@ -217,13 +218,12 @@ async function registrarEntrada(event) {
         return;
     }
 
-    // Coleta das Parcelas
     document.querySelectorAll('.parcela-bloco').forEach(bloco => {
         const parcela = {
             valor: bloco.querySelector('.parcela-valor').value,
             dataVencimento: bloco.querySelector('.parcela-vencimento').value
         };
-        if(!parcela.valor || !parcela.dataVencimento) {
+        if (!parcela.valor || !parcela.dataVencimento) {
             formValido = false;
         }
         payload.parcelas.push(parcela);

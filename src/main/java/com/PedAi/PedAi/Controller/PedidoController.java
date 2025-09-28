@@ -1,3 +1,4 @@
+// Conteúdo anterior do arquivo...
 package com.PedAi.PedAi.Controller;
 
 import com.PedAi.PedAi.DTO.PedidoAdminDTO;
@@ -58,13 +59,24 @@ public class PedidoController {
         }
     }
 
+    // --- MÉTODO GET POR ID (ATUALIZADO) ---
     @GetMapping("/{id}")
     public ResponseEntity<?> getPedido(@PathVariable Long id) {
         return pedidoRepository.findById(id).map(pedido -> {
             Map<String, Object> body = new HashMap<>();
             body.put("id", pedido.getId());
             body.put("dataPedido", pedido.getDataPedido());
-            body.put("status", pedido.getStatus());
+            // body.put("status", pedido.getStatus()); // Status não é mais necessário aqui
+            
+            // ADICIONADO: Tipo do pedido e detalhes do cliente/endereço
+            body.put("tipo", pedido.getTipo());
+            if (pedido.getCliente() != null) {
+                body.put("clienteNome", pedido.getCliente().getNome());
+            }
+            if (pedido.getEnderecoEntrega() != null) {
+                body.put("enderecoEntrega", pedido.getEnderecoEntrega());
+            }
+
             body.put("itens", pedido.getItens().stream().map(i -> Map.of(
                     "produtoId", i.getProduto().getId(),
                     "produto", i.getProduto().getNome(),
@@ -89,7 +101,7 @@ public class PedidoController {
                 .toList();
         return ResponseEntity.ok(resposta);
     }
-
+// Conteúdo posterior do arquivo...
     @GetMapping("/por-cliente/{clienteId}")
     public ResponseEntity<?> listarPedidosPorCliente(@PathVariable Long clienteId) {
         if (!clienteRepository.existsById(clienteId)) {
@@ -127,13 +139,6 @@ public class PedidoController {
             String novoStatus = dto.getNovoStatus();
             pedido.setStatus(novoStatus);
             Pedido pedidoSalvo = pedidoRepository.save(pedido);
-
-            // COMENTADO PARA EVITAR CRIAÇÃO AUTOMÁTICA DE CONTAS A RECEBER
-            /*
-             * if ("Entregue".equalsIgnoreCase(novoStatus)) {
-             * financeiroService.criarContaAReceberDePedido(pedidoSalvo);
-             * }
-             */
 
             return ResponseEntity.ok(Map.of("id", pedidoSalvo.getId(), "status", pedidoSalvo.getStatus()));
         }).orElse(ResponseEntity.notFound().build());

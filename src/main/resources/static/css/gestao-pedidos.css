@@ -1,47 +1,48 @@
+/* --- Estilos Gerais da Página --- */
+.nav-pills .nav-link { display: flex; align-items: center; gap: 8px; font-weight: 500; }
+.nav-pills .nav-link.active { background-color: #0d6efd; }
+.nav-pills .nav-link .badge { transition: background-color 0.2s ease; }
+.nav-pills .nav-link.active .badge { background-color: #fff !important; color: #0d6efd !important; }
+
+/* --- Estilo do Card de Pedido --- */
 .pedido-card {
-    transition: all 0.2s ease-in-out;
-    font-size: 0.85rem; /* Reduz o tamanho da fonte base do card */
-}
-
-.pedido-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1) !important;
-}
-
-.pedido-card .card-header {
-    font-size: 0.8rem;
-    padding: 0.5rem 1rem;
-}
-
-.pedido-card .card-body {
-    padding: 1rem;
-}
-
-.pedido-card .card-title {
-    font-size: 1rem;
-    margin-bottom: 0.5rem !important;
-}
-
-.pedido-card .card-text {
-    margin-bottom: 0.25rem; /* Menos espaço entre as linhas de informação */
-}
-
-.pedido-card .list-group-item {
-    font-size: 0.8rem;
-    padding: 0.4rem 0; /* Mais compacto */
     border: none;
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    transition: all 0.2s ease-in-out;
+    background-color: #fff;
+    border-left: 5px solid #6c757d;
+    min-height: 320px; /* ALTURA FIXA ADICIONADA */
+    display: flex; /* Garante que o flexbox funcione para o card inteiro */
+    flex-direction: column; /* Organiza o conteúdo do card em coluna */
 }
 
-.pedido-card .list-group-flush {
-    margin-bottom: 0.5rem !important;
-}
+.pedido-card:hover { transform: translateY(-4px); box-shadow: 0 8px 20px rgba(0,0,0,0.12); }
+.pedido-card[data-status="Recebido"] { border-left-color: #0d6efd; }
+.pedido-card[data-status="Em Preparo"] { border-left-color: #ffc107; }
+.pedido-card[data-status="Pronto para Retirada"], .pedido-card[data-status="Saiu para Entrega"] { border-left-color: #fd7e14; }
+.pedido-card[data-status="Entregue"], .pedido-card[data-status="Concluido"] { border-left-color: #198754; }
+.pedido-card[data-status="Cancelado"] { border-left-color: #dc3545; }
 
-.pedido-card .card-footer {
-    padding: 0.5rem 1rem;
-}
-
-.nav-pills .nav-link {
+.pedido-card .card-header { background-color: transparent; border-bottom: 1px solid #f1f1f1; font-weight: 700; color: #343a40; }
+.pedido-card .card-body {
+    padding: 1.25rem;
+    flex-grow: 1; /* Faz o corpo do card ocupar o espaço disponível */
     display: flex;
-    align-items: center;
-    gap: 8px;
+    flex-direction: column; /* Organiza o conteúdo do corpo em coluna */
 }
+.pedido-card .card-title { font-size: 1.2rem; font-weight: 700; }
+.pedido-card .card-text { color: #6c757d; font-size: 0.9rem; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 8px; }
+.pedido-card .card-text .bi { color: #495057; }
+.pedido-card.encomenda .card-header { background-color: #fffbe6; }
+.pedido-card.encomenda .agendamento-info { color: #856404; font-weight: 700; background-color: #fffbe6; padding: 0.5rem; border-radius: 0.5rem; font-size: 0.9rem; }
+.pedido-card .total-e-status { margin-top: auto; /* Empurra esta seção para o final do card-body */ }
+.pedido-card .total { font-size: 1.5rem; font-weight: 700; color: #0d6efd; }
+.pedido-card .card-footer { background-color: #f8f9fa; border-top: 1px solid #e9ecef; }
+
+/* --- Estilo do Modal de Visualização --- */
+#visualizacao-content { background-color: #f8f9fa; padding: 2rem; border-radius: 8px; }
+#visualizacao-content .comprovante-header h2 { font-weight: 700; color: #0d6efd; }
+#visualizacao-content .info-section { font-size: 0.95rem; }
+#visualizacao-content .table thead th { background-color: #e9ecef; border-bottom: 2px solid #dee2e6; }
+#visualizacao-content .total-row td { font-size: 1.2rem; font-weight: 700; }

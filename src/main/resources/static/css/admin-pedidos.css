@@ -1,100 +1,139 @@
 /* static/css/admin-pedidos.css */
+
+/* --- Configurações Globais --- */
 body {
-    background-color: #212529;
-    color: #f8f9fa;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f0f2f5; /* Um cinza mais claro e suave */
+    color: #333;
+    font-family: 'Roboto', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
+/* --- Cabeçalho --- */
 .header {
-    background-color: #343a40;
-    padding: 20px;
+    background: linear-gradient(90deg, #4a00e0, #8e2de2);
+    color: #ffffff;
+    padding: 1rem 1.5rem;
     text-align: center;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    position: sticky;
-    top: 0;
-    z-index: 1000;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-bottom: 3px solid #6a11cb;
 }
 
 .header h2 {
-    margin: 0;
-    color: #0d6efd;
-    /* Azul */
-    font-weight: bold;
+    font-weight: 700;
+    font-size: 1.5rem;
 }
 
+/* --- Colunas do KDS --- */
 .column {
-    min-height: 500px;
-    max-height: 600px;
-    overflow-y: auto;
-    padding: 15px;
-    border: 1px solid #495057;
-    border-radius: 10px;
-    background-color: #343a40;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    transition: background-color 0.3s ease;
+    background-color: #e9ecef; /* Fundo da coluna */
+    border-radius: 12px;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    height: 85vh; /* Altura definida para a coluna */
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
 }
 
 .column h4 {
+    background-color: #343a40;
+    color: #ffffff;
+    padding: 0.75rem 1rem;
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 500;
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
     text-align: center;
-    margin-bottom: 15px;
-    color: #0d6efd;
-    /* Azul */
+    position: sticky;
+    top: 0;
+    z-index: 10;
 }
 
-.column.drag-over {
-    background-color: #495057 !important;
+.cards-container {
+    padding: 1rem;
+    overflow-y: auto;
+    flex-grow: 1; /* Permite que o container cresça para preencher o espaço */
 }
 
-.card { /* Estilo geral do card, pode precisar de ajustes se conflitar com global-admin */
+/* Customização da barra de rolagem */
+.cards-container::-webkit-scrollbar {
+    width: 8px;
+}
+.cards-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+.cards-container::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 10px;
+}
+.cards-container::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+
+/* --- Card do Pedido --- */
+.card {
     cursor: grab;
     border: none;
-    border-radius: 10px;
-    background-color: #495057; /* Cor específica para cards no KDS */
+    border-radius: 8px;
+    background-color: #ffffff;
+    color: #212529;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
     transition: transform 0.2s ease, box-shadow 0.2s ease;
-    color: #f8f9fa; /* Garante texto claro nos cards */
+    border-left: 5px solid #0d6efd; /* Borda de status inicial (azul) */
 }
 
-.card:hover {
-    transform: scale(1.02);
-    box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+.card:active {
+    cursor: grabbing;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+}
+
+.card.dragging {
+    opacity: 0.5;
+    transform: rotate(2deg);
 }
 
 .card-header {
-    background-color: #343a40; /* Cor específica para header no KDS */
-    border-bottom: 1px solid #6c757d;
-    color: #0d6efd;
-    /* Azul */
-    font-weight: bold;
+    background-color: transparent;
+    border-bottom: 1px solid #dee2e6;
+    font-weight: 700;
+    font-size: 0.95rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.list-group-item {
+    background-color: transparent;
+    border-color: #f1f1f1;
+    font-size: 0.9rem;
 }
 
 .card-footer {
-    background-color: #343a40; /* Cor específica para footer no KDS */
-    border-top: 1px solid #6c757d;
+    background-color: #f8f9fa;
+    border-top: 1px solid #dee2e6;
 }
 
-.list-group-item.bg-dark { /* Ajuste para itens da lista dentro do card KDS */
-    background-color: #495057 !important; /* Sobrescreve se necessário */
-    border-color: #6c757d !important;
+/* Indicadores de tempo */
+.time-indicator {
+    font-weight: 500;
+    padding: 0.2rem 0.5rem;
+    border-radius: 5px;
+    color: #fff;
 }
 
+.time-indicator.normal { background-color: #28a745; } /* Verde */
+.time-indicator.warning { background-color: #ffc107; color: #000 !important; } /* Amarelo */
+.time-indicator.danger { background-color: #dc3545; } /* Vermelho */
 
-.btn-primary {
-    background-color: #0d6efd;
-    /* Azul */
-    border: none;
-    color: #ffffff;
+/* Animação de entrada para novos cards */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
-.btn-primary:hover {
-    background-color: #0b5ed7;
-    /* Azul mais escuro */
-}
-
-.btn-success {
-    background-color: #28a745;
-    border: none;
-}
-
-.btn-success:hover {
-    background-color: #218838;
+.card {
+    animation: fadeIn 0.4s ease-in-out;
 }
