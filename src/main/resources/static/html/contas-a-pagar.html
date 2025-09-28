@@ -8,7 +8,8 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" />
+    <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
     <link rel="stylesheet" href="../css/global-admin.css">
     <link rel="stylesheet" href="../css/financeiro.css">
@@ -18,23 +19,34 @@
     <div class="wrapper">
         <div class="main">
             <div class="sidebar collapsed" id="sidebar">
-                <button class="toggle-btn" onclick="toggleSidebar()" aria-label="Abrir menu de navegação"><i class="bi bi-list"></i></button>
+                <button class="toggle-btn" onclick="toggleSidebar()" aria-label="Abrir menu de navegação">
+                    <i class="bi bi-list"></i>
+                </button>
                 <div class="dropdown">
-                    <a class="dropdown-toggle text-decoration-none" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi bi-plus-circle"></i><span class="menu-text">Cadastro</span></a>
+                    <a class="dropdown-toggle text-decoration-none" href="#" role="button" data-bs-toggle="dropdown"
+                        aria-expanded="false">
+                        <i class="bi bi-plus-circle"></i><span class="menu-text">Cadastro</span>
+                    </a>
                     <ul class="dropdown-menu dropdown-menu-dark">
                         <li><a class="dropdown-item" href="cadastro.html">Produtos</a></li>
                         <li><a class="dropdown-item" href="fornecedor.html">Fornecedores</a></li>
                     </ul>
                 </div>
                 <a href="Pedidos.html"><i class="bi bi-cart4"></i><span class="menu-text">Pedidos</span></a>
-                <a href="entrada.html"><i class="bi bi-box-arrow-in-down"></i><span class="menu-text">Entradas</span></a>
-                <a href="admin-pedidos.html"><i class="bi bi-speedometer2"></i><span class="menu-text">Painel Pedidos</span></a>
+                <a href="entrada.html"><i class="bi bi-box-arrow-in-down"></i><span
+                        class="menu-text">Entradas</span></a>
+                <a href="gestao-pedidos.html"><i class="bi bi-card-list"></i><span class="menu-text">Gestão de
+                        Pedidos</span></a>
+                <a href="admin-pedidos.html"><i class="bi bi-speedometer2"></i><span class="menu-text">KDS</span></a>
                 <a href="Produtos.html"><i class="bi bi-box-seam"></i><span class="menu-text">Listar Produtos</span></a>
                 <div class="dropdown">
-                    <a class="dropdown-toggle text-decoration-none active" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi bi-cash-coin"></i><span class="menu-text">Financeiro</span></a>
+                    <a class="dropdown-toggle text-decoration-none" href="#" role="button"
+                        data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-cash-coin"></i><span class="menu-text">Financeiro</span>
+                    </a>
                     <ul class="dropdown-menu dropdown-menu-dark">
                         <li><a class="dropdown-item" href="financeiro.html">Contas a Receber</a></li>
-                        <li><a class="dropdown-item active" href="contas-a-pagar.html">Contas a Pagar</a></li>
+                        <li><a class="dropdown-item" href="contas-a-pagar.html">Contas a Pagar</a></li>
                     </ul>
                 </div>
             </div>
@@ -99,7 +111,7 @@
                     <div class="card bg-light">
                         <div class="card-body py-2 px-3">
                             <h6 class="card-title mb-0">
-                                Total a Pagar (Filtrado): 
+                                Total a Pagar (Filtrado):
                                 <span class="fw-bold text-primary" id="totalFiltradoValor">R$ 0,00</span>
                             </h6>
                         </div>
@@ -107,7 +119,7 @@
                 </div>
             </div>
         </div>
-        
+
         <div class="modal fade" id="filtroModal" tabindex="-1">
             <div class="modal-dialog">
                 <div class="modal-content">
@@ -163,11 +175,13 @@
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <label for="contaFornecedorSelect" class="form-label">Fornecedor (Opcional)</label>
-                                    <select class="form-select" id="contaFornecedorSelect" style="width: 100%;"></select>
+                                    <select class="form-select" id="contaFornecedorSelect"
+                                        style="width: 100%;"></select>
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <label for="contaDescricao" class="form-label">Descrição da Despesa</label>
-                                    <input type="text" class="form-control" id="contaDescricao" placeholder="Ex: Aluguel, Conta de Luz" required>
+                                    <input type="text" class="form-control" id="contaDescricao"
+                                        placeholder="Ex: Aluguel, Conta de Luz" required>
                                 </div>
                             </div>
                             <div class="row">
@@ -181,7 +195,8 @@
                                 </div>
                             </div>
                             <div class="d-flex justify-content-end">
-                                <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Cancelar</button>
+                                <button type="button" class="btn btn-secondary me-2"
+                                    data-bs-dismiss="modal">Cancelar</button>
                                 <button type="submit" class="btn btn-success">Salvar Despesa</button>
                             </div>
                         </form>
@@ -201,7 +216,8 @@
                         <form id="formPagamentoPagar">
                             <input type="hidden" id="pagamentoContaId">
                             <p><strong>Despesa:</strong> <span id="modalPagarDescricao"></span></p>
-                            <p><strong>Valor Restante:</strong> <span id="modalPagarValorRestante" class="fw-bold text-danger"></span></p>
+                            <p><strong>Valor Restante:</strong> <span id="modalPagarValorRestante"
+                                    class="fw-bold text-danger"></span></p>
                             <div class="mb-3">
                                 <label for="valorAPagar" class="form-label">Valor Pago</label>
                                 <input type="number" step="0.01" class="form-control" id="valorAPagar" required>
@@ -211,7 +227,8 @@
                                 <input type="date" class="form-control" id="dataPagamentoPagar" required>
                             </div>
                             <div class="d-flex justify-content-end">
-                                <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Cancelar</button>
+                                <button type="button" class="btn btn-secondary me-2"
+                                    data-bs-dismiss="modal">Cancelar</button>
                                 <button type="submit" class="btn btn-success">Confirmar Pagamento</button>
                             </div>
                         </form>
@@ -234,4 +251,5 @@
     <script src="../js/global-admin.js"></script>
     <script src="../js/contas-a-pagar.js"></script>
 </body>
+
 </html>

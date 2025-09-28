@@ -7,7 +7,7 @@ let cartData = {};
 let loggedInCustomerData = null;
 let todosProdutosGlobaisParaCarrinho = [];
 
-// --- GERENCIAMENTO DO LOCALSTORAGE ---
+// --- GERENCIAMENTO DO LOCALSTORAGE (SEU CÓDIGO ORIGINAL) ---
 function getCartFromStorageCarrinho() {
     const storedCart = localStorage.getItem(CART_STORAGE_KEY_CARRINHO);
     try {
@@ -28,7 +28,7 @@ function getCustomerFromStorageCarrinho() { const s = localStorage.getItem(CUSTO
 function saveCustomerToStorageCarrinho(c) { localStorage.setItem(CUSTOMER_STORAGE_KEY_CARRINHO, JSON.stringify(c)); }
 function removeCustomerFromStorageCarrinho() { localStorage.removeItem(CUSTOMER_STORAGE_KEY_CARRINHO); }
 
-// --- CARREGAR PRODUTOS GLOBAIS ---
+// --- CARREGAR PRODUTOS GLOBAIS (SEU CÓDIGO ORIGINAL) ---
 async function carregarTodosProdutosParaReferenciaCarrinho() {
     try {
         const response = await fetch('/api/produtos');
@@ -39,7 +39,7 @@ async function carregarTodosProdutosParaReferenciaCarrinho() {
     }
 }
 
-// --- UI DO CARRINHO ---
+// --- UI DO CARRINHO (SEU CÓDIGO ORIGINAL) ---
 function updateCartCountNavbarCarrinho() {
     const cartCountEl = document.getElementById('cartCountNavbar');
     if (!cartCountEl) return;
@@ -146,6 +146,7 @@ function handleRemoveItem(cartId) {
     saveCartToStorageCarrinho();
 }
 
+// --- FUNÇÃO DE UI DO CLIENTE (ATUALIZADA) ---
 function updateCustomerUI() {
     const loggedInDiv = document.getElementById('loggedInCustomer');
     const guestDiv = document.getElementById('guestCustomer');
@@ -156,13 +157,18 @@ function updateCustomerUI() {
         loggedInDiv.style.display = 'flex';
         guestDiv.style.display = 'none';
         customerNameSpan.textContent = loggedInCustomerData.nome;
-        if (loggedInCustomerData.endereco) {
+
+        // Lógica para mostrar/esconder o endereço
+        const tipoPedidoSelecionado = document.querySelector('input[name="tipoPedido"]:checked').value;
+        if (tipoPedidoSelecionado === 'ENTREGA' && loggedInCustomerData.endereco) {
             customerDetailsDiv.style.display = 'block';
             customerDetailsDiv.innerHTML = `
                 <i class="bi bi-truck"></i> Entregar em: 
                 ${loggedInCustomerData.endereco.logradouro || ''}, 
                 ${loggedInCustomerData.endereco.numero || ''} - 
                 ${loggedInCustomerData.endereco.bairro || ''}`;
+        } else {
+            customerDetailsDiv.style.display = 'none';
         }
     } else {
         loggedInDiv.style.display = 'none';
@@ -179,10 +185,10 @@ function updateFinalizeButtonState() {
     finalizeBtn.disabled = isCartEmpty || !isCustomerLoggedIn;
 }
 
+// --- FUNÇÕES DE LOGIN/CADASTRO (SEU CÓDIGO ORIGINAL) ---
 async function handleRegister() {
     const { value: formValues, isConfirmed } = await Swal.fire({
         title: 'Cadastro Rápido',
-        // --- MELHORIA 1: Aumenta a largura do modal e reorganiza o HTML com Bootstrap Grid ---
         width: '800px',
         html: `
             <style>
@@ -191,105 +197,53 @@ async function handleRegister() {
               #cep-status { font-size: 0.8rem; height: 1.2rem; }
             </style>
             <div class="container-fluid">
-              <h6 class="text-start">Dados Pessoais</h6>
-              <hr class="mt-1">
+              <h6 class="text-start">Dados Pessoais</h6><hr class="mt-1">
               <div class="row">
-                <div class="col-md-6 mb-3">
-                  <p class="swal-label">Nome Completo</p>
-                  <input id="swal-nome" class="form-control" placeholder="Nome Completo" required>
-                </div>
-                <div class="col-md-6 mb-3">
-                  <p class="swal-label">E-mail</p>
-                  <input id="swal-email" type="email" class="form-control" placeholder="E-mail" required>
-                </div>
-                <div class="col-md-6 mb-3">
-                  <p class="swal-label">Senha</p>
-                  <input id="swal-senha" type="password" class="form-control" placeholder="Senha" required>
-                </div>
-                <div class="col-md-6 mb-3">
-                  <p class="swal-label">Telefone / WhatsApp</p>
-                  <input id="swal-telefone" type="tel" class="form-control" placeholder="Telefone / WhatsApp" required>
-                </div>
+                <div class="col-md-6 mb-3"><p class="swal-label">Nome Completo</p><input id="swal-nome" class="form-control" placeholder="Nome Completo" required></div>
+                <div class="col-md-6 mb-3"><p class="swal-label">E-mail</p><input id="swal-email" type="email" class="form-control" placeholder="E-mail" required></div>
+                <div class="col-md-6 mb-3"><p class="swal-label">Senha</p><input id="swal-senha" type="password" class="form-control" placeholder="Senha" required></div>
+                <div class="col-md-6 mb-3"><p class="swal-label">Telefone / WhatsApp</p><input id="swal-telefone" type="tel" class="form-control" placeholder="Telefone / WhatsApp" required></div>
               </div>
-
-              <h6 class="text-start mt-3">Endereço de Entrega</h6>
-              <hr class="mt-1">
+              <h6 class="text-start mt-3">Endereço de Entrega</h6><hr class="mt-1">
               <div class="row">
-                <div class="col-md-4 mb-3">
-                  <p class="swal-label">CEP</p>
-                  <input id="swal-cep" class="form-control" placeholder="Apenas números">
-                  <div id="cep-status" class="text-muted mt-1"></div>
-                </div>
-                <div class="col-md-8 mb-3">
-                  <p class="swal-label">Rua / Avenida</p>
-                  <input id="swal-logradouro" class="form-control" placeholder="Rua / Avenida">
-                </div>
-                 <div class="col-md-4 mb-3">
-                  <p class="swal-label">Número</p>
-                  <input id="swal-numero" class="form-control" placeholder="Número">
-                </div>
-                <div class="col-md-8 mb-3">
-                  <p class="swal-label">Bairro</p>
-                  <input id="swal-bairro" class="form-control" placeholder="Bairro">
-                </div>
-                <div class="col-md-6 mb-3">
-                  <p class="swal-label">Cidade</p>
-                  <input id="swal-cidade" class="form-control" placeholder="Cidade">
-                </div>
-                <div class="col-md-6 mb-3">
-                  <p class="swal-label">Estado (UF)</p>
-                  <input id="swal-estado" class="form-control" placeholder="Estado (UF)">
-                </div>
-                 <div class="col-12">
-                  <p class="swal-label">Complemento (opcional)</p>
-                  <input id="swal-complemento" class="form-control" placeholder="Apto, Bloco, etc.">
-                </div>
+                <div class="col-md-4 mb-3"><p class="swal-label">CEP</p><input id="swal-cep" class="form-control" placeholder="Apenas números"><div id="cep-status" class="text-muted mt-1"></div></div>
+                <div class="col-md-8 mb-3"><p class="swal-label">Rua / Avenida</p><input id="swal-logradouro" class="form-control" placeholder="Rua / Avenida"></div>
+                <div class="col-md-4 mb-3"><p class="swal-label">Número</p><input id="swal-numero" class="form-control" placeholder="Número"></div>
+                <div class="col-md-8 mb-3"><p class="swal-label">Bairro</p><input id="swal-bairro" class="form-control" placeholder="Bairro"></div>
+                <div class="col-md-6 mb-3"><p class="swal-label">Cidade</p><input id="swal-cidade" class="form-control" placeholder="Cidade"></div>
+                <div class="col-md-6 mb-3"><p class="swal-label">Estado (UF)</p><input id="swal-estado" class="form-control" placeholder="Estado (UF)"></div>
+                <div class="col-12"><p class="swal-label">Complemento (opcional)</p><input id="swal-complemento" class="form-control" placeholder="Apto, Bloco, etc."></div>
               </div>
-            </div>
-        `,
+            </div>`,
         focusConfirm: false,
         showCancelButton: true,
         confirmButtonText: 'Cadastrar e Entrar',
         cancelButtonText: 'Cancelar',
-        // --- MELHORIA 2: Lógica para buscar o CEP ---
         didOpen: () => {
             const cepInput = document.getElementById('swal-cep');
             const statusDiv = document.getElementById('cep-status');
-
             const logradouroInput = document.getElementById('swal-logradouro');
             const bairroInput = document.getElementById('swal-bairro');
             const cidadeInput = document.getElementById('swal-cidade');
             const estadoInput = document.getElementById('swal-estado');
             const numeroInput = document.getElementById('swal-numero');
-
             cepInput.addEventListener('blur', async (e) => {
-                const cep = e.target.value.replace(/\D/g, ''); // Remove tudo que não for número
-                if (cep.length !== 8) {
-                    statusDiv.textContent = '';
-                    return;
-                }
-
+                const cep = e.target.value.replace(/\D/g, '');
+                if (cep.length !== 8) { statusDiv.textContent = ''; return; }
                 statusDiv.textContent = 'Buscando...';
                 try {
                     const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
                     if (!response.ok) throw new Error('CEP não encontrado.');
-                    
                     const data = await response.json();
-                    if (data.erro) {
-                        throw new Error('CEP inválido.');
-                    }
-
+                    if (data.erro) throw new Error('CEP inválido.');
                     logradouroInput.value = data.logradouro;
                     bairroInput.value = data.bairro;
                     cidadeInput.value = data.localidade;
                     estadoInput.value = data.uf;
-
                     statusDiv.textContent = 'Endereço encontrado!';
                     statusDiv.classList.remove('text-danger');
                     statusDiv.classList.add('text-success');
-                    
-                    numeroInput.focus(); // Foca no campo de número após preencher o endereço
-
+                    numeroInput.focus();
                 } catch (error) {
                     statusDiv.textContent = error.message;
                     statusDiv.classList.remove('text-success');
@@ -297,28 +251,25 @@ async function handleRegister() {
                 }
             });
         },
-        preConfirm: () => {
-            return {
-                nome: document.getElementById('swal-nome').value,
-                email: document.getElementById('swal-email').value,
-                senha: document.getElementById('swal-senha').value,
-                telefone: document.getElementById('swal-telefone').value,
-                endereco: {
-                    cep: document.getElementById('swal-cep').value,
-                    logradouro: document.getElementById('swal-logradouro').value,
-                    numero: document.getElementById('swal-numero').value,
-                    bairro: document.getElementById('swal-bairro').value,
-                    cidade: document.getElementById('swal-cidade').value,
-                    estado: document.getElementById('swal-estado').value,
-                    complemento: document.getElementById('swal-complemento').value,
-                }
-            };
-        }
+        preConfirm: () => ({
+            nome: document.getElementById('swal-nome').value,
+            email: document.getElementById('swal-email').value,
+            senha: document.getElementById('swal-senha').value,
+            telefone: document.getElementById('swal-telefone').value,
+            endereco: {
+                cep: document.getElementById('swal-cep').value,
+                logradouro: document.getElementById('swal-logradouro').value,
+                numero: document.getElementById('swal-numero').value,
+                bairro: document.getElementById('swal-bairro').value,
+                cidade: document.getElementById('swal-cidade').value,
+                estado: document.getElementById('swal-estado').value,
+                complemento: document.getElementById('swal-complemento').value,
+            }
+        })
     });
 
     if (isConfirmed && formValues) {
         try {
-            // Validação simples
             if(!formValues.nome || !formValues.email || !formValues.senha) {
                 throw new Error('Nome, e-mail e senha são obrigatórios.');
             }
@@ -342,14 +293,10 @@ async function handleRegister() {
     }
 }
 
-
 async function handleLogin() {
     const { value: formValues } = await Swal.fire({
         title: 'Login',
-        html: `
-            <input id="swal-email" class="swal2-input" placeholder="E-mail">
-            <input id="swal-senha" type="password" class="swal2-input" placeholder="Senha">
-        `,
+        html: `<input id="swal-email" class="swal2-input" placeholder="E-mail"><input id="swal-senha" type="password" class="swal2-input" placeholder="Senha">`,
         focusConfirm: false,
         showCancelButton: true,
         confirmButtonText: 'Entrar',
@@ -385,19 +332,37 @@ function handleLogout() {
     updateCustomerUI();
 }
 
+// --- FUNÇÃO DE FINALIZAR PEDIDO (ATUALIZADA) ---
 async function finalizeOrder() {
     if (Object.keys(cartData).length === 0) { Swal.fire('Carrinho Vazio!', 'Adicione itens ao seu carrinho para continuar.', 'warning'); return; }
     if (!loggedInCustomerData) { Swal.fire('Identifique-se!', 'Por favor, entre na sua conta ou cadastre-se para finalizar o pedido.', 'info'); return; }
-    if (!loggedInCustomerData.endereco || !loggedInCustomerData.endereco.cep) { Swal.fire('Endereço Incompleto!', 'Por favor, complete seu endereço no cadastro para continuar.', 'warning'); return; }
     
     const formaPagamentoSelecionada = document.querySelector('input[name="formaPagamento"]:checked');
     if (!formaPagamentoSelecionada) { Swal.fire('Atenção!', 'Por favor, selecione uma forma de pagamento.', 'warning'); return; }
 
-    const pedidoItensPayload = [];
+    // NOVAS VALIDAÇÕES DE TIPO DE PEDIDO
+    const tipoPedido = document.querySelector('input[name="tipoPedido"]:checked').value;
+    const dataAgendamentoInput = document.getElementById('dataAgendamento');
+    let dataAgendamento = null;
 
+    if (tipoPedido === 'ENCOMENDA') {
+        if (!dataAgendamentoInput.value) {
+            Swal.fire('Atenção!', 'Por favor, selecione a data e a hora para a sua encomenda.', 'warning');
+            return;
+        }
+        // Converte para o formato ISO 8601 que o ZonedDateTime do backend espera
+        dataAgendamento = new Date(dataAgendamentoInput.value).toISOString();
+    }
+
+    if (tipoPedido === 'ENTREGA' && (!loggedInCustomerData.endereco || !loggedInCustomerData.endereco.cep)) {
+        Swal.fire('Endereço Incompleto!', 'Por favor, complete seu endereço no cadastro para pedidos de entrega.', 'warning');
+        return;
+    }
+    
+    // Montagem do payload de itens (seu código original)
+    const pedidoItensPayload = [];
     for (const cartId in cartData) {
         const item = cartData[cartId];
-        
         pedidoItensPayload.push({
             produtoId: parseInt(item.id),
             quantidade: item.qtde,
@@ -420,11 +385,14 @@ async function finalizeOrder() {
         }
     }
 
+    // PAYLOAD FINAL ENVIADO PARA A API (ATUALIZADO)
     const payload = {
         clienteId: loggedInCustomerData.id,
-        enderecoEntrega: loggedInCustomerData.endereco,
         itens: pedidoItensPayload,
         formaPagamento: formaPagamentoSelecionada.value,
+        tipo: tipoPedido,
+        enderecoEntrega: tipoPedido === 'ENTREGA' ? loggedInCustomerData.endereco : null,
+        dataAgendamento: dataAgendamento
     };
     
     Swal.fire({ title: 'Confirmando seu pedido...', text: 'Aguarde um momento.', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
@@ -450,7 +418,7 @@ async function finalizeOrder() {
     }
 }
 
-// --- INICIALIZAÇÃO DA PÁGINA DO CARRINHO ---
+// --- INICIALIZAÇÃO DA PÁGINA (ATUALIZADA) ---
 window.onload = async () => {
     cartData = getCartFromStorageCarrinho();
     loggedInCustomerData = getCustomerFromStorageCarrinho();
@@ -465,4 +433,13 @@ window.onload = async () => {
     document.getElementById('registerButton')?.addEventListener('click', handleRegister);
     document.getElementById('logoutButton')?.addEventListener('click', handleLogout);
     document.getElementById('finalizeOrderButton')?.addEventListener('click', finalizeOrder);
+
+    // ADICIONADO: Listeners para os tipos de pedido
+    const agendamentoSection = document.getElementById('agendamentoSection');
+    document.querySelectorAll('input[name="tipoPedido"]').forEach(radio => {
+        radio.addEventListener('change', function() {
+            agendamentoSection.style.display = this.value === 'ENCOMENDA' ? 'block' : 'none';
+            updateCustomerUI(); // Atualiza a exibição do endereço
+        });
+    });
 };

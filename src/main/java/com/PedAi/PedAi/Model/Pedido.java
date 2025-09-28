@@ -29,58 +29,41 @@ public class Pedido {
     @Embedded
     private Endereco enderecoEntrega;
 
-    public Endereco getEnderecoEntrega() {
-        return enderecoEntrega;
-    }
+    // --- NOVOS CAMPOS ADICIONADOS ---
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, columnDefinition = "varchar(255) default 'ENTREGA'")
+    private TipoPedido tipo;
 
-    public void setEnderecoEntrega(Endereco enderecoEntrega) {
-        this.enderecoEntrega = enderecoEntrega;
-    }
+    @Column(columnDefinition = "timestamp with time zone")
+    private ZonedDateTime dataAgendamento; // Usado para encomendas
 
-    public Cliente getCliente() {
-        return cliente;
-    }
+    private String formaPagamento; // Campo que faltava para armazenar a forma de pagamento
 
-    public void setCliente(Cliente cliente) {
-        this.cliente = cliente;
-    }
+    // --- FIM DOS NOVOS CAMPOS ---
 
+    // Getters e Setters
     public BigDecimal getTotal() {
         return itens.stream()
                 .map(ItemPedido::getSubtotal)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
-
-    // Getters e Setters
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public ZonedDateTime getDataPedido() {
-        return dataPedido;
-    }
-
-    public void setDataPedido(ZonedDateTime dataPedido) {
-        this.dataPedido = dataPedido;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public List<ItemPedido> getItens() {
-        return itens;
-    }
-
-    public void setItens(List<ItemPedido> itens) {
-        this.itens = itens;
-    }
+    
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+    public ZonedDateTime getDataPedido() { return dataPedido; }
+    public void setDataPedido(ZonedDateTime dataPedido) { this.dataPedido = dataPedido; }
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
+    public List<ItemPedido> getItens() { return itens; }
+    public void setItens(List<ItemPedido> itens) { this.itens = itens; }
+    public Cliente getCliente() { return cliente; }
+    public void setCliente(Cliente cliente) { this.cliente = cliente; }
+    public Endereco getEnderecoEntrega() { return enderecoEntrega; }
+    public void setEnderecoEntrega(Endereco enderecoEntrega) { this.enderecoEntrega = enderecoEntrega; }
+    public TipoPedido getTipo() { return tipo; }
+    public void setTipo(TipoPedido tipo) { this.tipo = tipo; }
+    public ZonedDateTime getDataAgendamento() { return dataAgendamento; }
+    public void setDataAgendamento(ZonedDateTime dataAgendamento) { this.dataAgendamento = dataAgendamento; }
+    public String getFormaPagamento() { return formaPagamento; }
+    public void setFormaPagamento(String formaPagamento) { this.formaPagamento = formaPagamento; }
 }
