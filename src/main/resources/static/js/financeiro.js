@@ -60,9 +60,11 @@ document.addEventListener('DOMContentLoaded', function () {
             id: item.id,
             clienteNome: item.clienteNome,
             origem: item.origem,
+            vencimento: item.dataVencimento,
+            valorTotal: item.valorTotal,
+            valorRecebido: item.valorRecebido,
             valorRestante: item.valorRestante,
             status: item.status.replace('_', ' '),
-            vencimento: item.dataVencimento,
             dadosCompletos: item
         }));
 
@@ -72,27 +74,39 @@ document.addEventListener('DOMContentLoaded', function () {
             tabelaContas = $('#tabela-contas').DataTable({
                 data: dadosMapeados,
                 columns: [
-                    { data: "id" }, { data: "clienteNome" }, { data: "origem" },
-                    { data: "valorRestante", render: formatarMoeda },
-                    { data: "status", render: function (data) {
-                        const s = { 'A RECEBER': 'status-areceber', 'PARCIALMENTE PAGO': 'status-parcial', 'RECEBIDO': 'status-recebido' };
-                        return `<span class="status-badge ${s[data] || ''}">${data}</span>`;
-                    }},
+                    { data: "id" },
+                    { data: "clienteNome" },
+                    { data: "origem" },
                     { data: "vencimento", render: formatarData },
-                    { data: null, title: "Ações", render: function (data, type, row) {
-                        let btnPagar = row.dadosCompletos.status !== 'RECEBIDO' ? `<button class="btn btn-sm btn-success btn-pagar" data-id="${row.id}" title="Pagar"><i class="bi bi-currency-dollar"></i></button>` : '';
-                        return `<div class="btn-group" role="group"><button class="btn btn-sm btn-info btn-detalhes" data-id="${row.id}" title="Detalhes"><i class="bi bi-eye"></i></button>${btnPagar}<button class="btn btn-sm btn-warning btn-editar" data-id="${row.id}" title="Editar"><i class="bi bi-pencil"></i></button><button class="btn btn-sm btn-danger btn-excluir" data-id="${row.id}" title="Excluir"><i class="bi bi-trash"></i></button></div>`;
-                    }, orderable: false, width: "150px" }
+                    { data: "valorTotal", render: formatarMoeda },
+                    { data: "valorRecebido", render: formatarMoeda },
+                    { data: "valorRestante", render: formatarMoeda },
+                    {
+                        data: "status",
+                        render: function (data) {
+                            const s = { 'A RECEBER': 'status-areceber', 'PARCIALMENTE PAGO': 'status-parcial', 'RECEBIDO': 'status-recebido' };
+                            return `<span class="status-badge ${s[data] || ''}">${data}</span>`;
+                        }
+                    },
+                    {
+                        data: null,
+                        title: "Ações",
+                        render: function (data, type, row) {
+                            let btnPagar = row.dadosCompletos.status !== 'RECEBIDO' ? `<button class="btn btn-sm btn-success btn-pagar" data-id="${row.id}" title="Pagar"><i class="bi bi-currency-dollar"></i></button>` : '';
+                            return `<div class="btn-group" role="group"><button class="btn btn-sm btn-info btn-detalhes" data-id="${row.id}" title="Detalhes"><i class="bi bi-eye"></i></button>${btnPagar}<button class="btn btn-sm btn-warning btn-editar" data-id="${row.id}" title="Editar"><i class="bi bi-pencil"></i></button><button class="btn btn-sm btn-danger btn-excluir" data-id="${row.id}" title="Excluir"><i class="bi bi-trash"></i></button></div>`;
+                        },
+                        orderable: false,
+                        width: "150px"
+                    }
                 ],
                 language: { url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/pt-BR.json' },
-                order: [[5, 'asc']]
+                order: [[3, 'asc']]
             });
             
             tabelaContas.on('draw.dt', function() {
                 atualizarTotalFiltrado();
             });
         }
-        // Aplica os filtros (ou a falta deles) na inicialização
         aplicarFiltros(false); 
     }
     
@@ -134,16 +148,14 @@ document.addEventListener('DOMContentLoaded', function () {
         const dataFim = $('#filtroDataFim').val();
         const status = $('#filtroStatus').val();
     
-        // Limpa filtros customizados anteriores para não acumular
         $.fn.dataTable.ext.search.pop(); 
     
-        // Adiciona a nova lógica de filtro
         $.fn.dataTable.ext.search.push(
             function(settings, data, dataIndex) {
-                const cliente = data[1].toLowerCase(); // Coluna 'Cliente'
-                const origem = data[2].toLowerCase(); // Coluna 'Origem'
-                const statusTabela = data[4]; // Coluna 'Status'
-                const vencimento = tabelaContas.row(dataIndex).data().vencimento; // Pega o dado original
+                const cliente = data[1].toLowerCase();
+                const origem = data[2].toLowerCase();
+                const statusTabela = data[7];
+                const vencimento = tabelaContas.row(dataIndex).data().vencimento;
                 
                 const textoValido = !texto || cliente.includes(texto) || origem.includes(texto);
                 const dataValida = (!dataInicio || vencimento >= dataInicio) && (!dataFim || vencimento <= dataFim);
@@ -160,7 +172,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // --- EVENT LISTENERS ---
     $('#btnAbrirFiltros').on('click', () => filtroModal.show());
     $('#btnAplicarFiltros').on('click', () => aplicarFiltros(true));
     $('#btnLimparFiltros').on('click', () => {

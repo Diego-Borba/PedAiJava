@@ -40,11 +40,12 @@ document.addEventListener('DOMContentLoaded', function () {
     function inicializarTabela(dados) {
         const dadosMapeados = dados.map(item => ({
             id: item.id,
-            // A coluna de descrição agora mostra o nome do fornecedor se existir, senão mostra a descrição manual.
             fornecedorDescricao: item.fornecedorNome ? `${item.fornecedorNome} (${item.descricao})` : item.descricao,
+            vencimento: item.dataVencimento,
+            valorTotal: item.valorTotal,
+            valorPago: item.valorPago,
             valorRestante: item.valorRestante,
             status: item.status.replace('_', ' '),
-            vencimento: item.dataVencimento,
             dadosCompletos: item
         }));
 
@@ -55,20 +56,31 @@ document.addEventListener('DOMContentLoaded', function () {
                 data: dadosMapeados,
                 columns: [
                     { data: "id" }, 
-                    { data: "fornecedorDescricao" }, 
-                    { data: "valorRestante", render: formatarMoeda },
-                    { data: "status", render: function (data) {
-                        const statusMap = { 'A PAGAR': 'status-apagar', 'PARCIALMENTE PAGO': 'status-parcial', 'PAGO': 'status-pago' };
-                        return `<span class="status-badge ${statusMap[data] || ''}">${data}</span>`;
-                    }},
+                    { data: "fornecedorDescricao" },
                     { data: "vencimento", render: formatarData },
-                    { data: null, title: "Ações", render: function (data, type, row) {
-                        let btnPagar = row.dadosCompletos.status !== 'PAGO' ? `<button class="btn btn-sm btn-success btn-pagar" data-id="${row.id}" title="Registrar Pagamento"><i class="bi bi-currency-dollar"></i></button>` : '';
-                        return `<div class="btn-group">${btnPagar}<button class="btn btn-sm btn-warning btn-editar" data-id="${row.id}" title="Editar"><i class="bi bi-pencil"></i></button><button class="btn btn-sm btn-danger btn-excluir" data-id="${row.id}" title="Excluir"><i class="bi bi-trash"></i></button></div>`;
-                    }, orderable: false, width: "120px" }
+                    { data: "valorTotal", render: formatarMoeda },
+                    { data: "valorPago", render: formatarMoeda },
+                    { data: "valorRestante", render: formatarMoeda },
+                    { 
+                        data: "status", 
+                        render: function (data) {
+                            const statusMap = { 'A PAGAR': 'status-apagar', 'PARCIALMENTE PAGO': 'status-parcial', 'PAGO': 'status-pago' };
+                            return `<span class="status-badge ${statusMap[data] || ''}">${data}</span>`;
+                        }
+                    },
+                    { 
+                        data: null, 
+                        title: "Ações", 
+                        render: function (data, type, row) {
+                            let btnPagar = row.dadosCompletos.status !== 'PAGO' ? `<button class="btn btn-sm btn-success btn-pagar" data-id="${row.id}" title="Registrar Pagamento"><i class="bi bi-currency-dollar"></i></button>` : '';
+                            return `<div class="btn-group">${btnPagar}<button class="btn btn-sm btn-warning btn-editar" data-id="${row.id}" title="Editar"><i class="bi bi-pencil"></i></button><button class="btn btn-sm btn-danger btn-excluir" data-id="${row.id}" title="Excluir"><i class="bi bi-trash"></i></button></div>`;
+                        }, 
+                        orderable: false, 
+                        width: "120px" 
+                    }
                 ],
                 language: { url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/pt-BR.json' },
-                order: [[4, 'asc']]
+                order: [[2, 'asc']]
             });
 
             tabelaContasPagar.on('draw.dt', function() {
@@ -100,7 +112,7 @@ document.addEventListener('DOMContentLoaded', function () {
         $.fn.dataTable.ext.search.push(
             function(settings, data, dataIndex) {
                 const descricao = data[1].toLowerCase();
-                const statusTabela = data[3];
+                const statusTabela = data[6];
                 const vencimento = tabelaContasPagar.row(dataIndex).data().vencimento;
                 
                 const textoValido = !texto || descricao.includes(texto);
@@ -133,7 +145,6 @@ document.addEventListener('DOMContentLoaded', function () {
         container.show();
     }
 
-    // --- EVENT LISTENERS ---
     $('#btnAbrirFiltros').on('click', () => filtroModal.show());
     $('#btnAplicarFiltros').on('click', () => aplicarFiltros(true));
     $('#btnLimparFiltros').on('click', () => {
