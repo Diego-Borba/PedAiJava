@@ -19,22 +19,41 @@
     <div class="wrapper">
         <div class="main">
             <div class="sidebar collapsed" id="sidebar">
-                <button class="toggle-btn" onclick="toggleSidebar()" aria-label="Abrir menu de navegação"><i class="bi bi-list"></i></button>
-                <div class="dropdown"><a class="dropdown-toggle text-decoration-none" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi bi-plus-circle"></i><span class="menu-text">Cadastro</span></a><ul class="dropdown-menu dropdown-menu-dark"><li><a class="dropdown-item" href="cadastro.html">Produtos</a></li><li><a class="dropdown-item" href="fornecedor.html">Fornecedores</a></li></ul></div>
+                <button class="toggle-btn" onclick="toggleSidebar()" aria-label="Abrir menu de navegação"><i
+                        class="bi bi-list"></i></button>
+                <div class="dropdown"><a class="dropdown-toggle text-decoration-none" href="#" role="button"
+                        data-bs-toggle="dropdown" aria-expanded="false"><i class="bi bi-plus-circle"></i><span
+                            class="menu-text">Cadastro</span></a>
+                    <ul class="dropdown-menu dropdown-menu-dark">
+                        <li><a class="dropdown-item" href="cadastro.html">Produtos</a></li>
+                        <li><a class="dropdown-item" href="fornecedor.html">Fornecedores</a></li>
+                    </ul>
+                </div>
                 <a href="Pedidos.html"><i class="bi bi-cart4"></i><span class="menu-text">Pedidos</span></a>
-                <a href="entrada.html"><i class="bi bi-box-arrow-in-down"></i><span class="menu-text">Entradas</span></a>
-                <a href="gestao-pedidos.html"><i class="bi bi-card-list"></i><span class="menu-text">Gestão de Pedidos</span></a>
+                <a href="entrada.html"><i class="bi bi-box-arrow-in-down"></i><span
+                        class="menu-text">Entradas</span></a>
+                <a href="gestao-pedidos.html"><i class="bi bi-card-list"></i><span class="menu-text">Gestão de
+                        Pedidos</span></a>
                 <a href="admin-pedidos.html"><i class="bi bi-speedometer2"></i><span class="menu-text">KDS</span></a>
                 <a href="Produtos.html"><i class="bi bi-box-seam"></i><span class="menu-text">Listar Produtos</span></a>
-                <div class="dropdown"><a class="dropdown-toggle text-decoration-none" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi bi-cash-coin"></i><span class="menu-text">Financeiro</span></a><ul class="dropdown-menu dropdown-menu-dark"><li><a class="dropdown-item" href="financeiro.html">Contas a Receber</a></li><li><a class="dropdown-item" href="contas-a-pagar.html">Contas a Pagar</a></li></ul></div>
+                <div class="dropdown"><a class="dropdown-toggle text-decoration-none" href="#" role="button"
+                        data-bs-toggle="dropdown" aria-expanded="false"><i class="bi bi-cash-coin"></i><span
+                            class="menu-text">Financeiro</span></a>
+                    <ul class="dropdown-menu dropdown-menu-dark">
+                        <li><a class="dropdown-item" href="financeiro.html">Contas a Receber</a></li>
+                        <li><a class="dropdown-item" href="contas-a-pagar.html">Contas a Pagar</a></li>
+                    </ul>
+                </div>
             </div>
 
             <div class="content collapsed" id="content">
                 <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
                     <h2 class="mb-0">Contas a Receber</h2>
                     <div class="btn-toolbar">
-                        <button class="btn btn-outline-secondary me-2" id="btnAbrirFiltros"><i class="bi bi-funnel"></i> Filtrar</button>
-                        <button class="btn btn-primary" id="btnNovaConta"><i class="bi bi-plus-circle"></i> Cadastrar Conta</button>
+                        <button class="btn btn-outline-secondary me-2" id="btnAbrirFiltros"><i class="bi bi-funnel"></i>
+                            Filtrar</button>
+                        <button class="btn btn-primary" id="btnNovaConta"><i class="bi bi-plus-circle"></i> Cadastrar
+                            Conta</button>
                     </div>
                 </div>
 
@@ -50,7 +69,7 @@
                     </div>
                     <div class="col-lg-4 col-md-6 mb-4">
                         <div class="dashboard-card card-recebido">
-                             <div class="card-icon"><i class="bi bi-check2-circle"></i></div>
+                            <div class="card-icon"><i class="bi bi-check2-circle"></i></div>
                             <div class="card-content">
                                 <h6>Recebido (Mês)</h6>
                                 <h4 id="totalRecebidoMes">R$ 0,00</h4>
@@ -68,34 +87,155 @@
                     </div>
                 </div>
 
-                <div class="card shadow-sm"><div class="card-body">
-                    <div class="table-responsive">
-                        <table id="tabela-contas" class="table table-hover w-100">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Cliente</th>
-                                    <th>Origem</th>
-                                    <th>Vencimento</th>
-                                    <th>Total da Conta</th>
-                                    <th>Valor Pago</th>
-                                    <th>Valor Restante</th>
-                                    <th>Status</th>
-                                    <th>Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody></tbody>
-                        </table>
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table id="tabela-contas" class="table table-hover w-100">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Cliente</th>
+                                        <th>Origem</th>
+                                        <th>Vencimento</th>
+                                        <th>Total da Conta</th>
+                                        <th>Valor Pago</th>
+                                        <th>Valor Restante</th>
+                                        <th>Status</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                        <div id="totalFiltradoContainer" class="mt-3 d-flex justify-content-end" style="display: none;">
+                            <div class="card bg-light">
+                                <div class="card-body py-2 px-3">
+                                    <h6 class="card-title mb-0">Total a Receber (Filtrado): <span
+                                            class="fw-bold text-primary" id="totalFiltradoValor">R$ 0,00</span></h6>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div id="totalFiltradoContainer" class="mt-3 d-flex justify-content-end" style="display: none;"><div class="card bg-light"><div class="card-body py-2 px-3"><h6 class="card-title mb-0">Total a Receber (Filtrado): <span class="fw-bold text-primary" id="totalFiltradoValor">R$ 0,00</span></h6></div></div></div>
-                </div></div>
+                </div>
             </div>
         </div>
 
-        <div class="modal fade" id="filtroModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">Filtrar Contas</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><form id="formFiltro"><div class="mb-3"><label for="filtroTexto" class="form-label">Buscar por cliente ou origem</label><input type="text" class="form-control" id="filtroTexto" placeholder="Digite aqui..."></div><div class="row"><div class="col-md-6 mb-3"><label for="filtroDataInicio" class="form-label">Vencimento (De)</label><input type="date" class="form-control" id="filtroDataInicio"></div><div class="col-md-6 mb-3"><label for="filtroDataFim" class="form-label">Vencimento (Até)</label><input type="date" class="form-control" id="filtroDataFim"></div></div><div class="mb-3"><label for="filtroStatus" class="form-label">Status</label><select class="form-select" id="filtroStatus"><option value="">Todos</option><option value="A RECEBER">A Receber</option><option value="PARCIALMENTE PAGO">Parcialmente Pago</option><option value="RECEBIDO">Recebido</option></select></div></form></div><div class="modal-footer"><button type="button" class="btn btn-link text-secondary" id="btnLimparFiltros">Limpar</button><button type="button" class="btn btn-primary" id="btnAplicarFiltros">Aplicar</button></div></div></div></div>
-        <div class="modal fade" id="pagamentoModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">Registrar Pagamento</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><form id="formPagamento"><input type="hidden" id="contaId"><p><strong>Cliente:</strong> <span id="modalClienteNome"></span></p><p><strong>Valor Restante:</strong> <span id="modalValorRestante" class="fw-bold text-danger"></span></p><div class="mb-3"><label for="valorPago" class="form-label">Valor Recebido</label><input type="number" step="0.01" class="form-control" id="valorPago" required></div><div class="mb-3"><label for="dataPagamento" class="form-label">Data do Recebimento</label><input type="date" class="form-control" id="dataPagamento" required></div><div class="d-flex justify-content-end"><button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Cancelar</button><button type="submit" class="btn btn-success">Confirmar</button></div></form></div></div></div></div>
-        <div class="modal fade" id="contaModal" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="contaModalLabel">Nova Conta</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><form id="formConta"><input type="hidden" id="contaIdForm"><div class="row"><div class="col-md-6 mb-3"><label for="contaClienteSelect" class="form-label">Cliente Cadastrado (Opcional)</label><select class="form-select" id="contaClienteSelect" style="width: 100%;"></select></div><div class="col-md-6 mb-3"><label for="contaClienteNomeAvulso" class="form-label">Nome do Cliente Avulso</label><input type="text" class="form-control" id="contaClienteNomeAvulso" placeholder="Para clientes não cadastrados"></div></div><div class="row"><div class="col-md-6 mb-3"><label for="contaValor" class="form-label">Valor Total</label><input type="number" step="0.01" class="form-control" id="contaValor" required></div><div class="col-md-6 mb-3"><label for="contaVencimento" class="form-label">Vencimento</label><input type="date" class="form-control" id="contaVencimento" required></div></div><div class="mb-3"><label for="contaOrigem" class="form-label">Origem/Descrição</label><input type="text" class="form-control" id="contaOrigem" placeholder="Ex: Venda Manual, Serviço..." required></div><div class="d-flex justify-content-end"><button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Cancelar</button><button type="submit" class="btn btn-success">Salvar</button></div></form></div></div></div></div>
-        <div class="modal fade" id="detalhesModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">Detalhes da Conta</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><p><strong>ID:</strong> <span id="detalhesId"></span></p><p><strong>Cliente:</strong> <span id="detalhesCliente"></span></p><p><strong>Origem:</strong> <span id="detalhesOrigem"></span></p><p><strong>Vencimento:</strong> <span id="detalhesVencimento"></span></p><hr><p><strong>Valor Total:</strong> <span id="detalhesValorTotal"></span></p><p><strong>Valor Pago:</strong> <span id="detalhesValorPago"></span></p><p class="fw-bold"><strong>Valor Restante:</strong> <span id="detalhesValorRestante"></span></p><hr><p><strong>Status:</strong> <span id="detalhesStatus"></span></p></div></div></div></div>
+        <div class="modal fade" id="filtroModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Filtrar Contas</h5><button type="button" class="btn-close"
+                            data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="formFiltro">
+                            <div class="mb-3"><label for="filtroTexto" class="form-label">Buscar por cliente ou
+                                    origem</label><input type="text" class="form-control" id="filtroTexto"
+                                    placeholder="Digite aqui..."></div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3"><label for="filtroDataInicio" class="form-label">Vencimento
+                                        (De)</label><input type="date" class="form-control" id="filtroDataInicio"></div>
+                                <div class="col-md-6 mb-3"><label for="filtroDataFim" class="form-label">Vencimento
+                                        (Até)</label><input type="date" class="form-control" id="filtroDataFim"></div>
+                            </div>
+                            <div class="mb-3"><label for="filtroStatus" class="form-label">Status</label><select
+                                    class="form-select" id="filtroStatus">
+                                    <option value="">Todos</option>
+                                    <option value="A RECEBER">A Receber</option>
+                                    <option value="PARCIALMENTE PAGO">Parcialmente Pago</option>
+                                    <option value="RECEBIDO">Recebido</option>
+                                </select></div>
+                        </form>
+                    </div>
+                    <div class="modal-footer"><button type="button" class="btn btn-link text-secondary"
+                            id="btnLimparFiltros">Limpar</button><button type="button" class="btn btn-primary"
+                            id="btnAplicarFiltros">Aplicar</button></div>
+                </div>
+            </div>
+        </div>
+        <div class="modal fade" id="pagamentoModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Registrar Pagamento</h5><button type="button" class="btn-close"
+                            data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="formPagamento"><input type="hidden" id="contaId">
+                            <p><strong>Cliente:</strong> <span id="modalClienteNome"></span></p>
+                            <p><strong>Valor Restante:</strong> <span id="modalValorRestante"
+                                    class="fw-bold text-danger"></span></p>
+                            <div class="mb-3"><label for="valorPago" class="form-label">Valor Recebido</label><input
+                                    type="number" step="0.01" class="form-control" id="valorPago" required></div>
+                            <div class="mb-3"><label for="dataPagamento" class="form-label">Data do
+                                    Recebimento</label><input type="date" class="form-control" id="dataPagamento"
+                                    required></div>
+                            <div class="d-flex justify-content-end"><button type="button" class="btn btn-secondary me-2"
+                                    data-bs-dismiss="modal">Cancelar</button><button type="submit"
+                                    class="btn btn-success">Confirmar</button></div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal fade" id="contaModal" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="contaModalLabel">Nova Conta</h5><button type="button"
+                            class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="formConta"><input type="hidden" id="contaIdForm">
+                            <div class="row">
+                                <div class="col-md-6 mb-3"><label for="contaClienteSelect" class="form-label">Cliente
+                                        Cadastrado (Opcional)</label><select class="form-select" id="contaClienteSelect"
+                                        style="width: 100%;"></select></div>
+                                <div class="col-md-6 mb-3"><label for="contaClienteNomeAvulso" class="form-label">Nome
+                                        do Cliente Avulso</label><input type="text" class="form-control"
+                                        id="contaClienteNomeAvulso" placeholder="Para clientes não cadastrados"></div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3"><label for="contaValor" class="form-label">Valor
+                                        Total</label><input type="number" step="0.01" class="form-control"
+                                        id="contaValor" required></div>
+                                <div class="col-md-6 mb-3"><label for="contaVencimento"
+                                        class="form-label">Vencimento</label><input type="date" class="form-control"
+                                        id="contaVencimento" required></div>
+                            </div>
+                            <div class="mb-3"><label for="contaOrigem" class="form-label">Origem/Descrição</label><input
+                                    type="text" class="form-control" id="contaOrigem"
+                                    placeholder="Ex: Venda Manual, Serviço..." required></div>
+                            <div class="d-flex justify-content-end"><button type="button" class="btn btn-secondary me-2"
+                                    data-bs-dismiss="modal">Cancelar</button><button type="submit"
+                                    class="btn btn-success">Salvar</button></div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal fade" id="detalhesModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Detalhes da Conta</h5><button type="button" class="btn-close"
+                            data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p><strong>ID:</strong> <span id="detalhesId"></span></p>
+                        <p><strong>Cliente:</strong> <span id="detalhesCliente"></span></p>
+                        <p><strong>Origem:</strong> <span id="detalhesOrigem"></span></p>
+                        <p><strong>Vencimento:</strong> <span id="detalhesVencimento"></span></p>
+                        <hr>
+                        <p><strong>Valor Total:</strong> <span id="detalhesValorTotal"></span></p>
+                        <p><strong>Valor Pago:</strong> <span id="detalhesValorPago"></span></p>
+                        <p class="fw-bold"><strong>Valor Restante:</strong> <span id="detalhesValorRestante"></span></p>
+                        <hr>
+                        <p><strong>Status:</strong> <span id="detalhesStatus"></span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <footer class="mt-auto">&copy; 2025 PedAi | Todos os direitos reservados</footer>
     </div>
@@ -108,4 +248,5 @@
     <script src="../js/global-admin.js"></script>
     <script src="../js/financeiro.js"></script>
 </body>
+
 </html>

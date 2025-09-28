@@ -55,35 +55,35 @@ document.addEventListener('DOMContentLoaded', function () {
             tabelaContasPagar = $('#tabela-contas-pagar').DataTable({
                 data: dadosMapeados,
                 columns: [
-                    { data: "id" }, 
+                    { data: "id" },
                     { data: "fornecedorDescricao" },
                     { data: "vencimento", render: formatarData },
                     { data: "valorTotal", render: formatarMoeda },
                     { data: "valorPago", render: formatarMoeda },
                     { data: "valorRestante", render: formatarMoeda },
-                    { 
-                        data: "status", 
+                    {
+                        data: "status",
                         render: function (data) {
                             const statusMap = { 'A PAGAR': 'status-apagar', 'PARCIALMENTE PAGO': 'status-parcial', 'PAGO': 'status-pago' };
                             return `<span class="status-badge ${statusMap[data] || ''}">${data}</span>`;
                         }
                     },
-                    { 
-                        data: null, 
-                        title: "Ações", 
+                    {
+                        data: null,
+                        title: "Ações",
                         render: function (data, type, row) {
                             let btnPagar = row.dadosCompletos.status !== 'PAGO' ? `<button class="btn btn-sm btn-success btn-pagar" data-id="${row.id}" title="Registrar Pagamento"><i class="bi bi-currency-dollar"></i></button>` : '';
                             return `<div class="btn-group">${btnPagar}<button class="btn btn-sm btn-warning btn-editar" data-id="${row.id}" title="Editar"><i class="bi bi-pencil"></i></button><button class="btn btn-sm btn-danger btn-excluir" data-id="${row.id}" title="Excluir"><i class="bi bi-trash"></i></button></div>`;
-                        }, 
-                        orderable: false, 
-                        width: "120px" 
+                        },
+                        orderable: false,
+                        width: "120px"
                     }
                 ],
                 language: { url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/pt-BR.json' },
                 order: [[2, 'asc']]
             });
 
-            tabelaContasPagar.on('draw.dt', function() {
+            tabelaContasPagar.on('draw.dt', function () {
                 atualizarTotalFiltrado();
             });
         }
@@ -110,11 +110,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
         $.fn.dataTable.ext.search.pop();
         $.fn.dataTable.ext.search.push(
-            function(settings, data, dataIndex) {
+            function (settings, data, dataIndex) {
                 const descricao = data[1].toLowerCase();
                 const statusTabela = data[6];
                 const vencimento = tabelaContasPagar.row(dataIndex).data().vencimento;
-                
+
                 const textoValido = !texto || descricao.includes(texto);
                 const dataValida = (!dataInicio || vencimento >= dataInicio) && (!dataFim || vencimento <= dataFim);
                 const statusValido = !status || statusTabela === status;
@@ -140,7 +140,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const dadosFiltrados = tabelaContasPagar.rows({ search: 'applied' }).data().toArray();
         const total = dadosFiltrados.reduce((sum, item) => sum + (item.valorRestante || 0), 0);
-        
+
         valorSpan.text(formatarMoeda(total));
         container.show();
     }
@@ -152,7 +152,7 @@ document.addEventListener('DOMContentLoaded', function () {
         aplicarFiltros(true);
     });
 
-    $('#btnNovaContaPagar').on('click', function() {
+    $('#btnNovaContaPagar').on('click', function () {
         $('#formContaPagar')[0].reset();
         $('#contaPagarIdForm').val('');
         fornecedorSelect.val(null).trigger('change');
@@ -176,7 +176,7 @@ document.addEventListener('DOMContentLoaded', function () {
             $('#formContaPagar')[0].reset();
             $('#contaPagarIdForm').val(dadosLinha.id);
             $('#contaPagarModalLabel').text(`Editar Despesa #${dadosLinha.id}`);
-            
+
             if (dadosLinha.fornecedorId) {
                 const option = new Option(dadosLinha.fornecedorNome, dadosLinha.fornecedorId, true, true);
                 fornecedorSelect.append(option).trigger('change');
@@ -204,14 +204,14 @@ document.addEventListener('DOMContentLoaded', function () {
                         if (!response.ok) throw new Error('Falha ao excluir.');
                         Swal.fire('Excluído!', 'A despesa foi removida.', 'success');
                         carregarContas();
-                    } catch(err) {
+                    } catch (err) {
                         Swal.fire('Erro!', 'Não foi possível excluir a despesa.', 'error');
                     }
                 }
             });
         }
     });
-    
+
     $('#formContaPagar').on('submit', async (e) => {
         e.preventDefault();
         const id = $('#contaPagarIdForm').val();
@@ -236,7 +236,7 @@ document.addEventListener('DOMContentLoaded', function () {
             contaPagarModal.hide();
             Swal.fire('Sucesso!', 'Despesa salva com sucesso!', 'success');
             carregarContas();
-        } catch(error) {
+        } catch (error) {
             Swal.fire('Erro!', error.message, 'error');
         }
     });
@@ -255,7 +255,7 @@ document.addEventListener('DOMContentLoaded', function () {
             pagamentoPagarModal.hide();
             Swal.fire('Sucesso!', 'Pagamento registrado com sucesso!', 'success');
             carregarContas();
-        } catch(error) {
+        } catch (error) {
             Swal.fire('Erro!', error.message, 'error');
         }
     });
