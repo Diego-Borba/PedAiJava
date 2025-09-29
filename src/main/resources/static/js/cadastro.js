@@ -11,12 +11,12 @@ document.addEventListener('DOMContentLoaded', function () {
     // --- NOVAS REFERÊNCIAS PARA RECEITA ---
     const btnAddReceita = document.getElementById('btnAddReceita');
     const listaReceitaContainer = document.getElementById('listaReceita');
-    
+
     const imagemFileInput = document.getElementById('imagemFile');
     const previewContainer = document.getElementById('preview-container');
     const imagePreview = document.getElementById('image-preview');
-    let imagemParaUpload = null; 
-    
+    let imagemParaUpload = null;
+
     let todosOsProdutos = [];
 
     async function carregarProdutosParaSelecao() {
@@ -30,11 +30,11 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Lógica de Preview da Imagem (sem alterações)
-    imagemFileInput.addEventListener('change', function(event) {
+    imagemFileInput.addEventListener('change', function (event) {
         const file = event.target.files[0];
         if (file && (file.type === 'image/jpeg' || file.type === 'image/png')) {
             const reader = new FileReader();
-            reader.onload = function(e) {
+            reader.onload = function (e) {
                 imagemParaUpload = { base64: e.target.result, tipo: file.type };
                 imagePreview.src = e.target.result;
                 previewContainer.style.display = 'block';
@@ -57,9 +57,9 @@ document.addEventListener('DOMContentLoaded', function () {
             adicionarLinhaGrupoKit();
         }
     });
-    
+
     btnAddGrupoKit?.addEventListener('click', () => adicionarLinhaGrupoKit());
-    
+
     // --- NOVA LÓGICA PARA ADICIONAR INGREDIENTE ---
     btnAddReceita?.addEventListener('click', () => adicionarLinhaIngrediente());
 
@@ -93,40 +93,35 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // --- NOVA FUNÇÃO PARA CRIAR LINHA DE INGREDIENTE ---
     function adicionarLinhaIngrediente() {
+        const materiasPrimas = todosOsProdutos.filter(p => p.tipo === 'Matéria-Prima');
+
+        let optionsHTML = '<option value="">Selecione um ingrediente...</option>';
+        materiasPrimas.forEach(mp => {
+            optionsHTML += `<option value="${mp.id}">${mp.nome}</option>`;
+        });
+
         const div = document.createElement('div');
         div.className = 'row g-3 mb-3 pb-3 border-bottom ingrediente-bloco';
         div.innerHTML = `
             <div class="col-md-7">
                 <label class="form-label small">Ingrediente (Matéria-Prima)</label>
-                <select class="form-select form-select-sm select-ingrediente" required></select>
+                <select class="form-select form-select-sm select-ingrediente" required>${optionsHTML}</select>
             </div>
             <div class="col-md-4">
                 <label class="form-label small">Qtde. Utilizada</label>
                 <input type="number" step="0.001" class="form-control form-control-sm qtde-ingrediente" required placeholder="Ex: 0.250 para 250g">
             </div>
-            <div class="col-md-1">
+            <div class="col-md-1 d-flex align-items-end">
                 <button type="button" class="btn btn-danger btn-sm w-100 btn-remover-ingrediente"><i class="bi bi-trash"></i></button>
             </div>
         `;
         listaReceitaContainer.appendChild(div);
-        
-        // Inicializa o Select2 para busca de produtos
-        $(div.querySelector('.select-ingrediente')).select2({
-            theme: 'bootstrap-5',
-            placeholder: 'Busque por uma matéria-prima',
-            ajax: {
-                url: '/api/produtos/search', // Usa o mesmo endpoint de busca geral
-                dataType: 'json',
-                delay: 250,
-                data: (params) => ({ q: params.term }),
-                processResults: (data) => ({ results: data }),
-            }
-        });
-        
-        div.querySelector('.btn-remover-ingrediente').addEventListener('click', function() {
+
+        div.querySelector('.btn-remover-ingrediente').addEventListener('click', function () {
             this.closest('.ingrediente-bloco').remove();
         });
     }
+
 
     // --- Submissão do Formulário (ATUALIZADA) ---
     formProduto.addEventListener('submit', async function (e) {
@@ -149,13 +144,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             });
         }
-        
+
         // --- NOVA LÓGICA PARA COLETAR DADOS DA RECEITA ---
         const receita = [];
         document.querySelectorAll('.ingrediente-bloco').forEach(bloco => {
             const ingredienteId = bloco.querySelector('.select-ingrediente').value;
             const quantidade = parseFloat(bloco.querySelector('.qtde-ingrediente').value);
-            
+
             if (ingredienteId && quantidade > 0) {
                 receita.push({
                     produtoIngredienteId: parseInt(ingredienteId),
@@ -203,7 +198,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ imagemBase64: imagemParaUpload.base64, imagemTipo: imagemParaUpload.tipo })
                 });
-                 if (!responseImagem.ok) { throw new Error('Produto salvo, mas falha ao enviar imagem.'); }
+                if (!responseImagem.ok) { throw new Error('Produto salvo, mas falha ao enviar imagem.'); }
             }
 
             Swal.fire({

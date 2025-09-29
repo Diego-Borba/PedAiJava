@@ -67,7 +67,7 @@ public class ProdutoController {
     @PostMapping
     @Transactional
     public ResponseEntity<?> create(@RequestBody Produto produto) {
-        
+
         if (produto.getNome() == null || produto.getNome().trim().isEmpty()) {
             return ResponseEntity.badRequest().body("O nome do produto é obrigatório.");
         }
@@ -117,10 +117,8 @@ public class ProdutoController {
     @PutMapping("/{id}")
     @Transactional
     public ResponseEntity<?> update(@PathVariable Long id, @RequestBody Produto produtoDetails) {
-        // A imagem não é mais tratada aqui
         return repository.findById(id).map(produtoExistente -> {
             produtoExistente.setNome(produtoDetails.getNome());
-            // ... (copiar todos os outros campos como estava antes, exceto a imagem)
             produtoExistente.setPreco(produtoDetails.getPreco());
             produtoExistente.setCategoria(produtoDetails.getCategoria());
             produtoExistente.setQtdeMax(produtoDetails.getQtdeMax());
@@ -137,7 +135,6 @@ public class ProdutoController {
             if (produtoDetails.isKit() && produtoDetails.getGruposKit() != null) {
                 produtoDetails.getGruposKit().forEach(grupoNovo -> {
                     grupoNovo.setProdutoKit(produtoExistente);
-                    // ... (lógica dos grupos e opções como estava antes)
                     grupoNovo.getOpcoes().forEach(opcaoNova -> {
                         opcaoNova.setGrupo(grupoNovo);
                         if (opcaoNova.getProduto() != null && opcaoNova.getProduto().getId() != null) {
@@ -147,6 +144,13 @@ public class ProdutoController {
                     produtoExistente.getGruposKit().add(grupoNovo);
                 });
             }
+
+            // Lógica para atualizar a receita
+            produtoExistente.getReceita().clear();
+            if (produtoDetails.getReceita() != null && !produtoDetails.getReceita().isEmpty()) {
+                produtoExistente.getReceita().addAll(produtoDetails.getReceita());
+            }
+
             Produto updatedProduto = repository.save(produtoExistente);
             return ResponseEntity.ok(updatedProduto);
         }).orElse(ResponseEntity.notFound().build());

@@ -1,16 +1,15 @@
 document.addEventListener('DOMContentLoaded', function () {
     let tabela;
     let todosOsProdutosParaSelecao = [];
-    let novaImagemParaUpload = null; 
+    let novaImagemParaUpload = null;
 
-    // --- Carga Inicial e DataTable ---
     async function carregarProdutos() {
         try {
             const response = await fetch('/api/produtos');
             if (!response.ok) throw new Error('Falha ao carregar produtos do servidor.');
-            todosOsProdutosParaSelecao = await response.json(); 
+            todosOsProdutosParaSelecao = await response.json();
             renderizarDataTable(todosOsProdutosParaSelecao);
-        } catch(err) {
+        } catch (err) {
             Swal.fire('Erro!', `Não foi possível carregar os produtos: ${err.message}`, 'error');
         }
     }
@@ -22,7 +21,7 @@ document.addEventListener('DOMContentLoaded', function () {
             tabela = $('#tabela-produtos').DataTable({
                 data: data,
                 columns: [
-                     {
+                    {
                         data: null,
                         title: "Nome / Tipo",
                         render: function (data, type, row) {
@@ -59,7 +58,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // --- LÓGICA DE EDIÇÃO (ABRIR MODAL) ---
     $('#tabela-produtos tbody').on('click', '.btn-editar', function () {
         const id = $(this).data('id');
         abrirModalDeEdicao(id);
@@ -71,13 +69,12 @@ document.addEventListener('DOMContentLoaded', function () {
             if (!res.ok) throw new Error('Produto não encontrado para edição.');
             const p = await res.json();
 
-            // Resetar formulário
             $('#formEditProduto')[0].reset();
             novaImagemParaUpload = null;
             $('#edit-imagemFile').val('');
             $('#edit-listaGruposKit').empty();
+            $('#edit-listaReceita').empty();
 
-            // Preencher dados básicos
             $('#edit-id').val(p.id);
             $('#edit-nome').val(p.nome || '');
             $('#edit-preco').val(p.preco || 0);
@@ -86,15 +83,13 @@ document.addEventListener('DOMContentLoaded', function () {
             $('#edit-codigoPdv').val(p.codPdv || '');
             $('#edit-ordemVisualizacao').val(p.ordemVisualizacao || 0);
             $('#edit-descricao').val(p.descricao || '');
-            
-            // Preencher checkboxes
+
             $('#edit-isMateriaPrima').prop('checked', p.isMateriaPrima);
             $('#edit-isComplemento').prop('checked', p.isComplemento);
             $('#edit-permiteComplementos').prop('checked', p.permiteComplementos);
             $('#edit-vendidoIndividualmente').prop('checked', p.vendidoIndividualmente);
             $('#edit-isKit').prop('checked', p.isKit).trigger('change');
 
-            // Lógica da Imagem
             const previewContainer = document.getElementById('edit-preview-container');
             const imagePreview = document.getElementById('edit-image-preview');
             const produtoOriginalNaLista = todosOsProdutosParaSelecao.find(prod => prod.id == id);
@@ -106,11 +101,16 @@ document.addEventListener('DOMContentLoaded', function () {
                 imagePreview.src = '#';
             }
 
-            // --- LÓGICA PRINCIPAL: Carregar configuração do Kit ---
             if (p.isKit && p.gruposKit) {
                 p.gruposKit.forEach(grupo => adicionarLinhaGrupoKitEdit(grupo));
             }
-            
+
+            if (p.receita && p.receita.length > 0) {
+                for (const itemReceita of p.receita) {
+                    await adicionarLinhaIngredienteEdit(itemReceita);
+                }
+            }
+
             new bootstrap.Modal($('#editModal')[0]).show();
 
         } catch (err) {
@@ -118,11 +118,10 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // --- LÓGICA DE SUBMISSÃO DO FORMULÁRIO DE EDIÇÃO ---
     $('#formEditProduto').on('submit', async function (e) {
         e.preventDefault();
         const id = $('#edit-id').val();
-        
+
         const gruposKit = [];
         if ($('#edit-isKit').is(':checked')) {
             document.querySelectorAll('#edit-listaGruposKit .grupo-kit-bloco').forEach(blocoGrupo => {
@@ -142,6 +141,18 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         }
 
+        const receita = [];
+        document.querySelectorAll('#edit-listaReceita .ingrediente-bloco').forEach(bloco => {
+            const ingredienteId = bloco.querySelector('.select-ingrediente').value;
+            const quantidade = parseFloat(bloco.querySelector('.qtde-ingrediente').value);
+            if (ingredienteId && quantidade > 0) {
+                receita.push({
+                    produtoIngredienteId: parseInt(ingredienteId),
+                    quantidadeUtilizada: quantidade
+                });
+            }
+        });
+
         const produto = {
             id: id,
             nome: $('#edit-nome').val(),
@@ -156,11 +167,11 @@ document.addEventListener('DOMContentLoaded', function () {
             permiteComplementos: $('#edit-permiteComplementos').is(':checked'),
             isKit: $('#edit-isKit').is(':checked'),
             vendidoIndividualmente: $('#edit-vendidoIndividualmente').is(':checked'),
-            gruposKit: gruposKit
+            gruposKit: gruposKit,
+            receita: receita
         };
 
         try {
-            // 1. Atualiza os dados do produto (sem a imagem)
             const responseProduto = await fetch(`/api/produtos/${id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
@@ -168,7 +179,6 @@ document.addEventListener('DOMContentLoaded', function () {
             });
             if (!responseProduto.ok) throw new Error(await responseProduto.text());
 
-            // 2. Se uma nova imagem foi selecionada, faz o upload
             if (novaImagemParaUpload) {
                 const responseImagem = await fetch(`/api/produtos/${id}/imagem`, {
                     method: 'POST',
@@ -188,9 +198,8 @@ document.addEventListener('DOMContentLoaded', function () {
             Swal.fire('Erro!', `Não foi possível atualizar: ${err.message}`, 'error');
         }
     });
-    
-    // --- Funções e Listeners Auxiliares para o Modal de Edição ---
-    $('#edit-isKit').on('change', function() {
+
+    $('#edit-isKit').on('change', function () {
         $('#edit-containerKit').css('display', this.checked ? 'block' : 'none');
     });
 
@@ -221,39 +230,69 @@ document.addEventListener('DOMContentLoaded', function () {
             <button type="button" class="btn btn-sm btn-outline-success btn-add-opcao-kit"><i class="bi bi-plus"></i> Adicionar Opção</button>
         `;
         $('#edit-listaGruposKit').append(divGrupo);
-        
+
         const containerOpcoes = divGrupo.querySelector('.lista-opcoes-kit');
         if (grupo.opcoes && grupo.opcoes.length > 0) {
             grupo.opcoes.forEach(opcao => adicionarLinhaOpcaoKitEdit(containerOpcoes, opcao));
         } else {
-            adicionarLinhaOpcaoKitEdit(containerOpcoes); // Adiciona uma linha em branco se não houver opções
+            adicionarLinhaOpcaoKitEdit(containerOpcoes);
         }
     }
 
     function adicionarLinhaOpcaoKitEdit(containerOpcoes, opcao = {}) {
         const divOpcao = document.createElement('div');
         divOpcao.className = 'row g-2 mb-2 align-items-center opcao-kit-bloco';
-        
+
         let optionsHTML = '<option value="">Selecione um produto...</option>';
         todosOsProdutosParaSelecao.forEach(p => {
             const isSelected = opcao.produto && p.id == opcao.produto.id ? 'selected' : '';
             optionsHTML += `<option value="${p.id}" ${isSelected}>${p.nome}</option>`;
         });
-        
+
         divOpcao.innerHTML = `
             <div class="col-10"><select class="form-select form-select-sm produto-id-opcao-kit" required>${optionsHTML}</select></div>
             <div class="col-2"><button type="button" class="btn btn-sm btn-danger w-100 btn-remover-opcao"><i class="bi bi-trash"></i></button></div>`;
-        
+
         containerOpcoes.appendChild(divOpcao);
     }
-    
-    // Listeners dinâmicos para remover/adicionar (delegados ao container pai)
-    $('#edit-listaGruposKit').on('click', '.btn-remover-grupo', function() { $(this).closest('.grupo-kit-bloco').remove(); });
-    $('#edit-listaGruposKit').on('click', '.btn-add-opcao-kit', function() { adicionarLinhaOpcaoKitEdit(this.previousElementSibling); });
-    $('#edit-listaGruposKit').on('click', '.btn-remover-opcao', function() { $(this).closest('.opcao-kit-bloco').remove(); });
-    
 
-    // --- Deleção de Produto ---
+    $('#edit-listaGruposKit').on('click', '.btn-remover-grupo', function () { $(this).closest('.grupo-kit-bloco').remove(); });
+    $('#edit-listaGruposKit').on('click', '.btn-add-opcao-kit', function () { adicionarLinhaOpcaoKitEdit(this.previousElementSibling); });
+    $('#edit-listaGruposKit').on('click', '.btn-remover-opcao', function () { $(this).closest('.opcao-kit-bloco').remove(); });
+
+    $('#edit-btnAddReceita').on('click', () => adicionarLinhaIngredienteEdit());
+
+    function adicionarLinhaIngredienteEdit(itemReceita = {}) {
+        const materiasPrimas = todosOsProdutosParaSelecao.filter(p => p.tipo === 'Matéria-Prima');
+
+        let optionsHTML = '<option value="">Selecione um ingrediente...</option>';
+        materiasPrimas.forEach(mp => {
+            const isSelected = itemReceita.produtoIngredienteId == mp.id ? 'selected' : '';
+            optionsHTML += `<option value="${mp.id}" ${isSelected}>${mp.nome}</option>`;
+        });
+
+        const div = document.createElement('div');
+        div.className = 'row g-3 mb-3 pb-3 border-bottom ingrediente-bloco';
+        div.innerHTML = `
+            <div class="col-md-7">
+                <label class="form-label small">Ingrediente (Matéria-Prima)</label>
+                <select class="form-select form-select-sm select-ingrediente" required>${optionsHTML}</select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label small">Qtde. Utilizada</label>
+                <input type="number" step="0.001" class="form-control form-control-sm qtde-ingrediente" required placeholder="Ex: 0.250 para 250g" value="${itemReceita.quantidadeUtilizada || ''}">
+            </div>
+            <div class="col-md-1 d-flex align-items-end">
+                <button type="button" class="btn btn-danger btn-sm w-100 btn-remover-ingrediente"><i class="bi bi-trash"></i></button>
+            </div>
+        `;
+        document.getElementById('edit-listaReceita').appendChild(div);
+
+        div.querySelector('.btn-remover-ingrediente').addEventListener('click', function () {
+            this.closest('.ingrediente-bloco').remove();
+        });
+    }
+
     $('#tabela-produtos tbody').on('click', '.btn-excluir', function () {
         const id = $(this).data('id');
         const nomeProduto = tabela.row($(this).closest('tr')).data().nome;
@@ -270,24 +309,23 @@ document.addEventListener('DOMContentLoaded', function () {
         }).then((result) => {
             if (result.isConfirmed) {
                 fetch(`/api/produtos/${id}`, { method: 'DELETE' })
-                .then(res => {
-                    if (!res.ok) throw new Error('Erro ao excluir.');
-                    Swal.fire('Excluído!', 'O produto foi removido.', 'success');
-                    carregarProdutos(); // Recarrega a lista
-                }).catch(err => Swal.fire('Erro!', `Não foi possível excluir: ${err.message}`, 'error'));
+                    .then(res => {
+                        if (!res.ok) throw new Error('Erro ao excluir.');
+                        Swal.fire('Excluído!', 'O produto foi removido.', 'success');
+                        carregarProdutos();
+                    }).catch(err => Swal.fire('Erro!', `Não foi possível excluir: ${err.message}`, 'error'));
             }
         });
     });
 
-    // --- Listener para o campo de upload de imagem na edição ---
-    $('#edit-imagemFile').on('change', function(event) {
+    $('#edit-imagemFile').on('change', function (event) {
         const file = event.target.files[0];
         const previewContainer = document.getElementById('edit-preview-container');
         const imagePreview = document.getElementById('edit-image-preview');
 
         if (file && (file.type === 'image/jpeg' || file.type === 'image/png')) {
             const reader = new FileReader();
-            reader.onload = function(e) {
+            reader.onload = function (e) {
                 novaImagemParaUpload = {
                     base64: e.target.result,
                     tipo: file.type
@@ -305,6 +343,5 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // --- Carga inicial ---
     carregarProdutos();
 });
