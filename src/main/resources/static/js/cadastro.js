@@ -1,14 +1,13 @@
+// src/main/resources/static/js/cadastro.js
 document.addEventListener('DOMContentLoaded', function () {
     const formProduto = document.getElementById('formProduto');
     if (!formProduto) return;
 
-    // --- Referências aos Elementos ---
     const isKitCheckbox = document.getElementById('isKit');
     const containerKit = document.getElementById('containerKit');
     const btnAddGrupoKit = document.getElementById('btnAddGrupoKit');
     const listaGruposKit = document.getElementById('listaGruposKit');
 
-    // --- NOVAS REFERÊNCIAS PARA RECEITA ---
     const btnAddReceita = document.getElementById('btnAddReceita');
     const listaReceitaContainer = document.getElementById('listaReceita');
 
@@ -21,7 +20,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     async function carregarProdutosParaSelecao() {
         try {
-            const response = await fetch('/api/produtos');
+            const response = await fetchWithAuth('/api/produtos');
             if (!response.ok) throw new Error('Falha ao carregar produtos');
             todosOsProdutos = await response.json();
         } catch (error) {
@@ -29,12 +28,11 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // Lógica de Preview da Imagem (sem alterações)
-    imagemFileInput.addEventListener('change', function (event) {
+    imagemFileInput.addEventListener('change', function(event) {
         const file = event.target.files[0];
         if (file && (file.type === 'image/jpeg' || file.type === 'image/png')) {
             const reader = new FileReader();
-            reader.onload = function (e) {
+            reader.onload = function(e) {
                 imagemParaUpload = { base64: e.target.result, tipo: file.type };
                 imagePreview.src = e.target.result;
                 previewContainer.style.display = 'block';
@@ -50,7 +48,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // --- Lógica de UI (Kit e Receita) ---
     isKitCheckbox.addEventListener('change', function () {
         containerKit.style.display = this.checked ? 'block' : 'none';
         if (this.checked && listaGruposKit.children.length === 0) {
@@ -60,11 +57,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
     btnAddGrupoKit?.addEventListener('click', () => adicionarLinhaGrupoKit());
 
-    // --- NOVA LÓGICA PARA ADICIONAR INGREDIENTE ---
     btnAddReceita?.addEventListener('click', () => adicionarLinhaIngrediente());
 
     function adicionarLinhaGrupoKit() {
-        // (Função sem alterações)
         const divGrupo = document.createElement('div');
         divGrupo.className = 'p-3 border rounded mb-3 bg-white shadow-sm grupo-kit-bloco';
         divGrupo.innerHTML = `
@@ -81,7 +76,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function adicionarLinhaOpcaoKit(containerOpcoes) {
-        // (Função sem alterações)
         const divOpcao = document.createElement('div');
         divOpcao.className = 'row g-2 mb-2 align-items-center opcao-kit-bloco';
         let optionsHTML = '<option value="">Selecione um produto...</option>';
@@ -91,10 +85,9 @@ document.addEventListener('DOMContentLoaded', function () {
         divOpcao.querySelector('.btn-remover-opcao').addEventListener('click', function () { this.closest('.opcao-kit-bloco').remove(); });
     }
 
-    // --- NOVA FUNÇÃO PARA CRIAR LINHA DE INGREDIENTE ---
     function adicionarLinhaIngrediente() {
         const materiasPrimas = todosOsProdutos.filter(p => p.tipo === 'Matéria-Prima');
-
+        
         let optionsHTML = '<option value="">Selecione um ingrediente...</option>';
         materiasPrimas.forEach(mp => {
             optionsHTML += `<option value="${mp.id}">${mp.nome}</option>`;
@@ -116,18 +109,15 @@ document.addEventListener('DOMContentLoaded', function () {
             </div>
         `;
         listaReceitaContainer.appendChild(div);
-
-        div.querySelector('.btn-remover-ingrediente').addEventListener('click', function () {
+        
+        div.querySelector('.btn-remover-ingrediente').addEventListener('click', function() {
             this.closest('.ingrediente-bloco').remove();
         });
     }
 
-
-    // --- Submissão do Formulário (ATUALIZADA) ---
     formProduto.addEventListener('submit', async function (e) {
         e.preventDefault();
 
-        // Coleta de dados do Kit (sem alterações)
         const gruposKit = [];
         if (document.getElementById('isKit').checked) {
             document.querySelectorAll('.grupo-kit-bloco').forEach(blocoGrupo => {
@@ -144,13 +134,12 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             });
         }
-
-        // --- NOVA LÓGICA PARA COLETAR DADOS DA RECEITA ---
+        
         const receita = [];
         document.querySelectorAll('.ingrediente-bloco').forEach(bloco => {
             const ingredienteId = bloco.querySelector('.select-ingrediente').value;
             const quantidade = parseFloat(bloco.querySelector('.qtde-ingrediente').value);
-
+            
             if (ingredienteId && quantidade > 0) {
                 receita.push({
                     produtoIngredienteId: parseInt(ingredienteId),
@@ -159,7 +148,6 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
 
-        // Montagem do objeto produto final para envio
         const produto = {
             nome: document.getElementById('nome').value,
             preco: parseFloat(document.getElementById('preco').value) || 0,
@@ -173,12 +161,11 @@ document.addEventListener('DOMContentLoaded', function () {
             isKit: document.getElementById('isKit').checked,
             vendidoIndividualmente: document.getElementById('vendidoIndividualmente').checked,
             gruposKit: gruposKit,
-            receita: receita // Adiciona a receita ao payload
+            receita: receita
         };
 
         try {
-            // Lógica de envio para o backend (sem alterações)
-            const responseProduto = await fetch('/api/produtos', {
+            const responseProduto = await fetchWithAuth('/api/produtos', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(produto)
@@ -193,12 +180,12 @@ document.addEventListener('DOMContentLoaded', function () {
             const produtoId = produtoCriado.id;
 
             if (imagemParaUpload) {
-                const responseImagem = await fetch(`/api/produtos/${produtoId}/imagem`, {
+                const responseImagem = await fetchWithAuth(`/api/produtos/${produtoId}/imagem`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ imagemBase64: imagemParaUpload.base64, imagemTipo: imagemParaUpload.tipo })
                 });
-                if (!responseImagem.ok) { throw new Error('Produto salvo, mas falha ao enviar imagem.'); }
+                 if (!responseImagem.ok) { throw new Error('Produto salvo, mas falha ao enviar imagem.'); }
             }
 
             Swal.fire({
@@ -211,7 +198,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 imagemParaUpload = null;
                 listaGruposKit.innerHTML = '';
                 containerKit.style.display = 'none';
-                listaReceitaContainer.innerHTML = ''; // Limpa a lista de receita
+                listaReceitaContainer.innerHTML = '';
                 window.scrollTo(0, 0);
             });
 

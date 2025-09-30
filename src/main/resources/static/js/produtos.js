@@ -1,3 +1,4 @@
+// src/main/resources/static/js/produtos.js
 document.addEventListener('DOMContentLoaded', function () {
     let tabela;
     let todosOsProdutosParaSelecao = [];
@@ -5,7 +6,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     async function carregarProdutos() {
         try {
-            const response = await fetch('/api/produtos');
+            const response = await fetchWithAuth('/api/produtos');
             if (!response.ok) throw new Error('Falha ao carregar produtos do servidor.');
             todosOsProdutosParaSelecao = await response.json();
             renderizarDataTable(todosOsProdutosParaSelecao);
@@ -21,7 +22,7 @@ document.addEventListener('DOMContentLoaded', function () {
             tabela = $('#tabela-produtos').DataTable({
                 data: data,
                 columns: [
-                    {
+                     {
                         data: null,
                         title: "Nome / Tipo",
                         render: function (data, type, row) {
@@ -65,7 +66,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     async function abrirModalDeEdicao(id) {
         try {
-            const res = await fetch(`/api/produtos/${id}`);
+            const res = await fetchWithAuth(`/api/produtos/${id}`);
             if (!res.ok) throw new Error('Produto não encontrado para edição.');
             const p = await res.json();
 
@@ -106,9 +107,9 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             if (p.receita && p.receita.length > 0) {
-                for (const itemReceita of p.receita) {
-                    await adicionarLinhaIngredienteEdit(itemReceita);
-                }
+                p.receita.forEach(itemReceita => {
+                    adicionarLinhaIngredienteEdit(itemReceita);
+                });
             }
 
             new bootstrap.Modal($('#editModal')[0]).show();
@@ -172,7 +173,7 @@ document.addEventListener('DOMContentLoaded', function () {
         };
 
         try {
-            const responseProduto = await fetch(`/api/produtos/${id}`, {
+            const responseProduto = await fetchWithAuth(`/api/produtos/${id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(produto)
@@ -180,7 +181,7 @@ document.addEventListener('DOMContentLoaded', function () {
             if (!responseProduto.ok) throw new Error(await responseProduto.text());
 
             if (novaImagemParaUpload) {
-                const responseImagem = await fetch(`/api/produtos/${id}/imagem`, {
+                const responseImagem = await fetchWithAuth(`/api/produtos/${id}/imagem`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -199,7 +200,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    $('#edit-isKit').on('change', function () {
+    $('#edit-isKit').on('change', function() {
         $('#edit-containerKit').css('display', this.checked ? 'block' : 'none');
     });
 
@@ -256,9 +257,9 @@ document.addEventListener('DOMContentLoaded', function () {
         containerOpcoes.appendChild(divOpcao);
     }
 
-    $('#edit-listaGruposKit').on('click', '.btn-remover-grupo', function () { $(this).closest('.grupo-kit-bloco').remove(); });
-    $('#edit-listaGruposKit').on('click', '.btn-add-opcao-kit', function () { adicionarLinhaOpcaoKitEdit(this.previousElementSibling); });
-    $('#edit-listaGruposKit').on('click', '.btn-remover-opcao', function () { $(this).closest('.opcao-kit-bloco').remove(); });
+    $('#edit-listaGruposKit').on('click', '.btn-remover-grupo', function() { $(this).closest('.grupo-kit-bloco').remove(); });
+    $('#edit-listaGruposKit').on('click', '.btn-add-opcao-kit', function() { adicionarLinhaOpcaoKitEdit(this.previousElementSibling); });
+    $('#edit-listaGruposKit').on('click', '.btn-remover-opcao', function() { $(this).closest('.opcao-kit-bloco').remove(); });
 
     $('#edit-btnAddReceita').on('click', () => adicionarLinhaIngredienteEdit());
 
@@ -288,7 +289,7 @@ document.addEventListener('DOMContentLoaded', function () {
         `;
         document.getElementById('edit-listaReceita').appendChild(div);
 
-        div.querySelector('.btn-remover-ingrediente').addEventListener('click', function () {
+        div.querySelector('.btn-remover-ingrediente').addEventListener('click', function() {
             this.closest('.ingrediente-bloco').remove();
         });
     }
@@ -306,26 +307,28 @@ document.addEventListener('DOMContentLoaded', function () {
             cancelButtonColor: '#3085d6',
             confirmButtonText: 'Sim, excluir!',
             cancelButtonText: 'Cancelar'
-        }).then((result) => {
+        }).then(async (result) => {
             if (result.isConfirmed) {
-                fetch(`/api/produtos/${id}`, { method: 'DELETE' })
-                    .then(res => {
-                        if (!res.ok) throw new Error('Erro ao excluir.');
-                        Swal.fire('Excluído!', 'O produto foi removido.', 'success');
-                        carregarProdutos();
-                    }).catch(err => Swal.fire('Erro!', `Não foi possível excluir: ${err.message}`, 'error'));
+                try {
+                    const response = await fetchWithAuth(`/api/produtos/${id}`, { method: 'DELETE' });
+                    if (!response.ok) throw new Error('Erro ao excluir.');
+                    Swal.fire('Excluído!', 'O produto foi removido.', 'success');
+                    carregarProdutos();
+                } catch (err) {
+                    Swal.fire('Erro!', `Não foi possível excluir: ${err.message}`, 'error');
+                }
             }
         });
     });
 
-    $('#edit-imagemFile').on('change', function (event) {
+    $('#edit-imagemFile').on('change', function(event) {
         const file = event.target.files[0];
         const previewContainer = document.getElementById('edit-preview-container');
         const imagePreview = document.getElementById('edit-image-preview');
 
         if (file && (file.type === 'image/jpeg' || file.type === 'image/png')) {
             const reader = new FileReader();
-            reader.onload = function (e) {
+            reader.onload = function(e) {
                 novaImagemParaUpload = {
                     base64: e.target.result,
                     tipo: file.type

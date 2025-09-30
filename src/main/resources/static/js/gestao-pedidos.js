@@ -1,4 +1,8 @@
+// src/main/resources/static/js/gestao-pedidos.js
 document.addEventListener('DOMContentLoaded', function() {
+    // A única alteração aqui é usar fetchWithAuth nas chamadas `axios`
+    // Como axios não está mais sendo usado, vamos reescrever com fetchWithAuth
+
     try {
         const filtroModal = new bootstrap.Modal(document.getElementById('filtroModal'));
         const contaReceberModal = new bootstrap.Modal(document.getElementById('contaReceberModal'));
@@ -28,8 +32,11 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!container || !contador) return;
             container.innerHTML = '<div class="text-center p-5"><div class="spinner-border text-primary"></div></div>';
             try {
-                const response = await axios.get('/api/pedidos/por-tipo', { params: { tipo, ...filtros } });
-                const pedidos = response.data;
+                const params = new URLSearchParams({ tipo, ...filtros });
+                const response = await fetchWithAuth(`/api/pedidos/por-tipo?${params.toString()}`);
+                if (!response.ok) throw new Error('Falha ao carregar pedidos.');
+
+                const pedidos = await response.json();
                 container.innerHTML = ''; contador.textContent = pedidos.length;
                 if (pedidos.length === 0) { container.innerHTML = `<div class="text-center p-5 bg-light rounded mt-3"><p class="mb-0 text-muted">Nenhum pedido encontrado para hoje.</p></div>`; return; }
                 const row = document.createElement('div'); row.className = 'row g-4';
@@ -37,6 +44,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 container.appendChild(row);
             } catch (error) { container.innerHTML = `<div class="alert alert-danger">Erro ao carregar pedidos.</div>`; console.error("Erro na API:", error); }
         }
+
         function criarCardPedido(pedido) {
             const col = document.createElement('div');
             col.className = 'col-xl-3 col-lg-4 col-md-6 col-sm-12';
@@ -68,7 +76,6 @@ document.addEventListener('DOMContentLoaded', function() {
             return col;
         }
 
-        // --- FUNÇÃO DE VISUALIZAÇÃO (ATUALIZADA) ---
         window.visualizarPedido = async function(pedidoId) {
             const modalTitle = document.getElementById('visualizacaoModalLabel');
             const modalContent = document.getElementById('visualizacao-content');
@@ -80,16 +87,15 @@ document.addEventListener('DOMContentLoaded', function() {
             visualizacaoModal.show();
 
             try {
-                const response = await axios.get(`/api/pedidos/${pedidoId}`);
-                const pedido = response.data; // Agora contém tipo e enderecoEntrega
+                const response = await fetchWithAuth(`/api/pedidos/${pedidoId}`);
+                if (!response.ok) throw new Error('Falha ao buscar detalhes do pedido.');
+                const pedido = await response.json();
                 
                 const totalPedido = pedido.itens.reduce((total, item) => total + (item.quantidade * item.precoUnitario), 0);
                 const itensHtml = pedido.itens.map(item => `<tr><td>${item.quantidade}x</td><td>${item.produto}</td><td class="text-end">${(item.quantidade * item.precoUnitario).toLocaleString('pt-br', {style: 'currency', currency: 'BRL'})}</td></tr>`).join('');
                 
-                // Formatação do tipo de pedido para exibição
                 const tipoPedido = pedido.tipo.charAt(0).toUpperCase() + pedido.tipo.slice(1).toLowerCase();
 
-                // Montagem do endereço
                 let enderecoHtml = '';
                 if (pedido.enderecoEntrega) {
                     const end = pedido.enderecoEntrega;
@@ -123,11 +129,11 @@ document.addEventListener('DOMContentLoaded', function() {
             } catch (error) { modalContent.innerHTML = '<div class="alert alert-danger">Não foi possível carregar os detalhes do pedido.</div>'; }
         }
         
-        // --- FUNÇÃO DE IMPRESSÃO DE CUPOM (ATUALIZADA) ---
         window.imprimirCupom = async function(pedidoId) {
             try {
-                const response = await axios.get(`/api/pedidos/${pedidoId}`);
-                const pedido = response.data;
+                const response = await fetchWithAuth(`/api/pedidos/${pedidoId}`);
+                if (!response.ok) throw new Error('Falha ao buscar dados para impressão.');
+                const pedido = await response.json();
                 const totalPedido = pedido.itens.reduce((total, item) => total + (item.quantidade * item.precoUnitario), 0);
                 const itensText = pedido.itens.map(item => `${item.quantidade} x ${item.produto}\n          R$ ${(item.quantidade * item.precoUnitario).toFixed(2).replace('.',',')}\n`).join('');
                 
@@ -166,9 +172,9 @@ document.addEventListener('DOMContentLoaded', function() {
         function aplicarFiltros() { const filtros = getFiltros(); const abaAtiva = document.querySelector('#pills-tab .nav-link.active').id; const tipo = abaAtiva.includes('entregas') ? 'ENTREGA' : (abaAtiva.includes('retiradas') ? 'RETIRADA' : 'ENCOMENDA'); carregarPedidosPorTipo(tipo, filtros); filtroModal.hide(); }
         function limparFiltros() { document.getElementById('formFiltro').reset(); const filtrosDeHoje = getTodaysDateFilter(); const abaAtiva = document.querySelector('#pills-tab .nav-link.active').id; const tipo = abaAtiva.includes('entregas') ? 'ENTREGA' : (abaAtiva.includes('retiradas') ? 'RETIRADA' : 'ENCOMENDA'); carregarPedidosPorTipo(tipo, filtrosDeHoje); filtroModal.hide(); }
         window.atualizarStatus = function(pedido, novoStatus) { if (novoStatus === 'Concluido' && pedido.clienteId) { Swal.fire({ title: 'Gerar Conta a Receber?', text: `Deseja gerar uma conta a receber para o pedido #${pedido.id}?`, icon: 'question', showCancelButton: true, confirmButtonText: 'Sim, gerar conta', cancelButtonText: 'Não, apenas concluir' }).then((result) => { if (result.isConfirmed) { abrirModalContaReceber(pedido); } else { finalizarAtualizacaoStatus(pedido.id, novoStatus, pedido.tipo); } }); } else { finalizarAtualizacaoStatus(pedido.id, novoStatus, pedido.tipo); } }
-        async function finalizarAtualizacaoStatus(id, novoStatus, tipo) { try { await axios.put(`/api/pedidos/${id}/status`, { novoStatus }); Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: `Pedido #${id} atualizado!`, showConfirmButton: false, timer: 2000 }); carregarPedidosPorTipo(tipo, getFiltros()); } catch (error) { Swal.fire('Erro!', `Não foi possível atualizar o status.`, 'error'); carregarPedidosPorTipo(tipo, getFiltros()); } }
+        async function finalizarAtualizacaoStatus(id, novoStatus, tipo) { try { await fetchWithAuth(`/api/pedidos/${id}/status`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ novoStatus }) }); Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: `Pedido #${id} atualizado!`, showConfirmButton: false, timer: 2000 }); carregarPedidosPorTipo(tipo, getFiltros()); } catch (error) { Swal.fire('Erro!', `Não foi possível atualizar o status.`, 'error'); carregarPedidosPorTipo(tipo, getFiltros()); } }
         function abrirModalContaReceber(pedido) { pedidoParaGerarConta = pedido; const form = document.getElementById('formContaReceber'); form.reset(); const option = new Option(pedido.clienteNome, pedido.clienteId, true, true); clienteSelect.append(option).trigger('change'); document.getElementById('contaOrigem').value = `Referente ao Pedido #${pedido.id}`; document.getElementById('contaValor').value = pedido.total.toFixed(2); let dataVencimento = pedido.dataAgendamento ? new Date(pedido.dataAgendamento) : new Date(); document.getElementById('contaVencimento').value = dataVencimento.toISOString().split('T')[0]; contaReceberModal.show(); }
-        async function salvarContaReceber(event) { event.preventDefault(); const payload = { clienteId: $('#contaClienteSelect').val(), origem: $('#contaOrigem').val(), valorTotal: $('#contaValor').val(), dataVencimento: $('#contaVencimento').val(), clienteNomeAvulso: null }; try { await axios.post('/api/contas-a-receber', payload); contaReceberModal.hide(); Swal.fire('Sucesso!', 'Conta a receber gerada!', 'success'); finalizarAtualizacaoStatus(pedidoParaGerarConta.id, 'Concluido', pedidoParaGerarConta.tipo); } catch (error) { Swal.fire('Erro!', 'Não foi possível gerar a conta a receber.', 'error'); } }
+        async function salvarContaReceber(event) { event.preventDefault(); const payload = { clienteId: $('#contaClienteSelect').val(), origem: $('#contaOrigem').val(), valorTotal: $('#contaValor').val(), dataVencimento: $('#contaVencimento').val(), clienteNomeAvulso: null }; try { await fetchWithAuth('/api/contas-a-receber', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) }); contaReceberModal.hide(); Swal.fire('Sucesso!', 'Conta a receber gerada!', 'success'); finalizarAtualizacaoStatus(pedidoParaGerarConta.id, 'Concluido', pedidoParaGerarConta.tipo); } catch (error) { Swal.fire('Erro!', 'Não foi possível gerar a conta a receber.', 'error'); } }
     
     } catch (error) { console.error("Erro fatal na inicialização:", error); }
 });

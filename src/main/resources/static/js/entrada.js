@@ -1,6 +1,6 @@
+// src/main/resources/static/js/entrada.js
 document.addEventListener("DOMContentLoaded", function () {
 
-    // Inicializa o Select2 para fornecedores
     $('#fornecedorId').select2({
         theme: 'bootstrap-5',
         placeholder: 'Selecione um fornecedor'
@@ -9,13 +9,10 @@ document.addEventListener("DOMContentLoaded", function () {
     carregarFornecedores();
     adicionarItem();
 
-    // --- EVENT LISTENERS PRINCIPAIS ---
     document.getElementById('btnAdicionarItem').addEventListener('click', adicionarItem);
 
     document.getElementById('entradaForm').addEventListener('submit', registrarEntrada);
 
-    // Listener para o container de itens para recalcular totais
-    // Usamos 'change' e 'input' para capturar todas as alterações nos campos relevantes
     document.getElementById('itensContainer').addEventListener('input', function (e) {
         if (e.target.matches('.item-quantidade, .item-preco-unitario, .item-fator-entrada')) {
             calcularTotalItens();
@@ -23,24 +20,23 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     document.getElementById('btnGerarParcelas').addEventListener('click', gerarParcelasManualmente);
-
 });
 
 async function carregarFornecedores() {
     try {
-        const response = await fetch("/api/fornecedores");
+        const response = await fetchWithAuth("/api/fornecedores");
         if (!response.ok) throw new Error("Erro ao buscar fornecedores.");
         const fornecedores = await response.json();
 
         const select = document.getElementById("fornecedorId");
-        select.innerHTML = '<option value=""></option>'; // Opção vazia para o placeholder funcionar
+        select.innerHTML = '<option value=""></option>';
 
         fornecedores.forEach(f => {
             const option = new Option(f.nome, f.id);
             select.appendChild(option);
         });
 
-        $(select).trigger('change'); // Notifica o Select2 das mudanças
+        $(select).trigger('change');
     } catch (error) {
         Swal.fire('Erro!', 'Não foi possível carregar os fornecedores.', 'error');
     }
@@ -76,12 +72,10 @@ function adicionarItem() {
     `;
     container.appendChild(div);
 
-    // Adiciona o listener para o botão de remover
     div.querySelector('.btn-remover-item').addEventListener('click', function () {
         removerItem(this);
     });
 
-    // Inicializa o Select2 no novo campo de produto
     const novoSelect = div.querySelector('.produto-select');
     $(novoSelect).select2({
         theme: 'bootstrap-5',
@@ -93,7 +87,20 @@ function adicionarItem() {
             delay: 250,
             data: (params) => ({ q: params.term }),
             processResults: (data) => ({ results: data }),
-            cache: true
+            cache: true,
+             transport: async function (params, success, failure) {
+                try {
+                    const response = await fetchWithAuth(params.url + '?q=' + (params.data.q || ''));
+                    if (!response.ok) {
+                        failure();
+                        return;
+                    }
+                    const data = await response.json();
+                    success({ results: data });
+                } catch (error) {
+                    failure();
+                }
+            }
         }
     }).on('select2:select', function (e) {
         const data = e.params.data;
@@ -110,22 +117,15 @@ function removerItem(button) {
     }
 }
 
-// --- FUNÇÃO DE CÁLCULO CORRIGIDA ---
 function calcularTotalItens() {
     let totalMonetario = 0;
     document.querySelectorAll('.item-bloco').forEach(bloco => {
         const qtde = parseFloat(bloco.querySelector('.item-quantidade').value) || 0;
-        const fator = parseFloat(bloco.querySelector('.item-fator-entrada').value) || 1; // Assume 1 se vazio
+        const fator = parseFloat(bloco.querySelector('.item-fator-entrada').value) || 1;
         const precoUnitario = parseFloat(bloco.querySelector('.item-preco-unitario').value) || 0;
-
-        // Lógica corrigida: O valor total do item é a quantidade total de unidades (qtde * fator) multiplicada pelo preço de cada unidade.
         totalMonetario += (qtde * fator) * precoUnitario;
     });
-
-    // Atualiza o campo "Total dos Itens" com o valor monetário calculado
     document.getElementById('totalItens').textContent = `R$ ${totalMonetario.toFixed(2).replace('.', ',')}`;
-
-    // Sugere o valor calculado no campo "Valor Total do Documento", mas permite que o usuário edite se houver impostos, etc.
     document.getElementById('valorTotalDocumento').value = totalMonetario.toFixed(2);
 }
 
@@ -133,7 +133,6 @@ function calcularTotalItens() {
 function gerarParcelasManualmente() {
     Swal.fire({
         title: 'Gerar Parcelas',
-        // HTML foi reestruturado com classes do Bootstrap para melhor aparência
         html: `
             <div class="form-group">
                 <label for="swal-num-parcelas" class="form-label">Número de parcelas</label>
@@ -236,7 +235,7 @@ async function registrarEntrada(event) {
 
 
     try {
-        const response = await fetch('/api/entradas', {
+        const response = await fetchWithAuth('/api/entradas', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)

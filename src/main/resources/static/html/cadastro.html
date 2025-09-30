@@ -8,10 +8,12 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" />
-  
+  <link rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" />
+
   <link rel="stylesheet" href="../css/global-admin.css">
   <link rel="stylesheet" href="../css/cadastro.css">
+  <script src="../js/auth.js"></script>
 </head>
 
 <body>
@@ -46,86 +48,125 @@
             <li><a class="dropdown-item" href="financeiro.html">Contas a Receber</a></li>
             <li><a class="dropdown-item" href="contas-a-pagar.html">Contas a Pagar</a></li>
           </ul>
+
+          <a href="#" onclick="logout()"><i class="bi bi-box-arrow-right"></i><span class="menu-text">Sair</span></a>
+
         </div>
       </div>
 
       <div class="content collapsed" id="content">
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1 class="mb-0">Cadastro de Produto</h1>
-            <a href="Produtos.html" class="btn btn-outline-success">
-                <i class="bi bi-list-ul"></i> Ver Lista de Produtos
-            </a>
+          <h1 class="mb-0">Cadastro de Produto</h1>
+          <a href="Produtos.html" class="btn btn-outline-success">
+            <i class="bi bi-list-ul"></i> Ver Lista de Produtos
+          </a>
         </div>
 
         <form id="formProduto" class="mb-5 needs-validation" novalidate>
-            <div class="card shadow-sm mb-4">
-                <div class="card-header"><h5 class="mb-0">1. Informações Básicas</h5></div>
-                <div class="card-body">
-                    <div class="row g-3">
-                        <div class="col-md-8"><label for="nome" class="form-label">Nome do Produto</label><input type="text" class="form-control" id="nome" required placeholder="Ex: Pizza Calabresa, Kit Festa P"></div>
-                        <div class="col-md-4"><label for="preco" class="form-label">Preço de Venda (R$)</label><input type="number" class="form-control" id="preco" step="0.01" min="0" required placeholder="0,00"></div>
-                    </div>
-                </div>
+          <div class="card shadow-sm mb-4">
+            <div class="card-header">
+              <h5 class="mb-0">1. Informações Básicas</h5>
             </div>
-            <div class="card shadow-sm mb-4">
-                <div class="card-header"><h5 class="mb-0">2. Detalhes e Exibição</h5></div>
-                <div class="card-body">
-                    <div class="row g-3">
-                        <div class="col-md-5"><label for="categoria" class="form-label">Categoria</label><input type="text" class="form-control" id="categoria" placeholder="Ex: Pizzas, Bebidas, Combos"><div class="form-text">Usada para agrupar produtos no cardápio.</div></div>
-                        <div class="col-md-4"><label for="codigoPdv" class="form-label">Código PDV / Referência</label><input type="text" class="form-control" id="codigoPdv"></div>
-                        <div class="col-md-3"><label for="ordemVisualizacao" class="form-label">Ordem no Cardápio</label><input type="number" class="form-control" id="ordemVisualizacao" placeholder="Ex: 1, 2, 3..."></div>
-                         <div class="col-12"><label for="descricao" class="form-label">Descrição</label><textarea class="form-control" id="descricao" rows="2" placeholder="Ingredientes ou detalhes do produto que aparecerão no cardápio."></textarea></div>
-                    </div>
-                </div>
-            </div>
-            <div class="card shadow-sm mb-4">
-                <div class="card-header"><h5 class="mb-0">3. Imagem do Produto</h5></div>
-                <div class="card-body">
-                    <div class="row align-items-center">
-                        <div class="col-md-8"><label for="imagemFile" class="form-label">Selecione uma Imagem</label><input type="file" class="form-control" id="imagemFile" accept="image/jpeg, image/png"><div class="form-text">Recomendado: Imagens quadradas nos formatos JPG ou PNG.</div></div>
-                        <div class="col-md-4"><div id="preview-container" class="mt-3 mt-md-0"><img id="image-preview" src="#" alt="Preview da Imagem" class="img-fluid rounded" /></div></div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card shadow-sm mb-4">
-                 <div class="card-header"><h5 class="mb-0">4. Tipo e Comportamento do Produto</h5></div>
-                 <div class="card-body">
-                    <div class="form-check mb-2"><input class="form-check-input" type="checkbox" id="isMateriaPrima"><label class="form-check-label" for="isMateriaPrima">Este produto é uma <strong>Matéria-Prima</strong> (Ex: Farinha, Tomate. Não aparecerá no cardápio).</label></div>
-                    <div class="form-check mb-2"><input class="form-check-input" type="checkbox" id="isComplemento"><label class="form-check-label" for="isComplemento">Este produto é um <strong>Complemento Opcional</strong> (Ex: Bacon extra, Borda recheada).</label></div>
-                    <div class="form-check mb-3"><input class="form-check-input" type="checkbox" id="permiteComplementos"><label class="form-check-label" for="permiteComplementos">Este produto permite adicionar <strong>Complementos Opcionais</strong>.</label></div>
-                    <div class="form-check mb-3"><input class="form-check-input" type="checkbox" id="isKit"><label class="form-check-label" for="isKit">Este produto é um <strong>Kit</strong> (Ex: Kit Festa, Combo).</label></div>
-                    
-                    <div id="containerKit" class="p-3 border rounded bg-light mb-3" style="display: none;">
-                      <h5 class="mb-3">Configuração do Kit</h5>
-                      <div id="listaGruposKit"></div>
-                      <button type="button" class="btn btn-info mt-2" id="btnAddGrupoKit"><i class="bi bi-plus-lg"></i> Adicionar Grupo ao Kit</button>
-                    </div>
-
-                    <div class="form-check mb-3 p-3 border rounded bg-light">
-                      <input class="form-check-input" type="checkbox" id="vendidoIndividualmente" checked>
-                      <label class="form-check-label" for="vendidoIndividualmente">
-                          <strong>Pode ser vendido individualmente no cardápio?</strong>
-                          <small class="d-block text-muted">Se desmarcado, este produto só aparecerá como opção dentro de um Kit.</small>
-                      </label>
-                    </div>
-                 </div>
-            </div>
-
-            <div class="card shadow-sm mb-4">
-              <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">5. Composição / Receita</h5>
-                <button type="button" class="btn btn-sm btn-outline-primary" id="btnAddReceita"><i class="bi bi-plus-circle"></i> Adicionar Ingrediente</button>
-              </div>
-              <div class="card-body">
-                  <p class="text-muted small">Use esta seção para produtos compostos (ex: um sanduíche). Ao vender, o sistema dará baixa no estoque dos ingredientes listados aqui.</p>
-                  <div id="listaReceita">
-                      </div>
+            <div class="card-body">
+              <div class="row g-3">
+                <div class="col-md-8"><label for="nome" class="form-label">Nome do Produto</label><input type="text"
+                    class="form-control" id="nome" required placeholder="Ex: Pizza Calabresa, Kit Festa P"></div>
+                <div class="col-md-4"><label for="preco" class="form-label">Preço de Venda (R$)</label><input
+                    type="number" class="form-control" id="preco" step="0.01" min="0" required placeholder="0,00"></div>
               </div>
             </div>
+          </div>
+          <div class="card shadow-sm mb-4">
+            <div class="card-header">
+              <h5 class="mb-0">2. Detalhes e Exibição</h5>
+            </div>
+            <div class="card-body">
+              <div class="row g-3">
+                <div class="col-md-5"><label for="categoria" class="form-label">Categoria</label><input type="text"
+                    class="form-control" id="categoria" placeholder="Ex: Pizzas, Bebidas, Combos">
+                  <div class="form-text">Usada para agrupar produtos no cardápio.</div>
+                </div>
+                <div class="col-md-4"><label for="codigoPdv" class="form-label">Código PDV / Referência</label><input
+                    type="text" class="form-control" id="codigoPdv"></div>
+                <div class="col-md-3"><label for="ordemVisualizacao" class="form-label">Ordem no Cardápio</label><input
+                    type="number" class="form-control" id="ordemVisualizacao" placeholder="Ex: 1, 2, 3..."></div>
+                <div class="col-12"><label for="descricao" class="form-label">Descrição</label><textarea
+                    class="form-control" id="descricao" rows="2"
+                    placeholder="Ingredientes ou detalhes do produto que aparecerão no cardápio."></textarea></div>
+              </div>
+            </div>
+          </div>
+          <div class="card shadow-sm mb-4">
+            <div class="card-header">
+              <h5 class="mb-0">3. Imagem do Produto</h5>
+            </div>
+            <div class="card-body">
+              <div class="row align-items-center">
+                <div class="col-md-8"><label for="imagemFile" class="form-label">Selecione uma Imagem</label><input
+                    type="file" class="form-control" id="imagemFile" accept="image/jpeg, image/png">
+                  <div class="form-text">Recomendado: Imagens quadradas nos formatos JPG ou PNG.</div>
+                </div>
+                <div class="col-md-4">
+                  <div id="preview-container" class="mt-3 mt-md-0"><img id="image-preview" src="#"
+                      alt="Preview da Imagem" class="img-fluid rounded" /></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card shadow-sm mb-4">
+            <div class="card-header">
+              <h5 class="mb-0">4. Tipo e Comportamento do Produto</h5>
+            </div>
+            <div class="card-body">
+              <div class="form-check mb-2"><input class="form-check-input" type="checkbox" id="isMateriaPrima"><label
+                  class="form-check-label" for="isMateriaPrima">Este produto é uma <strong>Matéria-Prima</strong> (Ex:
+                  Farinha, Tomate. Não aparecerá no cardápio).</label></div>
+              <div class="form-check mb-2"><input class="form-check-input" type="checkbox" id="isComplemento"><label
+                  class="form-check-label" for="isComplemento">Este produto é um <strong>Complemento Opcional</strong>
+                  (Ex: Bacon extra, Borda recheada).</label></div>
+              <div class="form-check mb-3"><input class="form-check-input" type="checkbox"
+                  id="permiteComplementos"><label class="form-check-label" for="permiteComplementos">Este produto
+                  permite adicionar <strong>Complementos Opcionais</strong>.</label></div>
+              <div class="form-check mb-3"><input class="form-check-input" type="checkbox" id="isKit"><label
+                  class="form-check-label" for="isKit">Este produto é um <strong>Kit</strong> (Ex: Kit Festa,
+                  Combo).</label></div>
+
+              <div id="containerKit" class="p-3 border rounded bg-light mb-3" style="display: none;">
+                <h5 class="mb-3">Configuração do Kit</h5>
+                <div id="listaGruposKit"></div>
+                <button type="button" class="btn btn-info mt-2" id="btnAddGrupoKit"><i class="bi bi-plus-lg"></i>
+                  Adicionar Grupo ao Kit</button>
+              </div>
+
+              <div class="form-check mb-3 p-3 border rounded bg-light">
+                <input class="form-check-input" type="checkbox" id="vendidoIndividualmente" checked>
+                <label class="form-check-label" for="vendidoIndividualmente">
+                  <strong>Pode ser vendido individualmente no cardápio?</strong>
+                  <small class="d-block text-muted">Se desmarcado, este produto só aparecerá como opção dentro de um
+                    Kit.</small>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div class="card shadow-sm mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <h5 class="mb-0">5. Composição / Receita</h5>
+              <button type="button" class="btn btn-sm btn-outline-primary" id="btnAddReceita"><i
+                  class="bi bi-plus-circle"></i> Adicionar Ingrediente</button>
+            </div>
+            <div class="card-body">
+              <p class="text-muted small">Use esta seção para produtos compostos (ex: um sanduíche). Ao vender, o
+                sistema dará baixa no estoque dos ingredientes listados aqui.</p>
+              <div id="listaReceita">
+              </div>
+            </div>
+          </div>
 
           <div class="mt-4 text-end">
-            <button type="submit" class="btn btn-primary btn-lg"><i class="bi bi-check-circle"></i> Salvar Produto</button>
+            <button type="submit" class="btn btn-primary btn-lg"><i class="bi bi-check-circle"></i> Salvar
+              Produto</button>
           </div>
         </form>
       </div>

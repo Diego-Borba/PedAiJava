@@ -1,4 +1,4 @@
-
+// src/main/resources/static/js/admin-pedidos.js
 const statusList = ['Recebido', 'Pendente', 'Em Preparo', 'Saiu para Entrega'];
 const KDS_UPDATE_INTERVAL = 30000;
 
@@ -19,8 +19,10 @@ function calcularTempoDecorrido(dataPedido) {
 
 async function carregarPedidos() {
     try {
-        const res = await axios.get('/api/pedidos');
-        const pedidos = res.data;
+        const res = await fetchWithAuth('/api/pedidos');
+        if (!res.ok) throw new Error("Falha ao carregar pedidos.");
+        
+        const pedidos = await res.json();
         const board = document.getElementById('kdsBoard');
         if (!board) return;
         board.innerHTML = '';
@@ -62,7 +64,6 @@ async function carregarPedidos() {
                 hour: '2-digit', minute: '2-digit'
             }) : 'Data indisponível';
             
-            // --- CÁLCULO E APLICAÇÃO DO TEMPO DECORRIDO ---
             const tempoStatus = calcularTempoDecorrido(p.dataPedido);
             card.style.borderLeftColor = tempoStatus.className === 'danger' ? '#dc3545' : (tempoStatus.className === 'warning' ? '#ffc107' : '#0d6efd');
 
@@ -138,8 +139,10 @@ function soltar(ev, novoStatus) {
 
 async function atualizarStatus(id, novoStatus) {
     try {
-        await axios.put(`/api/pedidos/${id}/status`, { novoStatus }, {
-            headers: { 'Content-Type': 'application/json' }
+        await fetchWithAuth(`/api/pedidos/${id}/status`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ novoStatus })
         });
         carregarPedidos();
     } catch (err) {
@@ -153,7 +156,6 @@ function formatarPedidoParaImpressao(pedido) {
     let texto = `Pedido #${pedido.id}\n`;
     texto += `Data: ${new Date(pedido.dataPedido).toLocaleString('pt-BR')}\n`;
     texto += `\n--------------------------\n\n`;
-    //texto += `Status: ${pedido.status}\n\n`;
     texto += `Itens:\n`;
     let totalPedido = 0;
 
@@ -171,8 +173,10 @@ function formatarPedidoParaImpressao(pedido) {
 
 async function imprimirPedido(idPedido) {
     try {
-        const res = await axios.get(`/api/pedidos/${idPedido}`);
-        const pedido = res.data;
+        const res = await fetchWithAuth(`/api/pedidos/${idPedido}`);
+        if (!res.ok) throw new Error("Falha ao buscar dados do pedido.");
+        
+        const pedido = await res.json();
         const textoImpressao = formatarPedidoParaImpressao(pedido);
         const janelaImpressao = window.open('', '_blank', 'width=400,height=600');
         if (janelaImpressao) {
@@ -192,7 +196,6 @@ async function imprimirPedido(idPedido) {
                     <script>
                         window.onload = function() {
                             window.print();
-                            // window.close();
                         }
                     </script>
                 </body>
@@ -210,8 +213,10 @@ async function imprimirPedido(idPedido) {
 
 async function concluirPedido(idPedido) {
     try {
-        await axios.put(`/api/pedidos/${idPedido}/status`, { novoStatus: 'Entregue' }, {
-            headers: { 'Content-Type': 'application/json' }
+        await fetchWithAuth(`/api/pedidos/${idPedido}/status`, { 
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ novoStatus: 'Entregue' })
         });
         carregarPedidos();
     } catch (err) {

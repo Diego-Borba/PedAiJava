@@ -1,3 +1,4 @@
+// src/main/resources/static/js/contas-a-pagar.js
 document.addEventListener('DOMContentLoaded', function () {
     let tabelaContasPagar;
     const contaPagarModal = new bootstrap.Modal(document.getElementById('contaPagarModal'));
@@ -21,13 +22,26 @@ document.addEventListener('DOMContentLoaded', function () {
             delay: 250,
             data: (params) => ({ q: params.term }),
             processResults: (data) => ({ results: data }),
-            cache: true
+            cache: true,
+            transport: async function (params, success, failure) {
+                try {
+                    const response = await fetchWithAuth(params.url + '?q=' + (params.data.q || ''));
+                    if (!response.ok) {
+                        failure();
+                        return;
+                    }
+                    const data = await response.json();
+                    success({ results: data });
+                } catch (error) {
+                    failure();
+                }
+            }
         }
     });
 
     async function carregarContas() {
         try {
-            const response = await fetch('/api/contas-a-pagar');
+            const response = await fetchWithAuth('/api/contas-a-pagar');
             if (!response.ok) throw new Error('Falha ao buscar dados do servidor.');
             todosOsDados = await response.json();
             inicializarTabela(todosOsDados);
@@ -200,7 +214,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }).then(async (result) => {
                 if (result.isConfirmed) {
                     try {
-                        const response = await fetch(`/api/contas-a-pagar/${id}`, { method: 'DELETE' });
+                        const response = await fetchWithAuth(`/api/contas-a-pagar/${id}`, { method: 'DELETE' });
                         if (!response.ok) throw new Error('Falha ao excluir.');
                         Swal.fire('Excluído!', 'A despesa foi removida.', 'success');
                         carregarContas();
@@ -231,7 +245,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         try {
-            const response = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+            const response = await fetchWithAuth(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
             if (!response.ok) throw new Error('Falha ao salvar despesa.');
             contaPagarModal.hide();
             Swal.fire('Sucesso!', 'Despesa salva com sucesso!', 'success');
@@ -250,7 +264,7 @@ document.addEventListener('DOMContentLoaded', function () {
         };
 
         try {
-            const response = await fetch(`/api/contas-a-pagar/${contaId}/registrar-pagamento`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+            const response = await fetchWithAuth(`/api/contas-a-pagar/${contaId}/registrar-pagamento`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
             if (!response.ok) throw new Error('Falha ao registrar pagamento.');
             pagamentoPagarModal.hide();
             Swal.fire('Sucesso!', 'Pagamento registrado com sucesso!', 'success');
