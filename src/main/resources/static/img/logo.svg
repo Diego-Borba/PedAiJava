@@ -19,7 +19,7 @@
   
   <text x="115" y="65" text-anchor="middle" class="logo-text">PedAI</text>
   
-  <g transform="translate(172, 14) scale(0.03)">
+  <g transform="translate(170, 14) scale(0.03)">
       <path fill="#FFFFFF" d="M256 0C167.6 0 96 71.6 96 160c0 88.4 160 352 160 352s160-263.6 160-352C416 71.6 344.4 0 256 0zm0 256c-53 0-96-43-96-96s43-96 96-96s96 43 96 96s-43 96-96 96z"/>
   </g>
 
