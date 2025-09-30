@@ -1,4 +1,3 @@
-// src/main/resources/static/js/financeiro.js
 document.addEventListener('DOMContentLoaded', function () {
     let tabelaContas;
     const pagamentoModal = new bootstrap.Modal(document.getElementById('pagamentoModal'));
@@ -21,9 +20,7 @@ document.addEventListener('DOMContentLoaded', function () {
             url: '/api/clientes/search',
             dataType: 'json',
             delay: 250,
-            data: (params) => ({ q: params.term }),
-            processResults: (data) => ({ results: data }),
-            cache: true
+            transport: select2AuthTransport // CORREÇÃO APLICADA AQUI
         }
     });
 
@@ -46,7 +43,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     async function carregarContas() {
         try {
-            const response = await fetchWithAuth('/api/contas-a-receber');
+            const response = await fetchWithAuth('/api/contas-a-receber'); // CORRIGIDO
             if (!response.ok) throw new Error('Falha ao buscar dados do servidor.');
             todosOsDados = await response.json();
             inicializarTabela(todosOsDados);
@@ -114,7 +111,6 @@ document.addEventListener('DOMContentLoaded', function () {
     function atualizarTotalFiltrado() {
         const container = $('#totalFiltradoContainer');
         const valorSpan = $('#totalFiltradoValor');
-
         const isFiltroAtivo = $('#filtroTexto').val() || $('#filtroDataInicio').val() || $('#filtroDataFim').val() || $('#filtroStatus').val();
 
         if (!isFiltroAtivo) {
@@ -245,7 +241,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }).then(async (result) => {
                 if (result.isConfirmed) {
                     try {
-                        const response = await fetchWithAuth(`/api/contas-a-receber/${id}`, { method: 'DELETE' });
+                        const response = await fetchWithAuth(`/api/contas-a-receber/${id}`, { method: 'DELETE' }); // CORRIGIDO
                         if (!response.ok) throw new Error('Falha ao excluir.');
                         Swal.fire('Excluído!', 'A conta foi removida.', 'success');
                         carregarContas();
@@ -264,7 +260,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const dataPagamento = $('#dataPagamento').val();
         const payload = { valor: parseFloat(valorPago), dataPagamento: dataPagamento };
         try {
-            const response = await fetchWithAuth(`/api/contas-a-receber/${contaId}/registrar-pagamento`, {
+            const response = await fetchWithAuth(`/api/contas-a-receber/${contaId}/registrar-pagamento`, { // CORRIGIDO
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
@@ -302,7 +298,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         try {
-            const response = await fetchWithAuth(url, {
+            const response = await fetchWithAuth(url, { // CORRIGIDO
                 method: method,
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)

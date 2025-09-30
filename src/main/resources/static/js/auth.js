@@ -1,4 +1,4 @@
-// src/main/resources/static/js/auth.js
+// Este script é auto-executável para proteger a página assim que ela carregar.
 (function() {
     const token = localStorage.getItem('jwt_token');
     const loginUrl = '../html/login.html';
@@ -17,18 +17,15 @@ function logout() {
 
 /**
  * Função global para fazer requisições fetch com o token de autenticação.
- * Use esta função no lugar de 'fetch()' em todas as chamadas para a API protegida.
  */
 async function fetchWithAuth(url, options = {}) {
     const token = localStorage.getItem('jwt_token');
 
-    // Se por algum motivo o token sumir, desloga o usuário.
     if (!token) {
         logout();
         return Promise.reject(new Error('Token não encontrado.'));
     }
 
-    // Adiciona o cabeçalho de autorização, mantendo outros cabeçalhos que já existam.
     const headers = {
         ...options.headers,
         'Authorization': `Bearer ${token}`
@@ -37,8 +34,6 @@ async function fetchWithAuth(url, options = {}) {
     try {
         const response = await fetch(url, { ...options, headers });
 
-        // Se o token for inválido ou expirado, o servidor retornará 401 ou 403.
-        // Nesse caso, deslogamos o usuário.
         if (response.status === 401 || response.status === 403) {
             logout();
             return Promise.reject(new Error('Sessão expirada. Faça o login novamente.'));
@@ -48,5 +43,27 @@ async function fetchWithAuth(url, options = {}) {
     } catch (error) {
         console.error('Erro na requisição com autenticação:', error);
         return Promise.reject(error);
+    }
+}
+
+/**
+ * Função de transporte para o Select2 usar o fetchWithAuth.
+ */
+async function select2AuthTransport(params, success, failure) {
+    // Adiciona o termo de busca (q) à URL, se ele existir
+    const url = params.url + (params.data.q ? '?q=' + params.data.q : '');
+    
+    try {
+        const response = await fetchWithAuth(url);
+        if (!response.ok) {
+            throw new Error('Falha na busca do Select2');
+        }
+        const data = await response.json();
+        // A função 'success' do Select2 espera um objeto com a chave 'results'
+        success({ results: data });
+    } catch (error) {
+        console.error("Erro no transporte do Select2:", error);
+        // A função 'failure' do Select2 informa que a requisição falhou
+        failure();
     }
 }
