@@ -27,21 +27,17 @@ public class SecurityConfigurations {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
-                        // Rotas públicas para clientes consumidores
+                        // ... (outras permissões permanecem iguais)
                         .requestMatchers(HttpMethod.POST, "/api/clientes/cadastro", "/api/clientes/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/pedidos").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/pedidos/por-cliente/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/produtos/cardapio", "/api/produtos/categorias").permitAll()
-                        
-                        // Rota pública para login do admin
                         .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
-                        
-                        // Permite acesso a todos os arquivos estáticos
                         .requestMatchers("/", "/index.html", "/html/**", "/css/**", "/js/**", "/img/**").permitAll()
-
-                        // ADICIONADO: Permite o acesso ao favicon
-                        .requestMatchers("/favicon.ico").permitAll()
                         
+                        // ADICIONADO: Permissão para a rota de depuração
+                        .requestMatchers("/api/auth/debug/secret").hasRole("ADMIN")
+
                         // Todas as outras rotas exigem autenticação de ADMIN
                         .anyRequest().hasRole("ADMIN")
                 )
