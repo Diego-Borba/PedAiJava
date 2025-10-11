@@ -1,8 +1,9 @@
-// Conteúdo anterior do arquivo...
+// Caminho: src/main/java/com/PedAi/PedAi/Controller/PedidoController.java
 package com.PedAi.PedAi.Controller;
 
 import com.PedAi.PedAi.DTO.PedidoAdminDTO;
 import com.PedAi.PedAi.DTO.PedidoDTO;
+import com.PedAi.PedAi.DTO.PedidoPdvDTO;
 import com.PedAi.PedAi.DTO.StatusDTO;
 import com.PedAi.PedAi.Model.Pedido;
 import com.PedAi.PedAi.Model.TipoPedido;
@@ -12,6 +13,7 @@ import com.PedAi.PedAi.repository.PedidoSpecification;
 import com.PedAi.PedAi.services.FinanceiroService;
 import com.PedAi.PedAi.services.PdfService;
 import com.PedAi.PedAi.services.PedidoService;
+import jakarta.persistence.criteria.Predicate; // IMPORTAÇÃO CORRIGIDA
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
@@ -21,6 +23,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -50,25 +53,19 @@ public class PedidoController {
         try {
             Pedido novoPedido = pedidoService.criarPedido(pedidoDTO);
             return ResponseEntity.ok(Map.of("id", novoPedido.getId()));
-
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
-
         } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", e.getMessage()));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("message", e.getMessage()));
         }
     }
 
-    // --- MÉTODO GET POR ID (ATUALIZADO) ---
     @GetMapping("/{id}")
     public ResponseEntity<?> getPedido(@PathVariable Long id) {
         return pedidoRepository.findById(id).map(pedido -> {
             Map<String, Object> body = new HashMap<>();
             body.put("id", pedido.getId());
             body.put("dataPedido", pedido.getDataPedido());
-            // body.put("status", pedido.getStatus()); // Status não é mais necessário aqui
-            
-            // ADICIONADO: Tipo do pedido e detalhes do cliente/endereço
             body.put("tipo", pedido.getTipo());
             if (pedido.getCliente() != null) {
                 body.put("clienteNome", pedido.getCliente().getNome());
@@ -76,7 +73,6 @@ public class PedidoController {
             if (pedido.getEnderecoEntrega() != null) {
                 body.put("enderecoEntrega", pedido.getEnderecoEntrega());
             }
-
             body.put("itens", pedido.getItens().stream().map(i -> Map.of(
                     "produtoId", i.getProduto().getId(),
                     "produto", i.getProduto().getNome(),
@@ -101,7 +97,7 @@ public class PedidoController {
                 .toList();
         return ResponseEntity.ok(resposta);
     }
-// Conteúdo posterior do arquivo...
+
     @GetMapping("/por-cliente/{clienteId}")
     public ResponseEntity<?> listarPedidosPorCliente(@PathVariable Long clienteId) {
         if (!clienteRepository.existsById(clienteId)) {
@@ -161,6 +157,33 @@ public class PedidoController {
 
         return ResponseEntity.ok(resposta);
     }
+    
+    @GetMapping("/importar")
+    public ResponseEntity<List<PedidoPdvDTO>> listarPedidosParaImportar() {
+        Specification<Pedido> spec = (root, query, cb) -> {
+            List<Predicate> predicates = new ArrayList<>();
+            // Filtra por pedidos que são de RETIRADA ou ENCOMENDA
+            predicates.add(cb.or(
+                cb.equal(root.get("tipo"), TipoPedido.RETIRADA),
+                cb.equal(root.get("tipo"), TipoPedido.ENCOMENDA)
+            ));
+            // Exclui pedidos já finalizados ou cancelados
+            predicates.add(cb.notEqual(root.get("status"), "Concluido"));
+            predicates.add(cb.notEqual(root.get("status"), "Cancelado"));
+            predicates.add(cb.notEqual(root.get("status"), "Entregue"));
+            
+            return cb.and(predicates.toArray(new Predicate[0]));
+        };
+        
+        List<Pedido> pedidos = pedidoRepository.findAll(spec, Sort.by(Sort.Direction.DESC, "dataPedido"));
+
+        List<PedidoPdvDTO> resposta = pedidos.stream()
+                .map(PedidoPdvDTO::new)
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(resposta);
+    }
+
 
     @GetMapping("/{id}/pdf")
     public ResponseEntity<byte[]> gerarPdfPedido(@PathVariable Long id) {

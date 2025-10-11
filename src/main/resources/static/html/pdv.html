@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <title>PDV - Ponto de Venda - PedAi</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" />
+    <link rel="stylesheet" href="../css/global-admin.css">
+    <link rel="stylesheet" href="../css/pdv.css">
+    <script src="../js/auth.js"></script>
+</head>
+
+<body>
+    <div class="wrapper">
+        <div class="main">
+            <div class="sidebar collapsed" id="sidebar">
+                <button class="toggle-btn" onclick="toggleSidebar()" aria-label="Abrir menu de navegação">
+                    <i class="bi bi-list"></i>
+                </button>
+                <div class="dropdown">
+                    <a class="dropdown-toggle text-decoration-none" href="#" role="button" data-bs-toggle="dropdown"
+                        aria-expanded="false">
+                        <i class="bi bi-plus-circle"></i><span class="menu-text">Cadastro</span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-dark">
+                        <li><a class="dropdown-item" href="cadastro.html">Produtos</a></li>
+                        <li><a class="dropdown-item" href="fornecedor.html">Fornecedores</a></li>
+                    </ul>
+                </div>
+                <a href="pdv.html"><i class="bi bi-shop-window"></i><span class="menu-text">Caixa</span></a>
+                <a href="Pedidos.html"><i class="bi bi-cart4"></i><span class="menu-text">Pedidos</span></a>
+                <a href="entrada.html"><i class="bi bi-box-arrow-in-down"></i><span
+                        class="menu-text">Entradas</span></a>
+                <a href="gestao-pedidos.html"><i class="bi bi-card-list"></i><span class="menu-text">Gestão de
+                        Pedidos</span></a>
+                <a href="admin-pedidos.html"><i class="bi bi-speedometer2"></i><span class="menu-text">KDS</span></a>
+                <a href="Produtos.html"><i class="bi bi-box-seam"></i><span class="menu-text">Listar Produtos</span></a>
+                <div class="dropdown">
+                    <a class="dropdown-toggle text-decoration-none" href="#" role="button" data-bs-toggle="dropdown"
+                        aria-expanded="false">
+                        <i class="bi bi-cash-coin"></i><span class="menu-text">Financeiro</span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-dark">
+                        <li><a class="dropdown-item" href="financeiro.html">Contas a Receber</a></li>
+                        <li><a class="dropdown-item" href="contas-a-pagar.html">Contas a Pagar</a></li>
+                    </ul>
+                </div>
+
+                <div class="dropdown">
+                    <a class="dropdown-toggle text-decoration-none" href="#" role="button" data-bs-toggle="dropdown"
+                        aria-expanded="false">
+                        <i class="bi bi-file-earmark-text"></i><span class="menu-text">Relatórios</span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-dark">
+                        <li><a class="dropdown-item" href="relatorio-vendas.html">Relatório de Vendas</a></li>
+                        <li><a class="dropdown-item" href="relatorio-produtos.html">Relatório de Produtos</a></li>
+                    </ul>
+                </div>
+
+                <a href="#" onclick="logout()"><i class="bi bi-box-arrow-right"></i><span
+                        class="menu-text">Sair</span></a>
+            </div>
+
+            <div class="content collapsed" id="content">
+                <div class="pdv-container">
+                    <div class="venda-coluna">
+                        <div class="card h-100 d-flex flex-column">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">Venda Atual</h5>
+                                <button class="btn btn-outline-info btn-sm" id="btnImportarPedido">
+                                    <i class="bi bi-download"></i> Importar Pedido
+                                </button>
+                            </div>
+                            <div class="card-body d-flex flex-column">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="flex-grow-1">
+                                        <select class="form-control" id="produto-search"></select>
+                                    </div>
+                                    <span class="badge bg-primary ms-2" id="multiplicador-badge"
+                                        style="display: none;"></span>
+                                </div>
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-hover" id="tabela-venda">
+                                        <thead>
+                                            <tr>
+                                                <th>Produto</th>
+                                                <th style="width: 100px;">Qtd.</th>
+                                                <th>Vlr. Unit.</th>
+                                                <th>Total</th>
+                                                <th style="width: 50px;"></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="venda-rodape">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span>Subtotal:</span>
+                                        <span id="subtotal-venda">R$ 0,00</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span>Descontos (-):</span>
+                                        <span id="descontos-venda" class="text-danger">R$ 0,00</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span>Acréscimos (+):</span>
+                                        <span id="acrescimos-venda" class="text-success">R$ 0,00</span>
+                                    </div>
+                                    <div class="d-flex justify-content-end gap-2 mt-2">
+                                        <button class="btn btn-sm btn-outline-danger" id="btn-desconto">Aplicar
+                                            Desconto</button>
+                                        <button class="btn btn-sm btn-outline-success" id="btn-acrescimo">Aplicar
+                                            Acréscimo</button>
+                                    </div>
+                                    <hr>
+                                    <div class="d-flex justify-content-between align-items-center fw-bold total-geral">
+                                        <span>TOTAL:</span>
+                                        <span id="total-venda">R$ 0,00</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-footer">
+                                <div class="d-grid gap-2">
+                                    <button class="btn btn-primary btn-lg" id="btnFinalizarVenda" disabled>
+                                        <i class="bi bi-check-circle"></i> Finalizar Venda (F12)
+                                    </button>
+                                    <button class="btn btn-danger" id="btnCancelarVenda">
+                                        <i class="bi bi-x-circle"></i> Cancelar Venda
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="browser-coluna">
+                        <div class="card h-100">
+                            <div class="card-header">
+                                <h5 class="mb-0">Catálogo de Produtos</h5>
+                            </div>
+                            <div class="card-body d-flex flex-column p-0">
+                                <div id="category-buttons-container" class="category-buttons p-2">
+                                </div>
+                                <div id="product-list-container" class="product-list flex-grow-1 p-2">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script src="../js/global-admin.js"></script>
+    <script src="../js/pdv.js"></script>
+</body>
+
+</html>

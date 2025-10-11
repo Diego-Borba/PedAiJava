@@ -1,0 +1,13 @@
+/* static/css/relatorio.css */
+.dataTables_wrapper .dataTables_filter {
+    display: none; /* Oculta a busca padrão do DataTables */
+}
+
+#tabela-relatorio-vendas ul {
+    padding-left: 1rem;
+    margin-bottom: 0;
+}
+
+#tabela-relatorio-vendas tfoot th {
+    font-size: 1.2rem;
+}

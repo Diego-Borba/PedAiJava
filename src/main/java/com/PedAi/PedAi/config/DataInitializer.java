@@ -17,31 +17,34 @@ public class DataInitializer implements CommandLineRunner {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    // Injeta a variável de ambiente. O valor padrão é 'false'.
     @Value("${FORCE_ADMIN_CREATION:false}")
     private boolean forceAdminCreation;
 
     @Override
     public void run(String... args) throws Exception {
-        // A lógica agora roda se a variável for true OU se o usuário não existir.
+        // Cria/Atualiza usuário ADMIN
         if (forceAdminCreation || clienteRepository.findByEmail("admin@pedai.com").isEmpty()) {
-            
-            // Usamos .orElseGet() para criar um novo se não existir, ou pegar o existente para atualizar.
-            Cliente admin = clienteRepository.findByEmail("admin@pedai.com").orElseGet(Cliente::new);
-            
+            Cliente admin = clienteRepository.findByEmail("admin@pedai.com").orElse(new Cliente());
             admin.setNome("Administrador");
             admin.setEmail("admin@pedai.com");
-            admin.setSenha(passwordEncoder.encode("admin123")); // Garante que a senha sempre será a padrão
+            admin.setSenha(passwordEncoder.encode("admin123"));
             admin.setTelefone("00000000000");
             admin.setRole(UserRole.ADMIN);
-            
             clienteRepository.save(admin);
-            
-            if(forceAdminCreation) {
-                System.out.println(">>> Variável de ambiente detectada. Usuário 'admin' foi forçadamente criado/atualizado. <<<");
-            } else {
-                System.out.println(">>> Usuário 'admin' padrão criado com senha 'admin123' <<<");
-            }
+        }
+
+        // --- CORREÇÃO APLICADA AQUI ---
+        // Cria cliente "Consumidor Final" se não existir pelo e-mail
+        if (clienteRepository.findByEmail("consumidor@final.com").isEmpty()) {
+            Cliente consumidorFinal = new Cliente();
+            // NÃO definimos mais o ID manualmente. Deixamos o banco de dados gerar.
+            consumidorFinal.setNome("Consumidor Final");
+            consumidorFinal.setEmail("consumidor@final.com");
+            consumidorFinal.setSenha(passwordEncoder.encode("consumidor")); // Senha genérica
+            consumidorFinal.setTelefone("00000000000");
+            consumidorFinal.setRole(UserRole.USER);
+            clienteRepository.save(consumidorFinal);
+            System.out.println(">>> Cliente 'Consumidor Final' criado com sucesso. <<<");
         }
     }
 }
