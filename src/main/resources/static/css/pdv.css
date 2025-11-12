@@ -1,34 +1,43 @@
 /* static/css/pdv.css */
+
+/* Em telas de desktop, o layout é o padrão */
 .pdv-container {
     display: grid;
     grid-template-columns: 60% 40%;
     gap: 1.5rem;
-    height: calc(100vh - 60px); /* Ajustar altura conforme o padding do .content */
+    height: calc(100vh - 60px);
+    /* Ajustar altura conforme o padding do .content */
 }
 
-/* --- Coluna da Venda --- */
+/* --- Coluna da Venda (Desktop) --- */
 .venda-coluna .card-body {
     padding-bottom: 0;
 }
+
 .venda-coluna .table-responsive {
     height: calc(100% - 250px);
     overflow-y: auto;
 }
+
 .venda-coluna .card-footer {
     background-color: #fff;
     border-top: none;
     padding-top: 1rem;
 }
+
 #tabela-venda tbody tr {
     cursor: pointer;
 }
+
 #tabela-venda .form-control-sm {
     text-align: center;
     border: 1px solid transparent;
 }
+
 #tabela-venda .form-control-sm:focus {
     border: 1px solid #0d6efd;
 }
+
 .table-hover tbody tr.table-info {
     --bs-table-bg-state: #cfe2ff;
     --bs-table-hover-bg: #c4d8f2;
@@ -38,10 +47,13 @@
     border-top: 1px solid #dee2e6;
     padding-top: 1rem;
     margin-top: auto;
+    /* Empurra para baixo */
 }
+
 .venda-rodape span {
     font-size: 1.1rem;
 }
+
 .venda-rodape .total-geral span {
     font-size: 2.2rem;
     font-weight: 700;
@@ -54,26 +66,26 @@
 }
 
 
-/* --- Coluna do Navegador de Produtos --- */
+/* --- Coluna do Navegador de Produtos (Desktop) --- */
 .browser-coluna .card {
     background-color: #f8f9fa;
 }
+
 .browser-coluna .card-header {
     background-color: #e9ecef;
 }
 
-/* --- INÍCIO DA MELHORIA VISUAL DAS CATEGORIAS --- */
 .category-buttons {
     display: flex;
-    justify-content: center; /* Centraliza os botões */
-    flex-wrap: wrap; /* Permite que quebrem a linha se necessário */
+    justify-content: center;
+    flex-wrap: wrap;
     gap: 0.5rem;
     padding: 0.5rem;
     border-bottom: 1px solid #dee2e6;
 }
 
 .category-buttons .btn {
-    border-radius: 50rem; /* Formato "Pill" */
+    border-radius: 50rem;
     font-weight: 500;
     border: 1px solid #d0d5dd;
     color: #344054;
@@ -93,15 +105,13 @@
     border-color: #0d6efd;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
-/* --- FIM DA MELHORIA VISUAL DAS CATEGORIAS --- */
-
 
 .product-list {
     overflow-y: auto;
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
     gap: 0.75rem;
-    grid-auto-rows: 190px; 
+    grid-auto-rows: 190px;
 }
 
 .product-card-pdv {
@@ -113,21 +123,24 @@
     border-radius: 0.5rem;
     background-color: #fff;
     transition: all 0.2s ease;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
     overflow: hidden;
 }
+
 .product-card-pdv:hover {
     transform: translateY(-3px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     border-color: #0d6efd;
 }
 
 .product-card-pdv .img-container {
     width: 100%;
-    padding-top: 75%; /* Proporção 4:3 */
+    padding-top: 75%;
+    /* Proporção 4:3 */
     position: relative;
     background-color: #f1f1f1;
 }
+
 .product-card-pdv img {
     position: absolute;
     top: 0;
@@ -136,6 +149,7 @@
     height: 100%;
     object-fit: cover;
 }
+
 .product-card-pdv .info {
     padding: 0.5rem;
     text-align: center;
@@ -144,6 +158,7 @@
     justify-content: center;
     flex-grow: 1;
 }
+
 .product-card-pdv .nome {
     font-size: 0.85rem;
     font-weight: 600;
@@ -155,10 +170,235 @@
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
-    min-height: 2.5em; 
+    min-height: 2.5em;
 }
+
 .product-card-pdv .preco {
     font-size: 1rem;
     font-weight: 700;
     color: #0d6efd;
+}
+
+
+/* ======================================================= */
+/* =============== REGRAS PARA TELAS MENORES ============= */
+/* ======================================================= */
+
+@media (max-width: 991.98px) {
+    /* A lógica da sidebar e do content foi movida 
+      para o global-admin.css 
+    */
+
+    /* --- Layout do PDV no Mobile --- */
+    .pdv-container {
+        /* display: flex; flex-direction: column; (já definido no HTML) */
+        /* Preenche a altura da tela menos o padding do content */
+        height: calc(100vh - 90px);
+    }
+
+    .venda-coluna {
+        flex: 1;
+        /* Faz a coluna da venda ocupar todo o espaço vertical */
+        min-height: 0;
+        /* Permite que a coluna encolha e use o scroll interno */
+    }
+
+    .venda-coluna>.card {
+        height: 100%;
+        /* O card preenche a coluna */
+    }
+
+    .venda-coluna .card-body {
+        flex: 1;
+        /* O corpo do card preenche o card */
+        min-height: 0;
+        /* Permite encolher */
+        padding: 0.75rem;
+        display: flex;
+        /* Garante que o flex-order funcione */
+        flex-direction: column;
+        /* Garante que o flex-order funcione */
+    }
+
+    /* --- Reordenação e Dimensionamento dos blocos do PDV Mobile --- */
+
+    /* 1. Barra de Pesquisa */
+    .venda-coluna .card-body>.d-flex.align-items-center.mb-3 {
+        order: 1;
+        /* 1º item */
+        flex-shrink: 0;
+        /* Não encolhe */
+    }
+
+    /* 2. Tabela de Itens (MOVENDO PARA CIMA) */
+    .table-responsive-wrapper-pdv {
+        order: 2;
+        /* 2º item */
+        flex: 1;
+        /* Faz a tabela crescer/encolher */
+        min-height: 150px;
+        /* Altura mínima para a tabela */
+        overflow-y: auto;
+        /* Garante scroll vertical */
+        border-top: 1px solid #eee;
+        border-bottom: 1px solid #eee;
+        margin-top: 10px;
+        /* Adiciona espaço da barra de busca */
+    }
+
+    /* 3. Navegador de Produtos (MOVENDO PARA BAIXO) */
+    .browser-mobile {
+        order: 3;
+        /* 3º item */
+        flex: 1;
+        /* Faz o browser crescer/encolher */
+        min-height: 230px;
+        /* Altura mínima para browser (categorias + produtos) */
+        display: flex;
+        flex-direction: column;
+        padding-top: 10px;
+        /* Espaço da tabela */
+    }
+
+    /* 4. Rodapé dos Totais */
+    .venda-rodape {
+        order: 4;
+        /* 4º item */
+        flex-shrink: 0;
+        /* Não encolhe */
+        padding-top: 0.75rem;
+    }
+
+
+    /* --- Estilos dos Navegadores Mobile (Scroll Horizontal) --- */
+
+    /* Cards de Categoria (Scroll Horizontal) */
+    .category-cards-mobile {
+        display: flex;
+        overflow-x: auto;
+        padding: 5px 2px;
+        gap: 10px;
+        margin-bottom: 10px;
+        scrollbar-width: thin;
+        /* Firefox */
+        scrollbar-color: #0d6efd #f0f0f0;
+        /* Firefox */
+        flex-shrink: 0;
+        /* Altura automática */
+    }
+
+    .category-cards-mobile::-webkit-scrollbar {
+        height: 6px;
+    }
+
+    .category-cards-mobile::-webkit-scrollbar-thumb {
+        background: #0d6efd;
+        border-radius: 3px;
+    }
+
+    .category-card-mobile {
+        padding: 0.5rem 1rem;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        background: #fff;
+        cursor: pointer;
+        font-weight: 500;
+        flex-shrink: 0;
+        /* Impede que os cards encolham */
+        white-space: nowrap;
+        /* Texto em uma linha */
+    }
+
+    .category-card-mobile.active {
+        background: #0d6efd;
+        color: white;
+        border-color: #0d6efd;
+    }
+
+    /* Lista de Produtos (Scroll Horizontal) */
+    .product-list-mobile {
+        display: flex;
+        overflow-x: auto;
+        gap: 10px;
+        padding: 5px 2px;
+        scrollbar-width: thin;
+        /* Firefox */
+        flex: 1;
+        /* Ocupa o resto do .browser-mobile */
+        min-height: 180px;
+        /* Altura mínima dos cards de produto */
+    }
+
+    .product-list-mobile::-webkit-scrollbar {
+        height: 6px;
+    }
+
+    /* Card de Produto (Tamanho Fixo) */
+    .product-card-pdv-mobile {
+        flex: 0 0 120px;
+        /* Largura fixa (aprox. 3 por tela) */
+        height: 170px;
+        /* Altura fixa */
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        background: #fff;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        cursor: pointer;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+
+    .product-card-pdv-mobile .img-container {
+        width: 100%;
+        height: 80px;
+        /* Altura fixa da imagem */
+        position: relative;
+        background-color: #f1f1f1;
+        /* Fundo caso a imagem falhe */
+    }
+
+    .product-card-pdv-mobile img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        /* Garante preenchimento sem distorção */
+    }
+
+    .product-card-pdv-mobile .info {
+        padding: 5px;
+        text-align: center;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    .product-card-pdv-mobile .nome {
+        font-size: 0.8rem;
+        font-weight: 600;
+        line-height: 1.2;
+        /* Limita o texto a 2 linhas */
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+    }
+
+    .product-card-pdv-mobile .preco {
+        font-size: 0.9rem;
+        font-weight: 700;
+        color: #0d6efd;
+    }
+
+    /* Ajusta o rodapé e botões de finalizar */
+    .venda-rodape .total-geral span {
+        font-size: 1.8rem;
+    }
+
+    .card-footer .btn {
+        padding: 0.5rem;
+        font-size: 0.9rem;
+    }
 }

@@ -18,10 +18,12 @@
 <body>
     <div class="wrapper">
         <div class="main">
+
+            <button class="toggle-btn" onclick="toggleSidebar()" aria-label="Abrir menu de navegação">
+                <i class="bi bi-list"></i>
+            </button>
+
             <div class="sidebar collapsed" id="sidebar">
-                <button class="toggle-btn" onclick="toggleSidebar()" aria-label="Abrir menu de navegação">
-                    <i class="bi bi-list"></i>
-                </button>
                 <div class="dropdown">
                     <a class="dropdown-toggle text-decoration-none" href="#" role="button" data-bs-toggle="dropdown"
                         aria-expanded="false">
@@ -67,13 +69,14 @@
             </div>
 
             <div class="content collapsed" id="content">
-                <div class="pdv-container">
+                <div class="pdv-container d-flex flex-column d-lg-grid">
+
                     <div class="venda-coluna">
                         <div class="card h-100 d-flex flex-column">
                             <div class="card-header d-flex justify-content-between align-items-center">
                                 <h5 class="mb-0">Venda Atual</h5>
                                 <button class="btn btn-outline-info btn-sm" id="btnImportarPedido">
-                                    <i class="bi bi-download"></i> Importar Pedido
+                                    <i class="bi bi-download"></i> <span class="d-none d-md-inline">Importar</span>
                                 </button>
                             </div>
                             <div class="card-body d-flex flex-column">
@@ -84,7 +87,15 @@
                                     <span class="badge bg-primary ms-2" id="multiplicador-badge"
                                         style="display: none;"></span>
                                 </div>
-                                <div class="table-responsive">
+
+                                <div class="browser-mobile d-block d-lg-none">
+                                    <div id="category-cards-container-mobile" class="category-cards-mobile">
+                                    </div>
+                                    <div id="product-list-container-mobile" class="product-list-mobile">
+                                    </div>
+                                </div>
+
+                                <div class="table-responsive-wrapper-pdv">
                                     <table class="table table-sm table-hover" id="tabela-venda">
                                         <thead>
                                             <tr>
@@ -99,24 +110,17 @@
                                         </tbody>
                                     </table>
                                 </div>
+
                                 <div class="venda-rodape">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <span>Subtotal:</span>
-                                        <span id="subtotal-venda">R$ 0,00</span>
-                                    </div>
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <span>Descontos (-):</span>
-                                        <span id="descontos-venda" class="text-danger">R$ 0,00</span>
-                                    </div>
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <span>Acréscimos (+):</span>
-                                        <span id="acrescimos-venda" class="text-success">R$ 0,00</span>
-                                    </div>
                                     <div class="d-flex justify-content-end gap-2 mt-2">
-                                        <button class="btn btn-sm btn-outline-danger" id="btn-desconto">Aplicar
-                                            Desconto</button>
-                                        <button class="btn btn-sm btn-outline-success" id="btn-acrescimo">Aplicar
-                                            Acréscimo</button>
+                                        <button class="btn btn-sm btn-outline-danger" id="btn-desconto">
+                                            <i class="bi bi-dash-circle"></i> <span
+                                                class="d-none d-md-inline">Desconto</span>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-success" id="btn-acrescimo">
+                                            <i class="bi bi-plus-circle"></i> <span
+                                                class="d-none d-md-inline">Acréscimo</span>
+                                        </button>
                                     </div>
                                     <hr>
                                     <div class="d-flex justify-content-between align-items-center fw-bold total-geral">
@@ -131,14 +135,15 @@
                                         <i class="bi bi-check-circle"></i> Finalizar Venda (F12)
                                     </button>
                                     <button class="btn btn-danger" id="btnCancelarVenda">
-                                        <i class="bi bi-x-circle"></i> Cancelar Venda
+                                        <i class="bi bi-x-circle"></i> <span class="d-none d-md-inline">Cancelar
+                                            Venda</span>
                                     </button>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="browser-coluna">
+                    <div class="browser-coluna d-none d-lg-block">
                         <div class="card h-100">
                             <div class="card-header">
                                 <h5 class="mb-0">Catálogo de Produtos</h5>

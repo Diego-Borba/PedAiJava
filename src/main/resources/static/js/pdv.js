@@ -14,9 +14,10 @@ document.addEventListener('DOMContentLoaded', function () {
     // --- Seletores de Elementos DOM ---
     const produtoSearch = $('#produto-search');
     const tabelaVendaBody = document.getElementById('tabela-venda').querySelector('tbody');
-    const subtotalEl = document.getElementById('subtotal-venda');
-    const descontosEl = document.getElementById('descontos-venda');
-    const acrescimosEl = document.getElementById('acrescimos-venda');
+    // Elementos removidos:
+    // const subtotalEl = document.getElementById('subtotal-venda');
+    // const descontosEl = document.getElementById('descontos-venda');
+    // const acrescimosEl = document.getElementById('acrescimos-venda');
     const totalEl = document.getElementById('total-venda');
     const btnFinalizarVenda = document.getElementById('btnFinalizarVenda');
     const btnCancelarVenda = document.getElementById('btnCancelarVenda');
@@ -24,8 +25,15 @@ document.addEventListener('DOMContentLoaded', function () {
     const btnDesconto = document.getElementById('btn-desconto');
     const btnAcrescimo = document.getElementById('btn-acrescimo');
     const multiplicadorBadge = document.getElementById('multiplicador-badge');
+
+    // --- Containers Desktop ---
     const categoryButtonsContainer = document.getElementById('category-buttons-container');
     const productListContainer = document.getElementById('product-list-container');
+
+    // --- Containers Mobile (NOVOS) ---
+    const categoryCardsContainerMobile = document.getElementById('category-cards-container-mobile');
+    const productListContainerMobile = document.getElementById('product-list-container-mobile');
+
 
     // --- Inicialização ---
     async function inicializarPdv() {
@@ -33,8 +41,15 @@ document.addEventListener('DOMContentLoaded', function () {
             const response = await fetchWithAuth('/api/produtos/cardapio');
             if (!response.ok) throw new Error('Falha ao carregar produtos');
             todosOsProdutos = await response.json();
+            
+            // Renderiza o navegador de desktop
             renderizarCategorias();
-            renderizarProdutos('Todos'); // Renderiza todos por padrão
+            renderizarProdutos('Todos');
+            
+            // Renderiza o navegador mobile
+            renderizarMobileBrowser();
+            renderizarProdutosMobile('Todos');
+
         } catch (error) {
             Swal.fire('Erro!', 'Não foi possível carregar o navegador de produtos.', 'error');
         }
@@ -80,8 +95,9 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // --- Navegador de Produtos ---
+    // --- Navegador de Produtos (Desktop) ---
     function renderizarCategorias() {
+        if (!categoryButtonsContainer) return; // Se não for desktop, não faz nada
         const categorias = ['Todos', ...new Set(todosOsProdutos.map(p => p.categoria).filter(Boolean))];
         categoryButtonsContainer.innerHTML = '';
         categorias.forEach(cat => {
@@ -101,6 +117,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function renderizarProdutos(categoria) {
+        if (!productListContainer) return; // Se não for desktop, não faz nada
         productListContainer.innerHTML = '';
         const produtosFiltrados = categoria === 'Todos'
             ? todosOsProdutos.filter(p => p.vendidoIndividualmente)
@@ -129,7 +146,68 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // --- Funções da Venda ---
+    // --- NOVAS Funções do Navegador Mobile ---
+    function renderizarMobileBrowser() {
+        if (!categoryCardsContainerMobile) return; // Se não for mobile, não faz nada
+
+        const categorias = ['Todos', ...new Set(todosOsProdutos.map(p => p.categoria).filter(Boolean))];
+        categoryCardsContainerMobile.innerHTML = '';
+
+        categorias.forEach(cat => {
+            const card = document.createElement('div');
+            card.className = 'category-card-mobile';
+            card.textContent = cat;
+            card.dataset.categoria = cat;
+            card.addEventListener('click', () => {
+                document.querySelectorAll('.category-card-mobile').forEach(c => c.classList.remove('active'));
+                card.classList.add('active');
+                renderizarProdutosMobile(cat);
+            });
+            categoryCardsContainerMobile.appendChild(card);
+        });
+
+        if (categoryCardsContainerMobile.firstChild) {
+            categoryCardsContainerMobile.firstChild.classList.add('active');
+        }
+    }
+    
+    function renderizarProdutosMobile(categoria) {
+        if (!productListContainerMobile) return; // Se não for mobile, não faz nada
+        
+        productListContainerMobile.innerHTML = '';
+        const produtosFiltrados = categoria === 'Todos'
+            ? todosOsProdutos.filter(p => p.vendidoIndividualmente)
+            : todosOsProdutos.filter(p => p.categoria === categoria && p.vendidoIndividualmente);
+
+        produtosFiltrados.sort((a, b) => (a.ordemVisualizacao || 999) - (b.ordemVisualizacao || 999));
+
+        produtosFiltrados.forEach(produto => {
+            const card = document.createElement('div');
+            card.className = 'product-card-pdv-mobile';
+            
+            // Lógica de imagem (não carrega se não tiver)
+            let imgHtml = '<div class="img-container"><img src="https://via.placeholder.com/120x80" alt="Sem Imagem"></div>'; // Placeholder
+            if (produto.imagem && produto.imagemTipo) {
+                 imgHtml = `
+                 <div class="img-container">
+                    <img src="data:${produto.imagemTipo};base64,${produto.imagem}" alt="${produto.nome}">
+                 </div>`;
+            }
+
+            card.innerHTML = `
+                ${imgHtml}
+                <div class="info">
+                    <div class="nome">${produto.nome}</div>
+                    <div class="preco">R$ ${produto.preco.toFixed(2)}</div>
+                </div>
+            `;
+            card.addEventListener('click', () => adicionarItemVenda(produto, quantidadeMultiplicador));
+            productListContainerMobile.appendChild(card);
+        });
+    }
+
+
+    // --- Funções da Venda (Sem alterações) ---
     function adicionarItemVenda(produto, quantidade = 1) {
         if (produto.isKit) {
             Swal.fire('Atenção', 'Kits ainda não podem ser adicionados diretamente pelo PDV.', 'warning');
@@ -168,9 +246,12 @@ document.addEventListener('DOMContentLoaded', function () {
         const subtotal = venda.itens.reduce((acc, item) => acc + (item.preco * item.quantidade), 0);
         const total = subtotal - venda.desconto + venda.acrescimo;
 
-        subtotalEl.textContent = `R$ ${subtotal.toFixed(2)}`;
-        descontosEl.textContent = `R$ ${venda.desconto.toFixed(2)}`;
-        acrescimosEl.textContent = `R$ ${venda.acrescimo.toFixed(2)}`;
+        // Linhas removidas:
+        // subtotalEl.textContent = `R$ ${subtotal.toFixed(2)}`;
+        // descontosEl.textContent = `R$ ${venda.desconto.toFixed(2)}`;
+        // acrescimosEl.textContent = `R$ ${venda.acrescimo.toFixed(2)}`;
+        
+        // Linha mantida:
         totalEl.textContent = `R$ ${total.toFixed(2)}`;
 
         btnFinalizarVenda.disabled = venda.itens.length === 0;
@@ -188,7 +269,7 @@ document.addEventListener('DOMContentLoaded', function () {
         multiplicadorBadge.textContent = '';
     }
 
-    // --- Event Listeners ---
+    // --- Event Listeners (Sem alterações) ---
     tabelaVendaBody.addEventListener('click', (e) => {
         const tr = e.target.closest('tr');
         if (!tr) return;
@@ -307,7 +388,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // --- Lógica dos Atalhos de Teclado ---
+    // --- Lógica dos Atalhos de Teclado (Sem alterações) ---
     document.addEventListener('keydown', (e) => {
         if (e.key === 'F2' && !Swal.isVisible()) {
             e.preventDefault();
@@ -353,8 +434,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // --- Modal de Finalização (F12) e Impressão ---
-    // --- INÍCIO DA CORREÇÃO E IMPLEMENTAÇÃO DA LÓGICA DE REGISTRO ---
+    // --- Modal de Finalização (F12) e Impressão (Sem alterações) ---
     async function abrirModalFinalizarVenda() {
         if (venda.itens.length === 0) {
             Swal.fire('Atenção', 'Adicione itens à venda para finalizar.', 'warning');
@@ -364,14 +444,14 @@ document.addEventListener('DOMContentLoaded', function () {
         const subtotal = venda.itens.reduce((acc, item) => acc + (item.preco * item.quantidade), 0);
         const totalVenda = subtotal - venda.desconto + venda.acrescimo;
 
-        const modalHtml = `...`;
-
+        const modalHtml = `...`; // O HTML é grande, mantido o original
+        
         const { value: formValues, isConfirmed } = await Swal.fire({
             title: 'Finalizar Venda',
             html: `
                 <div class="container-fluid">
                     <div class="row">
-                        <div class="col-7">
+                        <div class="col-12 col-md-7">
                             <h5>Pagamentos</h5>
                             <div class="input-group mb-3">
                                 <select class="form-select" id="swal-forma-pagamento" style="flex: 2;">
@@ -385,7 +465,7 @@ document.addEventListener('DOMContentLoaded', function () {
                             </div>
                              <ul class="list-group" id="swal-lista-pagamentos" style="max-height: 150px; overflow-y: auto;"></ul>
                         </div>
-                        <div class="col-5 border-start">
+                        <div class="col-12 col-md-5 border-start mt-3 mt-md-0">
                             <h5>Resumo</h5>
                             <div class="d-flex justify-content-between"><span>Subtotal:</span> <span>R$ ${subtotal.toFixed(2)}</span></div>
                             <div class="d-flex justify-content-between text-danger"><span>Desconto:</span> <span>- R$ ${venda.desconto.toFixed(2)}</span></div>
@@ -511,8 +591,6 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
     }
-
-
 
     function imprimirCupomVenda(venda) {
         const subtotal = venda.itens.reduce((acc, item) => acc + (item.preco * item.quantidade), 0);
