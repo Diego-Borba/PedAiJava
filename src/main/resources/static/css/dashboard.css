@@ -1,0 +1,124 @@
+/* static/css/dashboard.css */
+
+/* --- Cards de Resumo (KPIs) --- */
+.dashboard-summary-card {
+    background-color: #fff;
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    border-left: 5px solid;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    height: 100%;
+}
+.dashboard-summary-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.12);
+}
+
+.dashboard-summary-card .card-icon {
+    font-size: 2.5rem;
+    color: #fff;
+    background-color: var(--card-color, #6c757d);
+    height: 60px;
+    width: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.dashboard-summary-card .card-content h6 {
+    font-size: 0.9rem;
+    color: #6c757d;
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+    text-transform: uppercase;
+}
+
+.dashboard-summary-card .card-content h4 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #212529;
+    margin: 0;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.dashboard-summary-card .card-content small {
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+/* Cores dos Cards de KPI */
+.card-receber { border-color: #198754; --card-color: #198754; }
+.card-pagar   { border-color: #dc3545; --card-color: #dc3545; }
+.card-vendas-total { border-color: #0d6efd; --card-color: #0d6efd; }
+.card-top-item     { border-color: #ffc107; --card-color: #ffc107; }
+.card-top-item h4 {
+    color: #0d6efd; /* Dar um destaque ao nome do item */
+}
+
+
+/* --- Cards de Lista (Pedidos e Vendas) --- */
+.card-body#pedidos-list-card,
+.card-body#vendas-list-card {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+#lista-pedidos-dia .list-group-item,
+#lista-vendas-dia .list-group-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 0.25rem;
+    font-size: 0.9rem;
+}
+
+#lista-pedidos-dia .pedido-info {
+    font-weight: 500;
+}
+#lista-pedidos-dia .pedido-info small {
+    display: block;
+    font-weight: 400;
+    color: #6c757d;
+}
+
+#lista-pedidos-dia .pedido-status {
+    font-weight: bold;
+    font-size: 0.8rem;
+    padding: 0.25em 0.6em;
+    border-radius: 5px;
+}
+.status-atrasado {
+    color: #dc3545;
+    background-color: #f8d7da;
+}
+.status-pendente {
+    color: #0d6efd;
+    background-color: #cfe2ff;
+}
+
+#lista-vendas-dia .venda-info {
+    font-weight: 500;
+}
+#lista-vendas-dia .venda-info small {
+    display: block;
+    font-weight: 400;
+    color: #6c757d;
+}
+#lista-vendas-dia .venda-valor {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #198754;
+}
+
+/* --- Filtro de Data --- */
+#dashboard-date-filter {
+    font-weight: bold;
+}

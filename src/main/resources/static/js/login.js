@@ -26,7 +26,7 @@ document.addEventListener('DOMContentLoaded', function() {
             localStorage.setItem('jwt_token', data.token);
 
             
-            window.location.href = 'gestao-pedidos.html';
+            window.location.href = 'dashboard.html';
 
         } catch (error) {
             Swal.fire({
