@@ -12,8 +12,11 @@ document.addEventListener('DOMContentLoaded', function () {
         contentEl.style.display = 'none';
         loadingEl.style.display = 'block';
 
-        const dataInicial = `${dataFiltro}T00:00:00Z`;
-        const dataFinal = `${dataFiltro}T23:59:59Z`;
+        // CORREÇÃO: Convertendo a data local para o formato ISO (UTC)
+        // Isso garante que "00:00" do dia 13 local seja enviado como "03:00Z" (UTC)
+        // e "23:59" local seja enviado como "02:59Z" (UTC) do dia seguinte.
+        const dataInicial = new Date(dataFiltro + "T00:00:00").toISOString();
+        const dataFinal = new Date(dataFiltro + "T23:59:59").toISOString();
 
         await Promise.all([
             carregarContas(dataFiltro),

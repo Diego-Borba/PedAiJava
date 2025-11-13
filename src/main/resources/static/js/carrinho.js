@@ -31,7 +31,8 @@ function removeCustomerFromStorageCarrinho() { localStorage.removeItem(CUSTOMER_
 // --- CARREGAR PRODUTOS GLOBAIS (SEU CÓDIGO ORIGINAL) ---
 async function carregarTodosProdutosParaReferenciaCarrinho() {
     try {
-        const response = await fetch('/api/produtos');
+        // CORREÇÃO: Alterado de /api/produtos para /api/produtos/cardapio
+        const response = await fetch('/api/produtos/cardapio');
         if (!response.ok) throw new Error('Falha ao carregar produtos');
         todosProdutosGlobaisParaCarrinho = (await response.json()).map(p => ({ ...p, id: String(p.id) }));
     } catch (error) {
@@ -74,7 +75,7 @@ function displayCartItems() {
 
         const subtotalItem = (itemPrincipal.preco || 0) * itemPrincipal.qtde;
         totalGeralCompra += subtotalItem;
-        
+
         const itemRow = document.createElement('div');
         itemRow.className = 'cart-item-row mb-3 p-3 border rounded bg-white shadow-sm';
 
@@ -92,10 +93,16 @@ function displayCartItems() {
             }
             detalhesHtml += '</div>';
         }
-        
+
+        // CORREÇÃO: Lógica para construir a imagem Base64
+        let imagemSrc = PLACEHOLDER_IMAGE_CARRINHO;
+        if (itemPrincipal.imagem && itemPrincipal.imagemTipo) {
+            imagemSrc = `data:${itemPrincipal.imagemTipo};base64,${itemPrincipal.imagem}`;
+        }
+
         itemRow.innerHTML = `
             <div class="d-flex align-items-center">
-                <img src="${itemPrincipal.imagem || PLACEHOLDER_IMAGE_CARRINHO}" alt="${itemPrincipal.nome || 'Produto'}" class="cart-item-img">
+                <img src="${imagemSrc}" alt="${itemPrincipal.nome || 'Produto'}" class="cart-item-img">
                 <div class="flex-grow-1 cart-item-details ms-3">
                     <h5 class="mb-1">${itemPrincipal.nome || 'Produto Indisponível'}</h5>
                     <p class="text-muted mb-1 small">Unit.: R$ ${(itemPrincipal.preco || 0).toFixed(2)}</p>
@@ -270,7 +277,7 @@ async function handleRegister() {
 
     if (isConfirmed && formValues) {
         try {
-            if(!formValues.nome || !formValues.email || !formValues.senha) {
+            if (!formValues.nome || !formValues.email || !formValues.senha) {
                 throw new Error('Nome, e-mail e senha são obrigatórios.');
             }
             const response = await fetch('/api/clientes/cadastro', {
@@ -336,7 +343,7 @@ function handleLogout() {
 async function finalizeOrder() {
     if (Object.keys(cartData).length === 0) { Swal.fire('Carrinho Vazio!', 'Adicione itens ao seu carrinho para continuar.', 'warning'); return; }
     if (!loggedInCustomerData) { Swal.fire('Identifique-se!', 'Por favor, entre na sua conta ou cadastre-se para finalizar o pedido.', 'info'); return; }
-    
+
     const formaPagamentoSelecionada = document.querySelector('input[name="formaPagamento"]:checked');
     if (!formaPagamentoSelecionada) { Swal.fire('Atenção!', 'Por favor, selecione uma forma de pagamento.', 'warning'); return; }
 
@@ -358,7 +365,7 @@ async function finalizeOrder() {
         Swal.fire('Endereço Incompleto!', 'Por favor, complete seu endereço no cadastro para pedidos de entrega.', 'warning');
         return;
     }
-    
+
     // Montagem do payload de itens (seu código original)
     const pedidoItensPayload = [];
     for (const cartId in cartData) {
@@ -374,10 +381,10 @@ async function finalizeOrder() {
                 item.escolhas[nomeGrupo].forEach(opcao => {
                     const produtoOpcao = todosProdutosGlobaisParaCarrinho.find(p => p.id == opcao.produtoId);
                     if (produtoOpcao) {
-                         pedidoItensPayload.push({
+                        pedidoItensPayload.push({
                             produtoId: parseInt(opcao.produtoId),
                             quantidade: opcao.quantidade * item.qtde,
-                            precoUnitario: 0 
+                            precoUnitario: 0
                         });
                     }
                 });
@@ -394,16 +401,16 @@ async function finalizeOrder() {
         enderecoEntrega: tipoPedido === 'ENTREGA' ? loggedInCustomerData.endereco : null,
         dataAgendamento: dataAgendamento
     };
-    
+
     Swal.fire({ title: 'Confirmando seu pedido...', text: 'Aguarde um momento.', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-    
+
     try {
         const response = await fetch('/api/pedidos', {
             method: 'POST',
-            headers: {'Content-Type': 'application/json'},
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
         });
-        if(!response.ok) {
+        if (!response.ok) {
             const err = await response.json();
             throw new Error(err.message || 'Erro desconhecido');
         }
@@ -437,7 +444,7 @@ window.onload = async () => {
     // ADICIONADO: Listeners para os tipos de pedido
     const agendamentoSection = document.getElementById('agendamentoSection');
     document.querySelectorAll('input[name="tipoPedido"]').forEach(radio => {
-        radio.addEventListener('change', function() {
+        radio.addEventListener('change', function () {
             agendamentoSection.style.display = this.value === 'ENCOMENDA' ? 'block' : 'none';
             updateCustomerUI(); // Atualiza a exibição do endereço
         });
