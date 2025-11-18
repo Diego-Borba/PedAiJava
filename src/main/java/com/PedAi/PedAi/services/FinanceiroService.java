@@ -29,11 +29,29 @@ public class FinanceiroService {
         ContaAReceber conta = new ContaAReceber();
         conta.setPedido(pedido);
         conta.setCliente(pedido.getCliente());
-        conta.setClienteNome(pedido.getCliente().getNome()); // ATUALIZADO
+        conta.setClienteNome(pedido.getCliente().getNome());
         conta.setValorTotal(pedido.getTotal());
         conta.setOrigem("Pedido #" + pedido.getId());
         conta.setDataVencimento(LocalDate.now());
         conta.setStatus(StatusContaAReceber.A_RECEBER);
+        conta.setValorRecebido(BigDecimal.ZERO);
+        contaAReceberRepository.save(conta);
+    }
+
+    // --- NOVO MÉTODO PARA VENDA A PRAZO ---
+    @Transactional
+    public void criarContaAReceberDeVenda(Venda venda, BigDecimal valor, LocalDate dataVencimento) {
+        ContaAReceber conta = new ContaAReceber();
+        // Venda não tem relação direta OneToOne com ContaAReceber no modelo atual, 
+        // então usamos a origem como referência texto
+        conta.setCliente(venda.getCliente());
+        conta.setClienteNome(venda.getCliente().getNome());
+        conta.setValorTotal(valor);
+        conta.setOrigem("Venda (PDV) #" + venda.getId());
+        conta.setDataVencimento(dataVencimento);
+        conta.setStatus(StatusContaAReceber.A_RECEBER);
+        conta.setValorRecebido(BigDecimal.ZERO);
+        
         contaAReceberRepository.save(conta);
     }
 
@@ -43,15 +61,14 @@ public class FinanceiroService {
                 .orElseThrow(() -> new RuntimeException("Conta a receber com ID " + id + " não encontrada."))
                 : new ContaAReceber();
 
-        // Lógica para nome do cliente
         if (dto.getClienteId() != null) {
             Cliente cliente = clienteRepository.findById(dto.getClienteId())
                     .orElseThrow(() -> new RuntimeException("Cliente com ID " + dto.getClienteId() + " não encontrado."));
             conta.setCliente(cliente);
-            conta.setClienteNome(cliente.getNome()); // ATUALIZADO
+            conta.setClienteNome(cliente.getNome());
         } else {
             conta.setCliente(null);
-            conta.setClienteNome(dto.getClienteNomeAvulso()); // ATUALIZADO
+            conta.setClienteNome(dto.getClienteNomeAvulso());
         }
 
         conta.setOrigem(dto.getOrigem());
@@ -66,7 +83,6 @@ public class FinanceiroService {
         return contaAReceberRepository.save(conta);
     }
     
-    // ... os outros métodos do serviço permanecem iguais ...
     @Transactional
     public ContaAReceber registrarPagamentoAReceber(Long contaId, BigDecimal valorPago, LocalDate dataPagamento) {
         ContaAReceber conta = contaAReceberRepository.findById(contaId)
@@ -93,6 +109,8 @@ public class FinanceiroService {
         contaAReceberRepository.deleteById(id);
     }
     
+    // --- MÉTODOS PARA CONTAS A PAGAR ---
+
     @Transactional
     public ContaAPagar criarOuAtualizarContaAPagar(Long id, ContaAPagarInputDTO dto) {
         ContaAPagar conta = (id != null) ? contaAPagarRepository.findById(id)

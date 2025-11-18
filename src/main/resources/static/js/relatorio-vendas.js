@@ -4,6 +4,11 @@ document.addEventListener('DOMContentLoaded', function () {
     const btnLimpar = document.getElementById('btn-limpar-filtros');
     let tabelaRelatorio;
 
+    // Cards de Resumo
+    const cardTotalVendas = document.getElementById('card-total-vendas');
+    const cardTotalCaixa = document.getElementById('card-total-caixa');
+    const cardTotalPrazo = document.getElementById('card-total-prazo');
+
     const inicializarSelect2 = (selector, placeholder, url) => {
         $(selector).select2({
             theme: 'bootstrap-5',
@@ -57,10 +62,29 @@ document.addEventListener('DOMContentLoaded', function () {
                 { data: 'id' },
                 { data: 'dataVenda', render: (data) => data ? new Date(data).toLocaleString('pt-BR') : '' },
                 { data: 'clienteNome' },
-                { data: 'itens', render: (data) => `<ul>${data.map(item => `<li>${item}</li>`).join('')}</ul>` },
-                { data: 'formasPagamento', render: (data) => data.join(', ') },
-                { data: 'total', render: (data) => `R$ ${data.toFixed(2)}` },
-                // --- NOVA COLUNA DE AÇÕES ---
+                { data: 'itens', render: (data) => `<ul class="mb-0 ps-3 small">${data.map(item => `<li>${item}</li>`).join('')}</ul>` },
+                { 
+                    data: 'formasPagamento', 
+                    render: (data) => data.map(f => `<span class="badge bg-secondary me-1">${f}</span>`).join('') 
+                },
+                // Coluna Em Caixa
+                { 
+                    data: 'valorCaixa', 
+                    className: 'text-success fw-bold',
+                    render: (data) => `R$ ${parseFloat(data).toFixed(2)}` 
+                },
+                // Coluna A Receber
+                { 
+                    data: 'valorAReceber', 
+                    className: 'text-warning text-dark fw-bold', // text-warning as vezes fica claro demais, text-dark ajuda
+                    render: (data) => `R$ ${parseFloat(data).toFixed(2)}` 
+                },
+                // Coluna Total
+                { 
+                    data: 'total', 
+                    className: 'text-primary fw-bold',
+                    render: (data) => `R$ ${data.toFixed(2)}` 
+                },
                 {
                     data: 'id',
                     orderable: false,
@@ -77,8 +101,28 @@ document.addEventListener('DOMContentLoaded', function () {
             order: [[1, 'desc']],
             footerCallback: function (row, data, start, end, display) {
                 var api = this.api();
-                const totalFiltrado = api.column(5, { search: 'applied' }).data().reduce((a, b) => a + parseFloat(b.toString().replace('R$ ', '')), 0);
-                $(api.column(5).footer()).html(`R$ ${totalFiltrado.toFixed(2)}`);
+
+                // Função auxiliar para somar colunas
+                const sumColumn = (colIndex) => {
+                    return api.column(colIndex, { search: 'applied' }).data()
+                        .reduce((a, b) => a + parseFloat(b || 0), 0);
+                };
+
+                // Índices das colunas (baseado na ordem acima)
+                // 5: valorCaixa, 6: valorAReceber, 7: total
+                const totalCaixa = sumColumn(5);
+                const totalPrazo = sumColumn(6);
+                const totalGeral = sumColumn(7);
+
+                // Atualiza o rodapé da tabela
+                $(api.column(5).footer()).html(`R$ ${totalCaixa.toFixed(2)}`);
+                $(api.column(6).footer()).html(`R$ ${totalPrazo.toFixed(2)}`);
+                $(api.column(7).footer()).html(`R$ ${totalGeral.toFixed(2)}`);
+
+                // Atualiza os Cards de Resumo no topo
+                if(cardTotalVendas) cardTotalVendas.innerText = `R$ ${totalGeral.toFixed(2)}`;
+                if(cardTotalCaixa) cardTotalCaixa.innerText = `R$ ${totalCaixa.toFixed(2)}`;
+                if(cardTotalPrazo) cardTotalPrazo.innerText = `R$ ${totalPrazo.toFixed(2)}`;
             }
         });
     };
@@ -102,7 +146,13 @@ document.addEventListener('DOMContentLoaded', function () {
             const itensHtml = venda.itens.map(item => 
                 `<li>${item.quantidade}x ${item.nome} - R$ ${(item.precoUnitario * item.quantidade).toFixed(2)}</li>`
             ).join('');
-            const pagamentosHtml = venda.pagamentos.map(p => `<li>${p.forma.replace('_', ' ')}: R$ ${p.valor.toFixed(2)}</li>`).join('');
+            
+            // Destaca pagamentos a prazo
+            const pagamentosHtml = venda.pagamentos.map(p => {
+                const forma = p.forma.replace('_', ' ');
+                const style = forma === 'A Prazo' ? 'color: #d63384; font-weight: bold;' : '';
+                return `<li style="${style}">${forma}: R$ ${p.valor.toFixed(2)}</li>`;
+            }).join('');
 
             Swal.fire({
                 title: `Detalhes da Venda #${venda.id}`,
@@ -167,6 +217,12 @@ document.addEventListener('DOMContentLoaded', function () {
         filtroForm.reset();
         $('#filtro-cliente').val(null).trigger('change');
         $('#filtro-produto').val(null).trigger('change');
+        
+        // Reseta as datas para hoje
+        const hoje = new Date().toISOString().split('T')[0];
+        document.getElementById('filtro-data-inicial').value = hoje;
+        document.getElementById('filtro-data-final').value = hoje;
+
         if(tabelaRelatorio) {
             tabelaRelatorio.ajax.reload();
         }

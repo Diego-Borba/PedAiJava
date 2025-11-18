@@ -29,6 +29,7 @@ public class SecurityConfigurations {
                 .authorizeHttpRequests(authorize -> authorize
                         // ... (outras permissões permanecem iguais)
                         .requestMatchers(HttpMethod.POST, "/api/clientes/cadastro", "/api/clientes/login").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/clientes/admin-cadastro").hasRole("ADMIN") // NOVA LINHA
                         .requestMatchers(HttpMethod.POST, "/api/pedidos").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/pedidos/por-cliente/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/produtos/cardapio", "/api/produtos/categorias")
