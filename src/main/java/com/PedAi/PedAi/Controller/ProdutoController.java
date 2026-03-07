@@ -1,4 +1,3 @@
-// src/main/java/com/PedAi/PedAi/Controller/ProdutoController.java
 package com.PedAi.PedAi.Controller;
 
 import com.PedAi.PedAi.Model.Produto;
@@ -100,7 +99,6 @@ public class ProdutoController {
 
         return repository.findById(id).map(produto -> {
             try {
-                // Remove o prefixo "data:image/jpeg;base64," se ele existir
                 String base64Data = imagemDTO.getImagemBase64().substring(imagemDTO.getImagemBase64().indexOf(",") + 1);
                 byte[] imagemBytes = Base64.getDecoder().decode(base64Data);
 
@@ -144,8 +142,6 @@ public class ProdutoController {
                     produtoExistente.getGruposKit().add(grupoNovo);
                 });
             }
-
-            // Lógica para atualizar a receita
             produtoExistente.getReceita().clear();
             if (produtoDetails.getReceita() != null && !produtoDetails.getReceita().isEmpty()) {
                 produtoExistente.getReceita().addAll(produtoDetails.getReceita());

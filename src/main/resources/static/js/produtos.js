@@ -1,4 +1,3 @@
-// src/main/resources/static/js/produtos.js
 document.addEventListener('DOMContentLoaded', function () {
     let tabela;
     let todosOsProdutosParaSelecao = [];

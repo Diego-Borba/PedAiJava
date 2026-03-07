@@ -1,6 +1,5 @@
-/* static/css/carrinho.css */
 body {
-    padding-bottom: 80px; /* Para compensar o footer fixo */
+    padding-bottom: 80px; 
 }
 
 .cart-item-row {
@@ -33,7 +32,7 @@ body {
     text-align: center;
 }
 .cart-item-actions .btn {
-    min-width: 38px; /* Para botões de +/- terem tamanho consistente */
+    min-width: 38px;
 }
 
 .cart-item-price, .cart-item-subtotal {
@@ -43,7 +42,7 @@ body {
 }
 .cart-item-subtotal {
     font-weight: bold;
-    color: #ff5722; /* Subtotal em laranja */
+    color: #ff5722;
 }
 
 #cartSummary .list-group-item {
@@ -53,7 +52,7 @@ body {
     padding-right: 0;
 }
 #cartSummary .list-group-item strong.total-value {
-    color: #ff5722; /* Valor total em laranja */
+    color: #ff5722;
     font-size: 1.3rem;
 }
 
@@ -72,7 +71,6 @@ body {
 .footer.fixed-bottom {
     box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
 }
-/* ... (estilos existentes) ... */
 
 .cart-complement-item {
     background-color: #fcfcfc;
@@ -86,7 +84,7 @@ body {
     font-size: 0.7rem;
 }
 .cart-complement-item .form-control-sm {
-    height: calc(1.5em + 0.5rem + 2px); /* Ajuste de altura se necessário */
+    height: calc(1.5em + 0.5rem + 2px);
     font-size: 0.8rem;
 }
 

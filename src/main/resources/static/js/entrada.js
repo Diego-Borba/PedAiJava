@@ -1,4 +1,3 @@
-// src/main/resources/static/js/entrada.js
 document.addEventListener("DOMContentLoaded", function () {
 
     $('#fornecedorId').select2({

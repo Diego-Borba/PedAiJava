@@ -49,8 +49,6 @@ public class AuthController {
         if (activeSecret != null && activeSecret.length() > 5) {
             partialSecret = activeSecret.substring(0, 5) + "...";
         }
-        
-        // CORREÇÃO: Trocado ':' por ',' para a sintaxe correta do Map.of()
         return ResponseEntity.ok(Map.of(
             "propriedade", "api.security.token.secret",
             "valorParcialUtilizado", partialSecret

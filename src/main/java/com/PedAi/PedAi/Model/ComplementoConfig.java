@@ -5,8 +5,8 @@ import jakarta.persistence.Embeddable;
 @Embeddable
 public class ComplementoConfig {
 
-    private Long complementoProdutoId; // ID do Produto que atua como complemento
-    private Integer maxQtdePermitida;   // Quantidade máxima deste complemento para o produto principal
+    private Long complementoProdutoId; 
+    private Integer maxQtdePermitida;
 
     public ComplementoConfig() {
     }

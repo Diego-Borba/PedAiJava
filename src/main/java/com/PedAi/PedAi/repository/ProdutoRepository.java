@@ -1,4 +1,3 @@
-// Caminho: src/main/java/com/PedAi/PedAi/repository/ProdutoRepository.java
 package com.PedAi.PedAi.repository;
 
 import java.util.List;

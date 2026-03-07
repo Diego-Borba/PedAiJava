@@ -1,10 +1,8 @@
-/* --- Estilos Gerais da Página --- */
 .nav-pills .nav-link { display: flex; align-items: center; gap: 8px; font-weight: 500; }
 .nav-pills .nav-link.active { background-color: #0d6efd; }
 .nav-pills .nav-link .badge { transition: background-color 0.2s ease; }
 .nav-pills .nav-link.active .badge { background-color: #fff !important; color: #0d6efd !important; }
 
-/* --- Estilo do Card de Pedido --- */
 .pedido-card {
     border: none;
     border-radius: 0.75rem;
@@ -12,9 +10,9 @@
     transition: all 0.2s ease-in-out;
     background-color: #fff;
     border-left: 5px solid #6c757d;
-    min-height: 320px; /* ALTURA FIXA ADICIONADA */
-    display: flex; /* Garante que o flexbox funcione para o card inteiro */
-    flex-direction: column; /* Organiza o conteúdo do card em coluna */
+    min-height: 320px; 
+    display: flex;
+    flex-direction: column; 
 }
 
 .pedido-card:hover { transform: translateY(-4px); box-shadow: 0 8px 20px rgba(0,0,0,0.12); }
@@ -27,20 +25,19 @@
 .pedido-card .card-header { background-color: transparent; border-bottom: 1px solid #f1f1f1; font-weight: 700; color: #343a40; }
 .pedido-card .card-body {
     padding: 1.25rem;
-    flex-grow: 1; /* Faz o corpo do card ocupar o espaço disponível */
+    flex-grow: 1; 
     display: flex;
-    flex-direction: column; /* Organiza o conteúdo do corpo em coluna */
+    flex-direction: column; 
 }
 .pedido-card .card-title { font-size: 1.2rem; font-weight: 700; }
 .pedido-card .card-text { color: #6c757d; font-size: 0.9rem; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 8px; }
 .pedido-card .card-text .bi { color: #495057; }
 .pedido-card.encomenda .card-header { background-color: #fffbe6; }
 .pedido-card.encomenda .agendamento-info { color: #856404; font-weight: 700; background-color: #fffbe6; padding: 0.5rem; border-radius: 0.5rem; font-size: 0.9rem; }
-.pedido-card .total-e-status { margin-top: auto; /* Empurra esta seção para o final do card-body */ }
+.pedido-card .total-e-status { margin-top: auto;  }
 .pedido-card .total { font-size: 1.5rem; font-weight: 700; color: #0d6efd; }
 .pedido-card .card-footer { background-color: #f8f9fa; border-top: 1px solid #e9ecef; }
 
-/* --- Estilo do Modal de Visualização --- */
 #visualizacao-content { background-color: #f8f9fa; padding: 2rem; border-radius: 8px; }
 #visualizacao-content .comprovante-header h2 { font-weight: 700; color: #0d6efd; }
 #visualizacao-content .info-section { font-size: 0.95rem; }

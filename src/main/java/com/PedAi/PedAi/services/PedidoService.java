@@ -37,7 +37,6 @@ public class PedidoService {
 
     @Transactional
     public Pedido criarPedido(PedidoDTO pedidoDTO) {
-        // 1. Validação e busca do Cliente
         Cliente cliente = clienteRepository.findById(pedidoDTO.getClienteId())
                 .orElseThrow(() -> new IllegalArgumentException(
                         "Cliente com ID " + pedidoDTO.getClienteId() + " não encontrado."));
@@ -45,25 +44,20 @@ public class PedidoService {
         if (pedidoDTO.getItens() == null || pedidoDTO.getItens().isEmpty()) {
             throw new IllegalArgumentException("O pedido deve conter ao menos um item.");
         }
-
-        // 2. Criação do Pedido principal
         Pedido pedido = new Pedido();
         pedido.setCliente(cliente);
         pedido.setDataPedido(ZonedDateTime.now(ZoneOffset.UTC));
         pedido.setStatus("Recebido");
 
-        // --- NOVOS CAMPOS SENDO SALVOS ---
         pedido.setEnderecoEntrega(pedidoDTO.getEnderecoEntrega());
         pedido.setFormaPagamento(pedidoDTO.getFormaPagamento());
-        pedido.setTipo(pedidoDTO.getTipo() != null ? pedidoDTO.getTipo() : TipoPedido.ENTREGA); // Define um padrão
+        pedido.setTipo(pedidoDTO.getTipo() != null ? pedidoDTO.getTipo() : TipoPedido.ENTREGA);
         if (pedido.getTipo() == TipoPedido.ENCOMENDA) {
             pedido.setDataAgendamento(pedidoDTO.getDataAgendamento());
         }
-        // --- FIM DA ATUALIZAÇÃO ---
 
         List<ItemPedido> itensDePedidoProcessados = new ArrayList<>();
 
-        // 3. Processamento dos Itens e Baixa de Estoque
         for (ItemPedidoDTO itemDto : pedidoDTO.getItens()) {
             Produto produtoVendido = produtoRepository.findById(itemDto.getProdutoId())
                     .orElseThrow(

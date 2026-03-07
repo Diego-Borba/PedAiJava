@@ -1,4 +1,3 @@
-// src/main/resources/static/js/admin-pedidos.js
 const statusList = ['Recebido', 'Pendente', 'Em Preparo', 'Saiu para Entrega'];
 const KDS_UPDATE_INTERVAL = 30000;
 

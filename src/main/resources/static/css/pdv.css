@@ -1,15 +1,10 @@
-/* static/css/pdv.css */
-
-/* Em telas de desktop, o layout é o padrão */
 .pdv-container {
     display: grid;
     grid-template-columns: 60% 40%;
     gap: 1.5rem;
     height: calc(100vh - 60px);
-    /* Ajustar altura conforme o padding do .content */
 }
 
-/* --- Coluna da Venda (Desktop) --- */
 .venda-coluna .card-body {
     padding-bottom: 0;
 }
@@ -47,7 +42,6 @@
     border-top: 1px solid #dee2e6;
     padding-top: 1rem;
     margin-top: auto;
-    /* Empurra para baixo */
 }
 
 .venda-rodape span {
@@ -65,8 +59,6 @@
     padding: 0.5em 0.7em;
 }
 
-
-/* --- Coluna do Navegador de Produtos (Desktop) --- */
 .browser-coluna .card {
     background-color: #f8f9fa;
 }
@@ -136,7 +128,6 @@
 .product-card-pdv .img-container {
     width: 100%;
     padding-top: 75%;
-    /* Proporção 4:3 */
     position: relative;
     background-color: #f1f1f1;
 }
@@ -179,100 +170,61 @@
     color: #0d6efd;
 }
 
-
-/* ======================================================= */
-/* =============== REGRAS PARA TELAS MENORES ============= */
-/* ======================================================= */
-
 @media (max-width: 991.98px) {
-    /* A lógica da sidebar e do content foi movida 
-      para o global-admin.css 
-    */
-
-    /* --- Layout do PDV no Mobile --- */
+    
     .pdv-container {
-        /* display: flex; flex-direction: column; (já definido no HTML) */
-        /* Preenche a altura da tela menos o padding do content */
         height: calc(100vh - 90px);
     }
 
     .venda-coluna {
         flex: 1;
-        /* Faz a coluna da venda ocupar todo o espaço vertical */
         min-height: 0;
-        /* Permite que a coluna encolha e use o scroll interno */
     }
 
     .venda-coluna>.card {
         height: 100%;
-        /* O card preenche a coluna */
     }
 
     .venda-coluna .card-body {
         flex: 1;
-        /* O corpo do card preenche o card */
         min-height: 0;
-        /* Permite encolher */
         padding: 0.75rem;
         display: flex;
-        /* Garante que o flex-order funcione */
         flex-direction: column;
-        /* Garante que o flex-order funcione */
     }
 
-    /* --- Reordenação e Dimensionamento dos blocos do PDV Mobile --- */
-
-    /* 1. Barra de Pesquisa */
     .venda-coluna .card-body>.d-flex.align-items-center.mb-3 {
         order: 1;
-        /* 1º item */
         flex-shrink: 0;
-        /* Não encolhe */
     }
 
-    /* 2. Tabela de Itens (MOVENDO PARA CIMA) */
+ 
     .table-responsive-wrapper-pdv {
         order: 2;
-        /* 2º item */
         flex: 1;
-        /* Faz a tabela crescer/encolher */
         min-height: 150px;
-        /* Altura mínima para a tabela */
         overflow-y: auto;
-        /* Garante scroll vertical */
         border-top: 1px solid #eee;
         border-bottom: 1px solid #eee;
         margin-top: 10px;
-        /* Adiciona espaço da barra de busca */
     }
 
-    /* 3. Navegador de Produtos (MOVENDO PARA BAIXO) */
+ 
     .browser-mobile {
         order: 3;
-        /* 3º item */
         flex: 1;
-        /* Faz o browser crescer/encolher */
         min-height: 230px;
-        /* Altura mínima para browser (categorias + produtos) */
         display: flex;
         flex-direction: column;
         padding-top: 10px;
-        /* Espaço da tabela */
     }
 
-    /* 4. Rodapé dos Totais */
     .venda-rodape {
         order: 4;
-        /* 4º item */
         flex-shrink: 0;
-        /* Não encolhe */
         padding-top: 0.75rem;
     }
 
-
-    /* --- Estilos dos Navegadores Mobile (Scroll Horizontal) --- */
-
-    /* Cards de Categoria (Scroll Horizontal) */
     .category-cards-mobile {
         display: flex;
         overflow-x: auto;
@@ -284,7 +236,6 @@
         scrollbar-color: #0d6efd #f0f0f0;
         /* Firefox */
         flex-shrink: 0;
-        /* Altura automática */
     }
 
     .category-cards-mobile::-webkit-scrollbar {
@@ -304,9 +255,7 @@
         cursor: pointer;
         font-weight: 500;
         flex-shrink: 0;
-        /* Impede que os cards encolham */
         white-space: nowrap;
-        /* Texto em uma linha */
     }
 
     .category-card-mobile.active {
@@ -315,30 +264,22 @@
         border-color: #0d6efd;
     }
 
-    /* Lista de Produtos (Scroll Horizontal) */
     .product-list-mobile {
         display: flex;
         overflow-x: auto;
         gap: 10px;
         padding: 5px 2px;
         scrollbar-width: thin;
-        /* Firefox */
         flex: 1;
-        /* Ocupa o resto do .browser-mobile */
         min-height: 180px;
-        /* Altura mínima dos cards de produto */
     }
 
     .product-list-mobile::-webkit-scrollbar {
         height: 6px;
     }
-
-    /* Card de Produto (Tamanho Fixo) */
     .product-card-pdv-mobile {
         flex: 0 0 120px;
-        /* Largura fixa (aprox. 3 por tela) */
         height: 170px;
-        /* Altura fixa */
         border: 1px solid #dee2e6;
         border-radius: 8px;
         background: #fff;
@@ -352,17 +293,14 @@
     .product-card-pdv-mobile .img-container {
         width: 100%;
         height: 80px;
-        /* Altura fixa da imagem */
         position: relative;
         background-color: #f1f1f1;
-        /* Fundo caso a imagem falhe */
     }
 
     .product-card-pdv-mobile img {
         width: 100%;
         height: 100%;
         object-fit: cover;
-        /* Garante preenchimento sem distorção */
     }
 
     .product-card-pdv-mobile .info {
@@ -378,7 +316,6 @@
         font-size: 0.8rem;
         font-weight: 600;
         line-height: 1.2;
-        /* Limita o texto a 2 linhas */
         overflow: hidden;
         text-overflow: ellipsis;
         display: -webkit-box;
@@ -391,8 +328,6 @@
         font-weight: 700;
         color: #0d6efd;
     }
-
-    /* Ajusta o rodapé e botões de finalizar */
     .venda-rodape .total-geral span {
         font-size: 1.8rem;
     }

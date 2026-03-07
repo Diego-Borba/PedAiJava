@@ -1,7 +1,4 @@
-// src/main/resources/static/js/gestao-pedidos.js
 document.addEventListener('DOMContentLoaded', function() {
-    // A única alteração aqui é usar fetchWithAuth nas chamadas `axios`
-    // Como axios não está mais sendo usado, vamos reescrever com fetchWithAuth
 
     try {
         const filtroModal = new bootstrap.Modal(document.getElementById('filtroModal'));

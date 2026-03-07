@@ -29,19 +29,14 @@ public class Pedido {
     @Embedded
     private Endereco enderecoEntrega;
 
-    // --- NOVOS CAMPOS ADICIONADOS ---
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, columnDefinition = "varchar(255) default 'ENTREGA'")
     private TipoPedido tipo;
 
     @Column(columnDefinition = "timestamp with time zone")
-    private ZonedDateTime dataAgendamento; // Usado para encomendas
+    private ZonedDateTime dataAgendamento;
+    private String formaPagamento;
 
-    private String formaPagamento; // Campo que faltava para armazenar a forma de pagamento
-
-    // --- FIM DOS NOVOS CAMPOS ---
-
-    // Getters e Setters
     public BigDecimal getTotal() {
         return itens.stream()
                 .map(ItemPedido::getSubtotal)

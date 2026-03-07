@@ -1,10 +1,8 @@
-/* static/css/entrada.css */
+
 .item-bloco {
-    align-items: flex-end; /* Alinha o botão remover com a base dos inputs */
+    align-items: flex-end;
 }
 
-/* --- ESTILO PARA O MODAL DE PARCELAS --- */
-/* Garante que os labels e inputs dentro do SweetAlert fiquem bem formatados */
 .swal2-html-container .form-label {
     text-align: left;
     display: block;

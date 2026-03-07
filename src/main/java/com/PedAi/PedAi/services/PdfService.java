@@ -94,10 +94,9 @@ public class PdfService {
         return outputStream.toByteArray();
     }
 
-    // --- NOVO MÉTODO ADICIONADO ---
     public byte[] gerarPdfVenda(VendaDTO venda) throws IOException {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        Document document = new Document(PageSize.A5); // A5 é um bom tamanho para recibos
+        Document document = new Document(PageSize.A5);
         PdfWriter.getInstance(document, outputStream);
 
         document.open();
@@ -111,7 +110,6 @@ public class PdfService {
         document.add(new Paragraph("Data: " + ZonedDateTime.now().format(formatter)));
         document.add(Chunk.NEWLINE);
 
-        // Tabela de Itens
         PdfPTable table = new PdfPTable(4);
         table.setWidthPercentage(100);
         table.setWidths(new float[] { 5f, 1.5f, 2.5f, 2.5f });
@@ -135,7 +133,6 @@ public class PdfService {
         document.add(table);
         document.add(Chunk.NEWLINE);
 
-        // Seção de Totais
         Font fontTotals = FontFactory.getFont(FontFactory.HELVETICA, 10);
         Font fontTotalBold = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12);
 

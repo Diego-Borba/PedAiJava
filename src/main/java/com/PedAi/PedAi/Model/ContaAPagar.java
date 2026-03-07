@@ -12,7 +12,7 @@ public class ContaAPagar {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "fornecedor_id") // Opcional
+    @JoinColumn(name = "fornecedor_id")
     private Fornecedor fornecedor;
 
     @Column(nullable = false, precision = 10, scale = 2)
@@ -31,9 +31,7 @@ public class ContaAPagar {
     private StatusContaAPagar status;
 
     @Column(nullable = false)
-    private String descricao; // Ex: "Aluguel", "Conta de Luz", "NF-e 12345"
-
-    // Getters e Setters
+    private String descricao;
 
     public Long getId() {
         return id;

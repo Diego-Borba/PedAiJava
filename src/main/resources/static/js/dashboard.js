@@ -11,10 +11,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
         contentEl.style.display = 'none';
         loadingEl.style.display = 'block';
-
-        // CORREÇÃO: Convertendo a data local para o formato ISO (UTC)
-        // Isso garante que "00:00" do dia 13 local seja enviado como "03:00Z" (UTC)
-        // e "23:59" local seja enviado como "02:59Z" (UTC) do dia seguinte.
         const dataInicial = new Date(dataFiltro + "T00:00:00").toISOString();
         const dataFinal = new Date(dataFiltro + "T23:59:59").toISOString();
 
@@ -124,7 +120,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 listaVendasEl.innerHTML = '<li class="list-group-item text-muted">Nenhuma venda registrada para esta data.</li>';
             } else {
                 vendas.sort((a, b) => b.total - a.total)
-                    .slice(0, 5) // Pega as top 5
+                    .slice(0, 5)
                     .forEach(venda => {
                         const li = document.createElement('li');
                         li.className = 'list-group-item';

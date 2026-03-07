@@ -38,7 +38,6 @@ public class Venda {
     @Column(precision = 10, scale = 2)
     private BigDecimal total;
 
-    // Getters e Setters
     public Long getId() {
         return id;
     }

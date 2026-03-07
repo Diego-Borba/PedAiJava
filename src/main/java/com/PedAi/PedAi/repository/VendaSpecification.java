@@ -17,7 +17,7 @@ public class VendaSpecification {
 
         return (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
-            query.distinct(true); // Garante que não haja vendas duplicadas se um produto for comprado várias vezes
+            query.distinct(true);
 
             if (clienteId != null) {
                 predicates.add(criteriaBuilder.equal(root.get("cliente").get("id"), clienteId));
@@ -41,7 +41,6 @@ public class VendaSpecification {
                 predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("dataVenda"), dataFinal));
             }
 
-            // Ordena pelas vendas mais recentes primeiro
             query.orderBy(criteriaBuilder.desc(root.get("dataVenda")));
 
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));

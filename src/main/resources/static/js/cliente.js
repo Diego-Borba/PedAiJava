@@ -1,4 +1,3 @@
-// src/main/resources/static/js/cliente.js
 document.addEventListener("DOMContentLoaded", function () {
     const clienteForm = document.getElementById("clienteForm");
     const cepInput = document.getElementById('cep');
@@ -9,7 +8,6 @@ document.addEventListener("DOMContentLoaded", function () {
     const cidadeInput = document.getElementById('cidade');
     const estadoInput = document.getElementById('estado');
 
-    // --- Lógica de Preenchimento Automático de CEP (via ViaCEP) ---
     cepInput.addEventListener('blur', async (e) => {
         const cep = e.target.value.replace(/\D/g, '');
         if (cep.length !== 8) {
@@ -23,7 +21,6 @@ document.addEventListener("DOMContentLoaded", function () {
             const data = await response.json();
             if (data.erro) throw new Error('CEP inválido.');
             
-            // Preenche os campos
             logradouroInput.value = data.logradouro;
             bairroInput.value = data.bairro;
             cidadeInput.value = data.localidade;
@@ -40,12 +37,10 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    // --- Lógica de Submissão do Formulário ---
     if (clienteForm) {
         clienteForm.addEventListener("submit", async function (event) {
             event.preventDefault();
             
-            // Validação de Nome e Telefone (obrigatório)
             const nome = document.getElementById('nome').value.trim();
             const telefone = document.getElementById('telefone').value.trim();
 
@@ -58,9 +53,7 @@ document.addEventListener("DOMContentLoaded", function () {
             const payload = {
                 nome: nome,
                 telefone: telefone,
-                email: document.getElementById('email').value.trim() || null, // Opcional
-                
-                // Endereço
+                email: document.getElementById('email').value.trim() || null,
                 endereco: {
                     cep: cepInput.value.trim(),
                     logradouro: logradouroInput.value.trim(),
@@ -73,7 +66,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
             };
             
-            // Se nenhum campo de endereço foi preenchido, envia null para o endereço
+            
             const enderecoVazio = Object.values(payload.endereco).every(val => !val || val === "");
             if (enderecoVazio) {
                 payload.endereco = null;
@@ -81,7 +74,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
             try {
-                // Nova rota para cadastro via ADMIN
                 const response = await fetchWithAuth("/api/clientes/admin-cadastro", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },

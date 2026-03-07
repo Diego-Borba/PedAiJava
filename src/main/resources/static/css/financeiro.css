@@ -1,12 +1,10 @@
-/* --- Estilos para Badges de Status --- */
 .status-badge { padding: 0.4em 0.8em; font-size: 0.75rem; font-weight: 600; border-radius: 50rem; color: #fff; text-transform: uppercase; letter-spacing: 0.5px; }
-.status-areceber { background-color: #ffc107; color: #000; } /* Amarelo */
-.status-parcial { background-color: #0d6efd; } /* Azul */
-.status-recebido { background-color: #198754; } /* Verde */
-.status-apagar { background-color: #fd7e14; } /* Laranja para Contas a Pagar */
-.status-pago { background-color: #0dcaf0; color: #000; } /* Ciano para Contas a Pagar */
+.status-areceber { background-color: #ffc107; color: #000; } 
+.status-parcial { background-color: #0d6efd; } 
+.status-recebido { background-color: #198754; } 
+.status-apagar { background-color: #fd7e14; } 
+.status-pago { background-color: #0dcaf0; color: #000; }
 
-/* --- Estilos para o Dashboard --- */
 .dashboard-card {
     background-color: #fff;
     border-radius: 0.75rem;
@@ -48,15 +46,14 @@
 .card-areceber { border-color: #ffc107; --card-color: #ffc107; }
 .card-recebido { border-color: #198754; --card-color: #198754; }
 .card-vencido { border-color: #dc3545; --card-color: #dc3545; }
-.card-apagar { border-color: #fd7e14; --card-color: #fd7e14; } /* Cor para card A Pagar */
-.card-pago { border-color: #0dcaf0; --card-color: #0dcaf0; } /* Cor para card Pago */
+.card-apagar { border-color: #fd7e14; --card-color: #fd7e14; } 
+.card-pago { border-color: #0dcaf0; --card-color: #0dcaf0; }
 
-/* --- Estilos da Tabela --- */
+
 .table-hover tbody tr:hover {
     background-color: #f8f9fa;
 }
 
-/* Indicador de conta vencida (opcional, mantido para consistência) */
 .table tr.vencida {
     background-color: #fff5f5 !important;
     font-weight: 500;

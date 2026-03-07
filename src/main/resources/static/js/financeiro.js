@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', function () {
             url: '/api/clientes/search',
             dataType: 'json',
             delay: 250,
-            transport: select2AuthTransport // CORREÇÃO APLICADA AQUI
+            transport: select2AuthTransport
         }
     });
 
@@ -298,7 +298,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         try {
-            const response = await fetchWithAuth(url, { // CORRIGIDO
+            const response = await fetchWithAuth(url, { 
                 method: method,
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)

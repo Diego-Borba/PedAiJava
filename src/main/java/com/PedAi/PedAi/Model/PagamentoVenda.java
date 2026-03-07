@@ -20,7 +20,6 @@ public class PagamentoVenda {
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal valor;
 
-    // Getters e Setters
     public Long getId() {
         return id;
     }

@@ -1,9 +1,8 @@
-/* static/css/pedidos.css */
 body {
     background-color: #f8f9fa;
     color: #343a40;
     font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-    overflow-x: hidden; /* Prevenir scroll horizontal acidental */
+    overflow-x: hidden;
 }
 
 .navbar {
@@ -45,7 +44,7 @@ body {
 .page-title {
     color: #ff5722;
     font-weight: 700;
-    font-size: 2.2rem; /* Desktop */
+    font-size: 2.2rem;
 }
 .page-title i {
     color: #ffc107;
@@ -59,10 +58,10 @@ body {
 }
 
 .category-buttons .btn {
-    margin: 5px 8px; /* Desktop */
+    margin: 5px 8px; 
     border-radius: 50rem;
     font-weight: 500;
-    padding: 0.5rem 1.2rem; /* Desktop */
+    padding: 0.5rem 1.2rem;
     transition: all 0.3s ease;
     border: 2px solid #ffc9ac;
     color: #ff5722;
@@ -179,19 +178,14 @@ body {
 .spinner-border {
     color: #ff5722;
 }
-
-/* MEDIA QUERIES (Seus estilos responsivos permanecem aqui) */
 @media (min-width: 768px) and (max-width: 991.98px) {
-    /* ... seu código ... */
+
 }
 @media (max-width: 767.98px) {
-    /* ... seu código ... */
 }
 @media (max-width: 420px) {
-    /* ... seu código ... */
 }
 
-/* Estilo para itens no modal de complementos (seu código original) */
 .complemento-item {
     background-color: #f9f9f9;
 }
@@ -205,17 +199,11 @@ body {
 }
 
 
-/* ======================================================= */
-/* ====== ESTILOS MELHORADOS PARA O MODAL DO KIT ======= */
-/* ======================================================= */
-
 #kitModal .modal-body {
-    background-color: #f8f9fa; /* Fundo do modal um pouco mais suave */
+    background-color: #f8f9fa;
 }
-
-/* Título principal do Kit no Modal (ex: "KIT FESTA") */
 #kitProductNameModal {
-    color: #ff5722; /* Cor laranja da marca */
+    color: #ff5722;
     font-weight: bold;
     text-align: center;
     border-bottom: 2px solid #ffede6;
@@ -223,9 +211,9 @@ body {
     margin-bottom: 1.5rem !important;
 }
 
-/* Container de cada grupo (Torta, Salgados) */
+
 .modal-body .p-3.border.rounded {
-    background-color: #ffffff !important; /* Fundo branco para destacar */
+    background-color: #ffffff !important;
     box-shadow: 0 2px 8px rgba(0,0,0,0.05);
     border: 1px solid #e9ecef !important;
 }
@@ -236,9 +224,8 @@ body {
     color: #333;
 }
 
-/* Item individual de opção (Torta de Chocolate, Coxinha) */
 .kit-option-item {
-    padding: 0.75rem 0.5rem; /* Mais espaçamento vertical */
+    padding: 0.75rem 0.5rem; 
     border-bottom: 1px solid #f0f0f0;
     transition: background-color 0.2s ease;
 }
@@ -248,31 +235,25 @@ body {
 }
 
 .kit-option-item:hover {
-    background-color: #fffaf7; /* Leve fundo laranja no hover */
+    background-color: #fffaf7;
 }
-
-/* --- AJUSTE PARA CENTRALIZAR O RADIO BUTTON --- */
 .kit-option-item.form-check {
     display: flex;
-    align-items: center; /* Alinha verticalmente o radio button e o texto */
+    align-items: center;
     padding-left: 1rem;
 }
 
 .kit-option-item.form-check .form-check-input {
-    margin-top: 0; /* Reseta a margem padrão do bootstrap */
-    width: 1.25em; /* Aumenta um pouco o tamanho do radio */
+    margin-top: 0; 
+    width: 1.25em; 
     height: 1.25em;
-    flex-shrink: 0; /* Impede que o radio button encolha */
+    flex-shrink: 0;
 }
 
 .kit-option-item.form-check .form-check-label {
-    padding-left: 0.75rem; /* Aumenta a distância entre o radio e o texto */
+    padding-left: 0.75rem;
     font-size: 1rem;
 }
-/* --- FIM DO AJUSTE --- */
-
-
-/* Estilo para os botões de mais/menos quantidade */
 .kit-qty-btn {
     width: 30px;
     height: 30px;
@@ -282,27 +263,23 @@ body {
 }
 
 .kit-qty-input {
-    /* Remove as setas no Firefox */
     -moz-appearance: textfield;
-    /* Remove as setas em navegadores modernos */
     appearance: none;
 }
 
-/* Remove as setas no Chrome, Safari, Edge, Opera */
 .kit-qty-input::-webkit-outer-spin-button,
 .kit-qty-input::-webkit-inner-spin-button {
     -webkit-appearance: none;
     margin: 0;
 }
 
-/* Contador (0 / 100) */
 .modal-body .fw-bold.mt-2 {
     color: #555;
     font-size: 0.9rem;
     transition: color 0.3s ease;
 }
 .modal-body .fw-bold.mt-2.text-success {
-    color: #198754 !important; /* Garante que a cor de sucesso seja aplicada */
+    color: #198754 !important; 
 }
 .modal-body .fw-bold.mt-2.text-danger {
     color: #dc3545 !important;

@@ -6,9 +6,8 @@ import java.time.LocalDate;
 public class PagamentoDTO {
     private BigDecimal valor;
     private LocalDate dataPagamento;
-    private String forma; // Novo campo para forma de pagamento
+    private String forma;
 
-    // Getters e Setters
     public BigDecimal getValor() {
         return valor;
     }

@@ -10,7 +10,7 @@ public class ContaAReceberDTO {
 
     private Long id;
     private Long clienteId;
-    private String clienteNome; // Agora usamos o campo direto da entidade
+    private String clienteNome;
     private String origem;
     private BigDecimal valorTotal;
     private BigDecimal valorRecebido;
@@ -23,7 +23,7 @@ public class ContaAReceberDTO {
         if (conta.getCliente() != null) {
             this.clienteId = conta.getCliente().getId();
         }
-        this.clienteNome = conta.getClienteNome(); // ATUALIZADO
+        this.clienteNome = conta.getClienteNome();
         this.origem = conta.getOrigem();
         this.valorTotal = conta.getValorTotal();
         this.valorRecebido = conta.getValorRecebido();
@@ -32,7 +32,6 @@ public class ContaAReceberDTO {
         this.dataVencimento = conta.getDataVencimento();
     }
 
-    // Getters
     public Long getId() { return id; }
     public Long getClienteId() { return clienteId; }
     public String getClienteNome() { return clienteNome; }

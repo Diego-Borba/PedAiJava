@@ -1,4 +1,3 @@
-// src/main/java/com/PedAi/PedAi/DTO/ImagemDTO.java
 package com.PedAi.PedAi.DTO;
 
 public class ImagemDTO {

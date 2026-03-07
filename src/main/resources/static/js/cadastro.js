@@ -1,4 +1,3 @@
-// src/main/resources/static/js/cadastro.js
 document.addEventListener('DOMContentLoaded', function () {
     const formProduto = document.getElementById('formProduto');
     if (!formProduto) return;
@@ -28,11 +27,11 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    imagemFileInput.addEventListener('change', function(event) {
+    imagemFileInput.addEventListener('change', function (event) {
         const file = event.target.files[0];
         if (file && (file.type === 'image/jpeg' || file.type === 'image/png')) {
             const reader = new FileReader();
-            reader.onload = function(e) {
+            reader.onload = function (e) {
                 imagemParaUpload = { base64: e.target.result, tipo: file.type };
                 imagePreview.src = e.target.result;
                 previewContainer.style.display = 'block';
@@ -87,7 +86,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function adicionarLinhaIngrediente() {
         const materiasPrimas = todosOsProdutos.filter(p => p.tipo === 'Matéria-Prima');
-        
+
         let optionsHTML = '<option value="">Selecione um ingrediente...</option>';
         materiasPrimas.forEach(mp => {
             optionsHTML += `<option value="${mp.id}">${mp.nome}</option>`;
@@ -109,8 +108,8 @@ document.addEventListener('DOMContentLoaded', function () {
             </div>
         `;
         listaReceitaContainer.appendChild(div);
-        
-        div.querySelector('.btn-remover-ingrediente').addEventListener('click', function() {
+
+        div.querySelector('.btn-remover-ingrediente').addEventListener('click', function () {
             this.closest('.ingrediente-bloco').remove();
         });
     }
@@ -134,12 +133,12 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             });
         }
-        
+
         const receita = [];
         document.querySelectorAll('.ingrediente-bloco').forEach(bloco => {
             const ingredienteId = bloco.querySelector('.select-ingrediente').value;
             const quantidade = parseFloat(bloco.querySelector('.qtde-ingrediente').value);
-            
+
             if (ingredienteId && quantidade > 0) {
                 receita.push({
                     produtoIngredienteId: parseInt(ingredienteId),
@@ -185,7 +184,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ imagemBase64: imagemParaUpload.base64, imagemTipo: imagemParaUpload.tipo })
                 });
-                 if (!responseImagem.ok) { throw new Error('Produto salvo, mas falha ao enviar imagem.'); }
+                if (!responseImagem.ok) { throw new Error('Produto salvo, mas falha ao enviar imagem.'); }
             }
 
             Swal.fire({

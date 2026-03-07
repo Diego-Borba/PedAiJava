@@ -1,11 +1,9 @@
-// src/main/resources/static/js/pedidos.js
 let todosProdutos = [];
 let cart = {};
 
 const PLACEHOLDER_IMAGE = 'https://via.placeholder.com/250x250.png?text=PedAi';
 const CART_STORAGE_KEY = 'pedAiCart';
 
-// --- GERENCIAMENTO DO CARRINHO ---
 function getCartFromStorage() {
     const storedCart = localStorage.getItem(CART_STORAGE_KEY);
     try {
@@ -21,8 +19,6 @@ function saveCartToStorage() {
     localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
     updateCartCountNavbar();
 }
-
-// --- INTERFACE DO USUÁRIO (UI) ---
 function showLoadingIndicator(show) {
     const indicator = document.getElementById('loadingIndicator');
     if (indicator) indicator.style.display = show ? 'flex' : 'none';
@@ -47,7 +43,6 @@ function showProdutoAdicionadoToast(produto) {
     });
 }
 
-// --- LÓGICA DE PRODUTOS E API ---
 async function carregarEProcessarProdutosAPI() {
     showLoadingIndicator(true);
     try {
@@ -226,7 +221,7 @@ function criarInputOpcao(produtoOpcao, grupo, groupIndex) {
             <input class="form-check-input" type="radio" name="group-${groupIndex}" id="option-${produtoOpcao.id}" value="${produtoOpcao.id}" required>
             <label class="form-check-label w-100" for="option-${produtoOpcao.id}">${produtoOpcao.nome}</label>
         `;
-    } else { // QUANTIDADE_TOTAL
+    } else {
         div.className = 'kit-option-item d-flex justify-content-between align-items-center';
         div.innerHTML = `
             <span>${produtoOpcao.nome}</span>

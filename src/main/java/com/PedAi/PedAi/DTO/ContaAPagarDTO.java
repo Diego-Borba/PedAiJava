@@ -31,7 +31,6 @@ public class ContaAPagarDTO {
         this.dataVencimento = conta.getDataVencimento();
     }
     
-    // Getters
     public Long getId() { return id; }
     public Long getFornecedorId() { return fornecedorId; }
     public String getFornecedorNome() { return fornecedorNome; }

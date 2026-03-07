@@ -19,10 +19,9 @@ public class OpcaoComplemento {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "grupo_complemento_id")
-    @JsonBackReference("grupo-opcoes") // Corresponde ao nome em GrupoComplemento
+    @JsonBackReference("grupo-opcoes") 
     private GrupoComplemento grupo;
 
-    // ... (seus Getters e Setters permanecem inalterados)
     public Long getId() {
         return id;
     }
@@ -47,7 +46,6 @@ public class OpcaoComplemento {
         this.grupo = grupo;
     }
 
-    // ADICIONE ESTES MÉTODOS NO FINAL DA CLASSE OPCAOCOMPLEMENTO
 
     @Override
     public boolean equals(Object o) {

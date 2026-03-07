@@ -1,4 +1,3 @@
-// static/js/carrinho.js
 const CART_STORAGE_KEY_CARRINHO = 'pedAiCart';
 const CUSTOMER_STORAGE_KEY_CARRINHO = 'pedAiCustomer';
 const PLACEHOLDER_IMAGE_CARRINHO = 'https://via.placeholder.com/150x150.png?text=PedAi';
@@ -7,7 +6,6 @@ let cartData = {};
 let loggedInCustomerData = null;
 let todosProdutosGlobaisParaCarrinho = [];
 
-// --- GERENCIAMENTO DO LOCALSTORAGE (SEU CÓDIGO ORIGINAL) ---
 function getCartFromStorageCarrinho() {
     const storedCart = localStorage.getItem(CART_STORAGE_KEY_CARRINHO);
     try {
@@ -28,10 +26,8 @@ function getCustomerFromStorageCarrinho() { const s = localStorage.getItem(CUSTO
 function saveCustomerToStorageCarrinho(c) { localStorage.setItem(CUSTOMER_STORAGE_KEY_CARRINHO, JSON.stringify(c)); }
 function removeCustomerFromStorageCarrinho() { localStorage.removeItem(CUSTOMER_STORAGE_KEY_CARRINHO); }
 
-// --- CARREGAR PRODUTOS GLOBAIS (SEU CÓDIGO ORIGINAL) ---
 async function carregarTodosProdutosParaReferenciaCarrinho() {
     try {
-        // CORREÇÃO: Alterado de /api/produtos para /api/produtos/cardapio
         const response = await fetch('/api/produtos/cardapio');
         if (!response.ok) throw new Error('Falha ao carregar produtos');
         todosProdutosGlobaisParaCarrinho = (await response.json()).map(p => ({ ...p, id: String(p.id) }));
@@ -40,7 +36,6 @@ async function carregarTodosProdutosParaReferenciaCarrinho() {
     }
 }
 
-// --- UI DO CARRINHO (SEU CÓDIGO ORIGINAL) ---
 function updateCartCountNavbarCarrinho() {
     const cartCountEl = document.getElementById('cartCountNavbar');
     if (!cartCountEl) return;
@@ -93,8 +88,6 @@ function displayCartItems() {
             }
             detalhesHtml += '</div>';
         }
-
-        // CORREÇÃO: Lógica para construir a imagem Base64
         let imagemSrc = PLACEHOLDER_IMAGE_CARRINHO;
         if (itemPrincipal.imagem && itemPrincipal.imagemTipo) {
             imagemSrc = `data:${itemPrincipal.imagemTipo};base64,${itemPrincipal.imagem}`;
@@ -153,7 +146,6 @@ function handleRemoveItem(cartId) {
     saveCartToStorageCarrinho();
 }
 
-// --- FUNÇÃO DE UI DO CLIENTE (ATUALIZADA) ---
 function updateCustomerUI() {
     const loggedInDiv = document.getElementById('loggedInCustomer');
     const guestDiv = document.getElementById('guestCustomer');
@@ -164,8 +156,6 @@ function updateCustomerUI() {
         loggedInDiv.style.display = 'flex';
         guestDiv.style.display = 'none';
         customerNameSpan.textContent = loggedInCustomerData.nome;
-
-        // Lógica para mostrar/esconder o endereço
         const tipoPedidoSelecionado = document.querySelector('input[name="tipoPedido"]:checked').value;
         if (tipoPedidoSelecionado === 'ENTREGA' && loggedInCustomerData.endereco) {
             customerDetailsDiv.style.display = 'block';
@@ -192,7 +182,6 @@ function updateFinalizeButtonState() {
     finalizeBtn.disabled = isCartEmpty || !isCustomerLoggedIn;
 }
 
-// --- FUNÇÕES DE LOGIN/CADASTRO (SEU CÓDIGO ORIGINAL) ---
 async function handleRegister() {
     const { value: formValues, isConfirmed } = await Swal.fire({
         title: 'Cadastro Rápido',
@@ -339,7 +328,6 @@ function handleLogout() {
     updateCustomerUI();
 }
 
-// --- FUNÇÃO DE FINALIZAR PEDIDO (ATUALIZADA) ---
 async function finalizeOrder() {
     if (Object.keys(cartData).length === 0) { Swal.fire('Carrinho Vazio!', 'Adicione itens ao seu carrinho para continuar.', 'warning'); return; }
     if (!loggedInCustomerData) { Swal.fire('Identifique-se!', 'Por favor, entre na sua conta ou cadastre-se para finalizar o pedido.', 'info'); return; }
@@ -347,7 +335,6 @@ async function finalizeOrder() {
     const formaPagamentoSelecionada = document.querySelector('input[name="formaPagamento"]:checked');
     if (!formaPagamentoSelecionada) { Swal.fire('Atenção!', 'Por favor, selecione uma forma de pagamento.', 'warning'); return; }
 
-    // NOVAS VALIDAÇÕES DE TIPO DE PEDIDO
     const tipoPedido = document.querySelector('input[name="tipoPedido"]:checked').value;
     const dataAgendamentoInput = document.getElementById('dataAgendamento');
     let dataAgendamento = null;
@@ -357,7 +344,6 @@ async function finalizeOrder() {
             Swal.fire('Atenção!', 'Por favor, selecione a data e a hora para a sua encomenda.', 'warning');
             return;
         }
-        // Converte para o formato ISO 8601 que o ZonedDateTime do backend espera
         dataAgendamento = new Date(dataAgendamentoInput.value).toISOString();
     }
 
@@ -366,7 +352,6 @@ async function finalizeOrder() {
         return;
     }
 
-    // Montagem do payload de itens (seu código original)
     const pedidoItensPayload = [];
     for (const cartId in cartData) {
         const item = cartData[cartId];
@@ -392,7 +377,6 @@ async function finalizeOrder() {
         }
     }
 
-    // PAYLOAD FINAL ENVIADO PARA A API (ATUALIZADO)
     const payload = {
         clienteId: loggedInCustomerData.id,
         itens: pedidoItensPayload,
@@ -425,7 +409,6 @@ async function finalizeOrder() {
     }
 }
 
-// --- INICIALIZAÇÃO DA PÁGINA (ATUALIZADA) ---
 window.onload = async () => {
     cartData = getCartFromStorageCarrinho();
     loggedInCustomerData = getCustomerFromStorageCarrinho();
@@ -441,12 +424,11 @@ window.onload = async () => {
     document.getElementById('logoutButton')?.addEventListener('click', handleLogout);
     document.getElementById('finalizeOrderButton')?.addEventListener('click', finalizeOrder);
 
-    // ADICIONADO: Listeners para os tipos de pedido
     const agendamentoSection = document.getElementById('agendamentoSection');
     document.querySelectorAll('input[name="tipoPedido"]').forEach(radio => {
         radio.addEventListener('change', function () {
             agendamentoSection.style.display = this.value === 'ENCOMENDA' ? 'block' : 'none';
-            updateCustomerUI(); // Atualiza a exibição do endereço
+            updateCustomerUI();
         });
     });
 };

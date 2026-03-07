@@ -1,4 +1,3 @@
-// src/main/java/com/PedAi/PedAi/security/SecurityFilter.java
 package com.PedAi.PedAi.security;
 
 import com.PedAi.PedAi.Model.Cliente;

@@ -4,18 +4,17 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import java.math.BigDecimal;
 
-@Embeddable // Indica que esta classe será embutida em outra entidade (Produto)
+@Embeddable
 public class ItemReceita {
 
-    private Long produtoIngredienteId; // ID do Produto que é o ingrediente
+    private Long produtoIngredienteId;
 
     @Column(nullable = false, precision = 10, scale = 3)
-    private BigDecimal quantidadeUtilizada; // Qtde do ingrediente usada na receita
+    private BigDecimal quantidadeUtilizada;
 
     public ItemReceita() {
     }
 
-    // Getters e Setters
     public Long getProdutoIngredienteId() {
         return produtoIngredienteId;
     }

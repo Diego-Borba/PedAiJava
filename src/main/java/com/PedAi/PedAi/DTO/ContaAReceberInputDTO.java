@@ -3,16 +3,14 @@ package com.PedAi.PedAi.DTO;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-// DTO para receber dados do frontend para criar/editar uma Conta a Receber
 public class ContaAReceberInputDTO {
 
     private Long clienteId;
-    private String clienteNomeAvulso; // Para clientes não cadastrados
+    private String clienteNomeAvulso;
     private String origem;
     private BigDecimal valorTotal;
     private LocalDate dataVencimento;
-
-    // Getters e Setters
+    
     public Long getClienteId() {
         return clienteId;
     }

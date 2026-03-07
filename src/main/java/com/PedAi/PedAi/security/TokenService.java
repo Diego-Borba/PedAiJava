@@ -1,4 +1,3 @@
-// src/main/java/com/PedAi/PedAi/security/TokenService.java
 package com.PedAi.PedAi.security;
 
 import com.PedAi.PedAi.Model.Cliente;
@@ -42,7 +41,7 @@ public class TokenService {
                     .verify(token)
                     .getSubject();
         } catch (JWTVerificationException exception) {
-            return ""; // Token inválido
+            return "";
         }
     }
 

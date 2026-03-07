@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', function () {
             url: '/api/fornecedores/search',
             dataType: 'json',
             delay: 250,
-            transport: select2AuthTransport // CORREÇÃO APLICADA AQUI
+            transport: select2AuthTransport
         }
     });
 
@@ -198,7 +198,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }).then(async (result) => {
                 if (result.isConfirmed) {
                     try {
-                        const response = await fetchWithAuth(`/api/contas-a-pagar/${id}`, { method: 'DELETE' }); // CORRIGIDO
+                        const response = await fetchWithAuth(`/api/contas-a-pagar/${id}`, { method: 'DELETE' });
                         if (!response.ok) throw new Error('Falha ao excluir.');
                         Swal.fire('Excluído!', 'A despesa foi removida.', 'success');
                         carregarContas();
@@ -229,7 +229,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         try {
-            const response = await fetchWithAuth(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }); // CORRIGIDO
+            const response = await fetchWithAuth(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
             if (!response.ok) throw new Error('Falha ao salvar despesa.');
             contaPagarModal.hide();
             Swal.fire('Sucesso!', 'Despesa salva com sucesso!', 'success');

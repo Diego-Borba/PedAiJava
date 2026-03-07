@@ -1,19 +1,16 @@
-// src/main/resources/static/js/pdv.js
 document.addEventListener('DOMContentLoaded', function () {
     let venda = {
         itens: [],
         pagamentos: [],
         desconto: 0,
         acrescimo: 0,
-        clienteId: null, // ID do cliente selecionado
+        clienteId: null,
     };
     let quantidadeMultiplicador = 1;
     let todosOsProdutos = [];
     let itemSelecionadoIndex = null;
-
-    // --- Seletores de Elementos DOM ---
     const produtoSearch = $('#produto-search');
-    const clienteSearch = $('#cliente-search'); // Novo seletor de cliente
+    const clienteSearch = $('#cliente-search');
     const tabelaVendaBody = document.getElementById('tabela-venda').querySelector('tbody');
     const totalEl = document.getElementById('total-venda');
     const btnFinalizarVenda = document.getElementById('btnFinalizarVenda');
@@ -23,27 +20,21 @@ document.addEventListener('DOMContentLoaded', function () {
     const btnAcrescimo = document.getElementById('btn-acrescimo');
     const multiplicadorBadge = document.getElementById('multiplicador-badge');
 
-    // --- Containers Desktop ---
     const categoryButtonsContainer = document.getElementById('category-buttons-container');
     const productListContainer = document.getElementById('product-list-container');
 
-    // --- Containers Mobile ---
     const categoryCardsContainerMobile = document.getElementById('category-cards-container-mobile');
     const productListContainerMobile = document.getElementById('product-list-container-mobile');
 
 
-    // --- Inicialização ---
     async function inicializarPdv() {
         try {
             const response = await fetchWithAuth('/api/produtos/cardapio');
             if (!response.ok) throw new Error('Falha ao carregar produtos');
             todosOsProdutos = await response.json();
             
-            // Renderiza o navegador de desktop
             renderizarCategorias();
             renderizarProdutos('Todos');
-            
-            // Renderiza o navegador mobile
             renderizarMobileBrowser();
             renderizarProdutosMobile('Todos');
 
@@ -53,7 +44,6 @@ document.addEventListener('DOMContentLoaded', function () {
         resetarVenda();
     }
 
-    // --- Configuração do Select2 para Cliente ---
     clienteSearch.select2({
         theme: 'bootstrap-5',
         placeholder: 'Selecione o cliente (Opcional para venda à vista)',
@@ -72,7 +62,6 @@ document.addEventListener('DOMContentLoaded', function () {
         venda.clienteId = null;
     });
 
-    // --- Configuração do Select2 para Produto ---
     produtoSearch.select2({
         theme: 'bootstrap-5',
         placeholder: 'Pesquisar produto (F2)',
@@ -112,7 +101,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // --- Navegador de Produtos (Desktop) ---
     function renderizarCategorias() {
         if (!categoryButtonsContainer) return; 
         const categorias = ['Todos', ...new Set(todosOsProdutos.map(p => p.categoria).filter(Boolean))];
@@ -163,7 +151,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // --- Navegador Mobile ---
     function renderizarMobileBrowser() {
         if (!categoryCardsContainerMobile) return;
 
@@ -223,7 +210,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
 
-    // --- Funções da Venda ---
     function adicionarItemVenda(produto, quantidade = 1) {
         if (produto.isKit) {
             Swal.fire('Atenção', 'Kits ainda não podem ser adicionados diretamente pelo PDV.', 'warning');
@@ -271,7 +257,7 @@ document.addEventListener('DOMContentLoaded', function () {
         venda = { itens: [], pagamentos: [], desconto: 0, acrescimo: 0, clienteId: null };
         renderizarVenda();
         resetarMultiplicador();
-        clienteSearch.val(null).trigger('change'); // Limpa o Select2 do cliente
+        clienteSearch.val(null).trigger('change');
     }
 
     function resetarMultiplicador() {
@@ -279,8 +265,6 @@ document.addEventListener('DOMContentLoaded', function () {
         multiplicadorBadge.style.display = 'none';
         multiplicadorBadge.textContent = '';
     }
-
-    // --- Event Listeners ---
     tabelaVendaBody.addEventListener('click', (e) => {
         const tr = e.target.closest('tr');
         if (!tr) return;
@@ -393,14 +377,12 @@ document.addEventListener('DOMContentLoaded', function () {
                         adicionarItemVenda(produtoOriginal, item.quantidade);
                     }
                 });
-                // TODO: Importar cliente também se necessário? Por enquanto mantém lógica padrão
             }
         } catch (err) {
             Swal.fire('Erro', err.message, 'error');
         }
     });
 
-    // --- Lógica dos Atalhos de Teclado ---
     document.addEventListener('keydown', (e) => {
         if (e.key === 'F2' && !Swal.isVisible()) {
             e.preventDefault();
@@ -445,8 +427,6 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
     });
-
-    // --- Modal de Finalização (F12) e Impressão ---
     async function abrirModalFinalizarVenda() {
         if (venda.itens.length === 0) {
             Swal.fire('Atenção', 'Adicione itens à venda para finalizar.', 'warning');
@@ -554,13 +534,8 @@ document.addEventListener('DOMContentLoaded', function () {
                     const [forma, valorStr] = li.textContent.split(': R$ ');
                     modalPagamentos.push({ forma: forma.trim().replace(' ', '_'), valor: parseFloat(valorStr) });
                 });
-
-                // --- VALIDAÇÃO DE A PRAZO ---
                 const temVendaAPrazo = modalPagamentos.some(p => p.forma === 'A_Prazo');
                 
-                // Se tiver venda a prazo e o cliente for nulo OU se o clienteId for 1 (Assumindo 1 como Consumidor Final padrão sem cadastro real)
-                // Nota: venda.clienteId é null se não selecionado no Select2. Se o sistema usa 1 por padrão, ajuste a lógica abaixo.
-                // A lógica atual: Obrigatório selecionar um cliente no Select2 (venda.clienteId != null)
                 if (temVendaAPrazo && !venda.clienteId) {
                     Swal.showValidationMessage('Para vendas "A Prazo", é OBRIGATÓRIO selecionar um cliente cadastrado!');
                     return false;
@@ -573,11 +548,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (isConfirmed && formValues) {
             venda.pagamentos = formValues.pagamentos;
             
-            // Se clienteId for nulo (não selecionado), define como 1 (Consumidor Final) para o backend processar vendas normais
-            // Se for A Prazo, a validação acima garantiu que não é nulo.
             const clienteFinal = venda.clienteId ? venda.clienteId : 1;
-
-            // Montar o DTO para enviar ao backend
             const vendaPayload = {
                 ...venda,
                 clienteId: clienteFinal, 
@@ -681,7 +652,5 @@ document.addEventListener('DOMContentLoaded', function () {
             Swal.fire('Erro!', error.message, 'error');
         }
     }
-
-    // --- Inicialização da Tela ---
     inicializarPdv();
 });

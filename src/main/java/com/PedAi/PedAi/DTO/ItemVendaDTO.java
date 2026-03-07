@@ -4,12 +4,11 @@ import java.math.BigDecimal;
 
 public class ItemVendaDTO {
     
-    private Long id; // Corresponde ao ID do produto
+    private Long id;
     private String nome;
     private int quantidade;
     private BigDecimal precoUnitario;
 
-    // Getters & Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     public String getNome() { return nome; }

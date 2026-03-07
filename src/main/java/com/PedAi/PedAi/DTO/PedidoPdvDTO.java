@@ -21,13 +21,11 @@ public class PedidoPdvDTO {
         this.itens = pedido.getItens().stream().map(ItemPedidoPdvDTO::new).collect(Collectors.toList());
     }
 
-    // Getters
     public Long getId() { return id; }
     public String getClienteNome() { return clienteNome; }
     public BigDecimal getTotal() { return total; }
     public List<ItemPedidoPdvDTO> getItens() { return itens; }
 
-    // Inner DTO for items
     public static class ItemPedidoPdvDTO {
         private Long produtoId;
         private String produtoNome;
@@ -41,7 +39,6 @@ public class PedidoPdvDTO {
             this.precoUnitario = itemPedido.getPrecoUnitario();
         }
 
-        // Getters
         public Long getProdutoId() { return produtoId; }
         public String getProdutoNome() { return produtoNome; }
         public int getQuantidade() { return quantidade; }

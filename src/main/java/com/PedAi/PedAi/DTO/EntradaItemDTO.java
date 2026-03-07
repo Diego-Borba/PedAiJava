@@ -8,8 +8,6 @@ public class EntradaItemDTO {
     private BigDecimal precoUnitario;
     private BigDecimal fatorEntrada;
 
-    // Getters e Setters
-
     public Long getProdutoId() {
         return produtoId;
     }

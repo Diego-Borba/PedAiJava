@@ -27,8 +27,6 @@ public class EntradaItem {
     @Column(precision = 10, scale = 4)
     private BigDecimal fatorEntrada;
 
-    // Getters e Setters
-
     public Long getId() {
         return id;
     }

@@ -1,4 +1,3 @@
-// Caminho: src/main/java/com/PedAi/PedAi/Controller/PedidoController.java
 package com.PedAi.PedAi.Controller;
 
 import com.PedAi.PedAi.DTO.PedidoAdminDTO;
@@ -13,7 +12,7 @@ import com.PedAi.PedAi.repository.PedidoSpecification;
 import com.PedAi.PedAi.services.FinanceiroService;
 import com.PedAi.PedAi.services.PdfService;
 import com.PedAi.PedAi.services.PedidoService;
-import jakarta.persistence.criteria.Predicate; // IMPORTAÇÃO CORRIGIDA
+import jakarta.persistence.criteria.Predicate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
@@ -162,12 +161,10 @@ public class PedidoController {
     public ResponseEntity<List<PedidoPdvDTO>> listarPedidosParaImportar() {
         Specification<Pedido> spec = (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
-            // Filtra por pedidos que são de RETIRADA ou ENCOMENDA
             predicates.add(cb.or(
                 cb.equal(root.get("tipo"), TipoPedido.RETIRADA),
                 cb.equal(root.get("tipo"), TipoPedido.ENCOMENDA)
             ));
-            // Exclui pedidos já finalizados ou cancelados
             predicates.add(cb.notEqual(root.get("status"), "Concluido"));
             predicates.add(cb.notEqual(root.get("status"), "Cancelado"));
             predicates.add(cb.notEqual(root.get("status"), "Entregue"));

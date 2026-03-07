@@ -1,4 +1,3 @@
-// src/main/resources/static/js/fornecedor.js
 document.addEventListener("DOMContentLoaded", function() {
     const fornecedorForm = document.getElementById("fornecedorForm");
     if (fornecedorForm) {

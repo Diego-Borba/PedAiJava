@@ -17,18 +17,11 @@ public class ProdutoService {
     @Autowired
     private ProdutoRepository repository;
 
-    /**
-     * Busca os produtos para o cardápio e os converte para DTO dentro de uma
-     * transação garantida.
-     * Isso resolve problemas de LazyInitializationException em diferentes ambientes.
-     */
+    
     @Transactional(readOnly = true)
     public List<ProdutoCardapioDTO> getProdutosParaCardapio() {
-        // 1. Busca os produtos e todos os seus dados aninhados (kits, opções, etc.)
         List<Produto> produtos = repository.findProdutosForCardapio();
 
-        // 2. Converte para DTO dentro da mesma transação, garantindo que todos os
-        // dados estejam acessíveis.
         return produtos.stream()
                 .map(ProdutoCardapioDTO::new)
                 .collect(Collectors.toList());

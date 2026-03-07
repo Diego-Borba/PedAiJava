@@ -1,10 +1,8 @@
-// src/main/resources/static/js/relatorio-vendas.js
 document.addEventListener('DOMContentLoaded', function () {
     const filtroForm = document.getElementById('filtro-form');
     const btnLimpar = document.getElementById('btn-limpar-filtros');
     let tabelaRelatorio;
 
-    // Cards de Resumo
     const cardTotalVendas = document.getElementById('card-total-vendas');
     const cardTotalCaixa = document.getElementById('card-total-caixa');
     const cardTotalPrazo = document.getElementById('card-total-prazo');
@@ -67,19 +65,16 @@ document.addEventListener('DOMContentLoaded', function () {
                     data: 'formasPagamento', 
                     render: (data) => data.map(f => `<span class="badge bg-secondary me-1">${f}</span>`).join('') 
                 },
-                // Coluna Em Caixa
                 { 
                     data: 'valorCaixa', 
                     className: 'text-success fw-bold',
                     render: (data) => `R$ ${parseFloat(data).toFixed(2)}` 
                 },
-                // Coluna A Receber
                 { 
                     data: 'valorAReceber', 
-                    className: 'text-warning text-dark fw-bold', // text-warning as vezes fica claro demais, text-dark ajuda
+                    className: 'text-warning text-dark fw-bold',
                     render: (data) => `R$ ${parseFloat(data).toFixed(2)}` 
                 },
-                // Coluna Total
                 { 
                     data: 'total', 
                     className: 'text-primary fw-bold',
@@ -101,25 +96,19 @@ document.addEventListener('DOMContentLoaded', function () {
             order: [[1, 'desc']],
             footerCallback: function (row, data, start, end, display) {
                 var api = this.api();
-
-                // Função auxiliar para somar colunas
                 const sumColumn = (colIndex) => {
                     return api.column(colIndex, { search: 'applied' }).data()
                         .reduce((a, b) => a + parseFloat(b || 0), 0);
                 };
 
-                // Índices das colunas (baseado na ordem acima)
-                // 5: valorCaixa, 6: valorAReceber, 7: total
                 const totalCaixa = sumColumn(5);
                 const totalPrazo = sumColumn(6);
                 const totalGeral = sumColumn(7);
 
-                // Atualiza o rodapé da tabela
                 $(api.column(5).footer()).html(`R$ ${totalCaixa.toFixed(2)}`);
                 $(api.column(6).footer()).html(`R$ ${totalPrazo.toFixed(2)}`);
                 $(api.column(7).footer()).html(`R$ ${totalGeral.toFixed(2)}`);
 
-                // Atualiza os Cards de Resumo no topo
                 if(cardTotalVendas) cardTotalVendas.innerText = `R$ ${totalGeral.toFixed(2)}`;
                 if(cardTotalCaixa) cardTotalCaixa.innerText = `R$ ${totalCaixa.toFixed(2)}`;
                 if(cardTotalPrazo) cardTotalPrazo.innerText = `R$ ${totalPrazo.toFixed(2)}`;
@@ -127,7 +116,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     };
     
-    // --- LÓGICA DOS BOTÕES DE AÇÃO ---
     $('#tabela-relatorio-vendas tbody').on('click', 'button', function () {
         const id = $(this).data('id');
         if ($(this).hasClass('btn-detalhes')) {
@@ -147,7 +135,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 `<li>${item.quantidade}x ${item.nome} - R$ ${(item.precoUnitario * item.quantidade).toFixed(2)}</li>`
             ).join('');
             
-            // Destaca pagamentos a prazo
             const pagamentosHtml = venda.pagamentos.map(p => {
                 const forma = p.forma.replace('_', ' ');
                 const style = forma === 'A Prazo' ? 'color: #d63384; font-weight: bold;' : '';
@@ -197,7 +184,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (!response.ok) throw new Error('Falha ao excluir a venda.');
                 
                 Swal.fire('Excluído!', 'A venda foi removida com sucesso.', 'success');
-                tabelaRelatorio.ajax.reload(); // Recarrega a tabela
+                tabelaRelatorio.ajax.reload();
             } catch (error) {
                 Swal.fire('Erro!', error.message, 'error');
             }
@@ -218,7 +205,6 @@ document.addEventListener('DOMContentLoaded', function () {
         $('#filtro-cliente').val(null).trigger('change');
         $('#filtro-produto').val(null).trigger('change');
         
-        // Reseta as datas para hoje
         const hoje = new Date().toISOString().split('T')[0];
         document.getElementById('filtro-data-inicial').value = hoje;
         document.getElementById('filtro-data-final').value = hoje;

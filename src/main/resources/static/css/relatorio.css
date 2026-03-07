@@ -1,6 +1,5 @@
-/* static/css/relatorio.css */
 .dataTables_wrapper .dataTables_filter {
-    display: none; /* Oculta a busca padrão do DataTables */
+    display: none;
 }
 
 #tabela-relatorio-vendas ul {

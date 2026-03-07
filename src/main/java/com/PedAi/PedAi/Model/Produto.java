@@ -1,4 +1,3 @@
-// src/main/java/com/PedAi/PedAi/Model/Produto.java
 package com.PedAi.PedAi.Model;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
@@ -25,9 +24,6 @@ public class Produto {
     private String descricao;
     private Integer codPdv;
     private Integer ordemVisualizacao;
-
-    // --- CORREÇÃO: A anotação @Lob foi REMOVIDA ---
-    // Apenas @Column é necessário para forçar o tipo bytea.
     @Basic(fetch = FetchType.EAGER)
     @Column(name = "imagem_dados", columnDefinition = "BYTEA")
     private byte[] imagemDados;
@@ -41,7 +37,6 @@ public class Produto {
     @Column(nullable = false, precision = 10, scale = 3)
     private BigDecimal estoqueAtual = BigDecimal.ZERO;
 
-    // Flags e configurações
     @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT TRUE")
     private boolean ativo = true;
 
@@ -60,7 +55,6 @@ public class Produto {
     @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
     private boolean isKit = false;
 
-    // Relacionamentos
     @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "produto_complemento_configs", joinColumns = @JoinColumn(name = "produto_principal_id"))
     private List<ComplementoConfig> complementosDisponiveis = new ArrayList<>();
@@ -69,7 +63,6 @@ public class Produto {
     @JsonManagedReference("kit-grupos")
     private List<GrupoComplemento> gruposKit = new ArrayList<>();
 
-    // Getters e Setters (sem alterações)
     public byte[] getImagemDados() { return imagemDados; }
     public void setImagemDados(byte[] imagemDados) { this.imagemDados = imagemDados; }
     public String getImagemTipo() { return imagemTipo; }

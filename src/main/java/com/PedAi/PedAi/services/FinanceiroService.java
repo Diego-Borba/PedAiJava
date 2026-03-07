@@ -22,8 +22,6 @@ public class FinanceiroService {
     @Autowired private ClienteRepository clienteRepository;
     @Autowired private FornecedorRepository fornecedorRepository;
 
-    // --- MÉTODOS PARA CONTAS A RECEBER ---
-
     @Transactional
     public void criarContaAReceberDePedido(Pedido pedido) {
         ContaAReceber conta = new ContaAReceber();
@@ -38,12 +36,9 @@ public class FinanceiroService {
         contaAReceberRepository.save(conta);
     }
 
-    // --- NOVO MÉTODO PARA VENDA A PRAZO ---
     @Transactional
     public void criarContaAReceberDeVenda(Venda venda, BigDecimal valor, LocalDate dataVencimento) {
         ContaAReceber conta = new ContaAReceber();
-        // Venda não tem relação direta OneToOne com ContaAReceber no modelo atual, 
-        // então usamos a origem como referência texto
         conta.setCliente(venda.getCliente());
         conta.setClienteNome(venda.getCliente().getNome());
         conta.setValorTotal(valor);
@@ -108,8 +103,6 @@ public class FinanceiroService {
         }
         contaAReceberRepository.deleteById(id);
     }
-    
-    // --- MÉTODOS PARA CONTAS A PAGAR ---
 
     @Transactional
     public ContaAPagar criarOuAtualizarContaAPagar(Long id, ContaAPagarInputDTO dto) {

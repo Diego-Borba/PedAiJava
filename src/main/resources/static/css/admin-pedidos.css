@@ -1,15 +1,11 @@
-/* static/css/admin-pedidos.css */
-
-/* --- Configurações Globais --- */
 body {
-    background-color: #f0f2f5; /* Um cinza mais claro e suave */
+    background-color: #f0f2f5;
     color: #333;
     font-family: 'Roboto', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 }
 
-/* --- Cabeçalho --- */
 .header {
     background: linear-gradient(90deg, #4a00e0, #8e2de2);
     color: #ffffff;
@@ -24,14 +20,13 @@ body {
     font-size: 1.5rem;
 }
 
-/* --- Colunas do KDS --- */
 .column {
-    background-color: #e9ecef; /* Fundo da coluna */
+    background-color: #e9ecef;
     border-radius: 12px;
     padding: 0;
     display: flex;
     flex-direction: column;
-    height: 85vh; /* Altura definida para a coluna */
+    height: 85vh;
     box-shadow: 0 2px 5px rgba(0,0,0,0.05);
 }
 
@@ -53,10 +48,10 @@ body {
 .cards-container {
     padding: 1rem;
     overflow-y: auto;
-    flex-grow: 1; /* Permite que o container cresça para preencher o espaço */
+    flex-grow: 1; 
 }
 
-/* Customização da barra de rolagem */
+
 .cards-container::-webkit-scrollbar {
     width: 8px;
 }
@@ -73,7 +68,6 @@ body {
 }
 
 
-/* --- Card do Pedido --- */
 .card {
     cursor: grab;
     border: none;
@@ -82,7 +76,7 @@ body {
     color: #212529;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
     transition: transform 0.2s ease, box-shadow 0.2s ease;
-    border-left: 5px solid #0d6efd; /* Borda de status inicial (azul) */
+    border-left: 5px solid #0d6efd;
 }
 
 .card:active {
@@ -116,7 +110,6 @@ body {
     border-top: 1px solid #dee2e6;
 }
 
-/* Indicadores de tempo */
 .time-indicator {
     font-weight: 500;
     padding: 0.2rem 0.5rem;
@@ -124,11 +117,11 @@ body {
     color: #fff;
 }
 
-.time-indicator.normal { background-color: #28a745; } /* Verde */
-.time-indicator.warning { background-color: #ffc107; color: #000 !important; } /* Amarelo */
-.time-indicator.danger { background-color: #dc3545; } /* Vermelho */
+.time-indicator.normal { background-color: #28a745; } 
+.time-indicator.warning { background-color: #ffc107; color: #000 !important; } 
+.time-indicator.danger { background-color: #dc3545; } 
 
-/* Animação de entrada para novos cards */
+
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }

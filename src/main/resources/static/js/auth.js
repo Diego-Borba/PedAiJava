@@ -1,9 +1,8 @@
-// Este script é auto-executável para proteger a página assim que ela carregar.
+
 (function() {
     const token = localStorage.getItem('jwt_token');
     const loginUrl = '../html/login.html';
     
-    // Se não há token e não estamos na página de login, redireciona.
     if (!token && !window.location.href.endsWith(loginUrl)) {
         window.location.href = loginUrl;
         return;
@@ -15,9 +14,6 @@ function logout() {
     window.location.href = '../html/login.html';
 }
 
-/**
- * Função global para fazer requisições fetch com o token de autenticação.
- */
 async function fetchWithAuth(url, options = {}) {
     const token = localStorage.getItem('jwt_token');
 
@@ -46,11 +42,7 @@ async function fetchWithAuth(url, options = {}) {
     }
 }
 
-/**
- * Função de transporte para o Select2 usar o fetchWithAuth.
- */
 async function select2AuthTransport(params, success, failure) {
-    // Adiciona o termo de busca (q) à URL, se ele existir
     const url = params.url + (params.data.q ? '?q=' + params.data.q : '');
     
     try {
@@ -59,11 +51,10 @@ async function select2AuthTransport(params, success, failure) {
             throw new Error('Falha na busca do Select2');
         }
         const data = await response.json();
-        // A função 'success' do Select2 espera um objeto com a chave 'results'
+        
         success({ results: data });
     } catch (error) {
         console.error("Erro no transporte do Select2:", error);
-        // A função 'failure' do Select2 informa que a requisição falhou
         failure();
     }
 }

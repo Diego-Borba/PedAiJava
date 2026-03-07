@@ -7,7 +7,6 @@ public class ParcelaPagamentoDTO {
     private BigDecimal valor;
     private LocalDate dataVencimento;
 
-    // Getters e Setters
     public BigDecimal getValor() {
         return valor;
     }

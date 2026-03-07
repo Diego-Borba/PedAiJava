@@ -16,9 +16,8 @@ public class RelatorioVendasDTO {
     private List<String> formasPagamento;
     private List<String> itens;
     
-    // Novos campos para destrinchar os valores
-    private BigDecimal valorCaixa;   // Dinheiro, Pix, Cartão, etc.
-    private BigDecimal valorAReceber; // A Prazo
+    private BigDecimal valorCaixa;
+    private BigDecimal valorAReceber;
 
     public RelatorioVendasDTO(Venda venda) {
         this.id = venda.getId();
@@ -35,7 +34,6 @@ public class RelatorioVendasDTO {
                 .map(item -> item.getQuantidade() + "x " + item.getProduto().getNome())
                 .collect(Collectors.toList());
 
-        // Cálculo da separação dos valores
         this.valorAReceber = venda.getPagamentos().stream()
                 .filter(p -> "A_Prazo".equals(p.getForma()))
                 .map(p -> p.getValor())
@@ -47,7 +45,6 @@ public class RelatorioVendasDTO {
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
-    // Getters
     public Long getId() { return id; }
     public ZonedDateTime getDataVenda() { return dataVenda; }
     public String getClienteNome() { return clienteNome; }

@@ -24,7 +24,6 @@ public class ItemVenda {
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal precoUnitario;
 
-    // Getters e Setters
     public Long getId() {
         return id;
     }

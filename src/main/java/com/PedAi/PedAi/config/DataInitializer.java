@@ -22,7 +22,6 @@ public class DataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        // Cria/Atualiza usuário ADMIN
         if (forceAdminCreation || clienteRepository.findByEmail("admin@pedai.com").isEmpty()) {
             Cliente admin = clienteRepository.findByEmail("admin@pedai.com").orElse(new Cliente());
             admin.setNome("Administrador");
@@ -32,15 +31,11 @@ public class DataInitializer implements CommandLineRunner {
             admin.setRole(UserRole.ADMIN);
             clienteRepository.save(admin);
         }
-
-        // --- CORREÇÃO APLICADA AQUI ---
-        // Cria cliente "Consumidor Final" se não existir pelo e-mail
         if (clienteRepository.findByEmail("consumidor@final.com").isEmpty()) {
             Cliente consumidorFinal = new Cliente();
-            // NÃO definimos mais o ID manualmente. Deixamos o banco de dados gerar.
             consumidorFinal.setNome("Consumidor Final");
             consumidorFinal.setEmail("consumidor@final.com");
-            consumidorFinal.setSenha(passwordEncoder.encode("consumidor")); // Senha genérica
+            consumidorFinal.setSenha(passwordEncoder.encode("consumidor"));
             consumidorFinal.setTelefone("00000000000");
             consumidorFinal.setRole(UserRole.USER);
             clienteRepository.save(consumidorFinal);

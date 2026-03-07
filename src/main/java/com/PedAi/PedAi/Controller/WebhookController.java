@@ -81,8 +81,6 @@ public class WebhookController {
                     responseJson = createDialogflowResponse("Desculpe, não entendi. Pode repetir?");
                     break;
             }
-            // CORREÇÃO: Movido o log para fora do bloco try-catch para evitar log duplo em
-            // caso de erro
             if (!intentName.equals("Default Fallback Intent")) {
                 logger.info("Webhook Respondendo com sucesso para a intenção: [{}].", intentName);
             }
@@ -90,7 +88,6 @@ public class WebhookController {
 
         } catch (Exception e) {
             logger.error("### ERRO FATAL NO WEBHOOK ###", e);
-            // Cria uma resposta de erro amigável para o usuário no Dialogflow
             ObjectNode errorResponse = createDialogflowResponse(
                     "Desculpe, encontrei um problema técnico. Poderia tentar novamente?");
             return ResponseEntity.ok(errorResponse.toString());
@@ -137,10 +134,7 @@ public class WebhookController {
     }
 
     private ObjectNode handleAdicionarProduto(JsonNode requestJson, String session) {
-        // CORREÇÃO: Define a variável 'parameters' que estava faltando
         JsonNode parameters = requestJson.path("queryResult").path("parameters");
-
-        // CORREÇÃO: Lógica mais robusta para extrair o nome do produto
         JsonNode produtoNode = parameters.path("produto");
         String nomeProduto = "";
         if (produtoNode.isArray() && !produtoNode.isEmpty()) {
@@ -174,8 +168,6 @@ public class WebhookController {
 
         for (Map<String, Object> item : carrinho) {
             String nomeProduto = (String) item.get("produto");
-
-            // CORREÇÃO: Converte o número de Double para Integer de forma segura
             int quantidade = ((Number) item.get("quantidade")).intValue();
 
             Optional<Produto> prodOpt = produtoRepository.findAll().stream()
@@ -186,7 +178,6 @@ public class WebhookController {
                 total = total.add(preco.multiply(BigDecimal.valueOf(quantidade)));
                 resumo.append(String.format("- %dx %s\n", quantidade, nomeProduto));
             } else {
-                // Adicionado para o caso de o produto do carrinho não ser encontrado no BD
                 resumo.append(String.format("- %dx %s (Produto não encontrado)\n", quantidade, nomeProduto));
             }
         }
@@ -221,7 +212,6 @@ public class WebhookController {
         try {
             pedidoService.criarPedido(itensDTO);
             String responseText = "Seu pedido foi recebido e já está em preparo! Muito obrigado!";
-            // CORREÇÃO: Limpa os dois contextos ao finalizar
             return createResponseWithContext(responseText, session, "_DELETED_CONTEXT_", 0, Map.of());
         } catch (Exception e) {
             logger.error("Erro ao tentar criar pedido via webhook", e);
@@ -243,8 +233,6 @@ public class WebhookController {
             if (context.path("name").asText().endsWith("/contexts/pedido_em_andamento")) {
                 JsonNode carrinhoNode = context.path("parameters").path("carrinho");
                 if (carrinhoNode != null && !carrinhoNode.isMissingNode() && carrinhoNode.isArray()) {
-                    // CORREÇÃO: Retorna uma lista de mapas mutável para que possamos adicionar
-                    // itens
                     return objectMapper.convertValue(carrinhoNode, new TypeReference<ArrayList<Map<String, Object>>>() {
                     });
                 }
@@ -257,7 +245,6 @@ public class WebhookController {
             Map<String, ?> parameters) {
         ObjectNode response = createDialogflowResponse(text);
 
-        // CORREÇÃO: Lógica para deletar todos os contextos de pedido ao finalizar
         if ("_DELETED_CONTEXT_".equals(contextName)) {
             ArrayNode outputContexts = response.putArray("outputContexts");
 

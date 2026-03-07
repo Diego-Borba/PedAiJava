@@ -29,10 +29,9 @@ public class GrupoComplemento {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "produto_kit_id")
-    @JsonBackReference("kit-grupos") // Corresponde ao nome em Produto
+    @JsonBackReference("kit-grupos")
     private Produto produtoKit;
 
-    // ... (seus Getters e Setters permanecem inalterados)
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     public String getNome() { return nome; }

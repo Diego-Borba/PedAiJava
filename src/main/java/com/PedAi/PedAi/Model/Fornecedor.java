@@ -49,5 +49,4 @@ public class Fornecedor {
         this.telefone = telefone;
     }
 
-    // Getters e Setters
 }

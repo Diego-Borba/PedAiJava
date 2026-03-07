@@ -33,14 +33,13 @@ public class ClienteController {
         if (cliente.getEmail() == null || cliente.getEmail().isEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Email não pode ser vazio");
         }
-        // Criptografar a senha antes de salvar
         cliente.setSenha(passwordEncoder.encode(cliente.getSenha()));
-        cliente.setRole(UserRole.USER); // Definir permissão padrão
+        cliente.setRole(UserRole.USER);
         Cliente clienteSalvo = clienteRepository.save(cliente);
         return ResponseEntity.status(HttpStatus.CREATED).body(new ClienteResponseDTO(clienteSalvo));
     }
 
-    // --- NOVO ENDPOINT PARA CADASTRO VIA ADMIN ---
+    // CADASTRO VIA ADMIN/DEFAULT
     @PostMapping("/admin-cadastro")
     @Transactional
     public ResponseEntity<?> cadastrarClienteAdmin(@RequestBody Cliente cliente) {
@@ -50,23 +49,16 @@ public class ClienteController {
         if (cliente.getTelefone() == null || cliente.getTelefone().trim().isEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Telefone é obrigatório.");
         }
-
-        // 1. Geração de E-mail Único (obrigatório pelo modelo)
         String baseEmail = cliente.getEmail() != null && !cliente.getEmail().trim().isEmpty() ? 
                            cliente.getEmail().toLowerCase() : 
                            "avulso." + System.currentTimeMillis() + "@pedai.com";
-
-        // Verifica se o e-mail (se fornecido) já existe
         if (clienteRepository.findByEmail(baseEmail).isPresent() && cliente.getEmail() != null) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("O e-mail informado já está em uso.");
         } 
         
         cliente.setEmail(baseEmail);
-
-        // 2. Geração de Senha Padrão (obrigatório pelo modelo)
-        cliente.setSenha(passwordEncoder.encode("pda-admin-default")); // Senha padrão criptografada
+        cliente.setSenha(passwordEncoder.encode("pda-admin-default"));
         
-        // 3. Definição de Permissão
         cliente.setRole(UserRole.USER); 
         
         try {
@@ -76,7 +68,6 @@ public class ClienteController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro interno ao salvar cliente.");
         }
     }
-    // --- FIM DO NOVO ENDPOINT ---
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequestDTO loginRequest) {

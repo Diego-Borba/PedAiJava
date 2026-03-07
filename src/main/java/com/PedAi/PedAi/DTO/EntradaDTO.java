@@ -7,13 +7,11 @@ public class EntradaDTO {
     private Long fornecedorId;
     private String tipoDocumento;
     private List<EntradaItemDTO> itens;
-    
-    // CAMPOS ADICIONADOS
+
     private BigDecimal valorTotalDocumento;
     private String formaPagamento;
     private List<ParcelaPagamentoDTO> parcelas;
 
-    // Getters e Setters
     public Long getFornecedorId() {
         return fornecedorId;
     }

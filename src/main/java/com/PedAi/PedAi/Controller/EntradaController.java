@@ -26,7 +26,7 @@ public class EntradaController {
     @Autowired private EntradaRepository entradaRepository;
     @Autowired private ProdutoRepository produtoRepository;
     @Autowired private FornecedorRepository fornecedorRepository;
-    @Autowired private ContaAPagarRepository contaAPagarRepository; // INJETADO
+    @Autowired private ContaAPagarRepository contaAPagarRepository;
 
     @PostMapping
     @Transactional
@@ -74,8 +74,6 @@ public class EntradaController {
                 conta.setValorTotal(parcelaDTO.getValor());
                 conta.setDataVencimento(parcelaDTO.getDataVencimento());
                 conta.setStatus(StatusContaAPagar.A_PAGAR);
-                
-                // Formata a descrição com o número da parcela: Ex: "NF-e 12345 (1/3)"
                 String descParcela = String.format("%05d/%d", entradaId, numeroParcela);
                 conta.setDescricao(entradaDTO.getTipoDocumento() + " - Parcela " + descParcela);
 

@@ -8,14 +8,13 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
-// DTO para exibir pedidos na nova tela de gestão
 public class PedidoAdminDTO {
     private Long id;
     private ZonedDateTime dataPedido;
     private ZonedDateTime dataAgendamento;
     private String status;
     private TipoPedido tipo;
-    private Long clienteId; // CAMPO ADICIONADO
+    private Long clienteId;
     private String clienteNome;
     private String endereco;
     private String formaPagamento;
@@ -32,7 +31,7 @@ public class PedidoAdminDTO {
         this.total = pedido.getTotal();
         
         if (pedido.getCliente() != null) {
-            this.clienteId = pedido.getCliente().getId(); // LÓGICA ADICIONADA
+            this.clienteId = pedido.getCliente().getId();
             this.clienteNome = pedido.getCliente().getNome();
         } else {
             this.clienteNome = "Cliente não informado";
@@ -49,13 +48,13 @@ public class PedidoAdminDTO {
                 .collect(Collectors.toList());
     }
 
-    // Getters
+    
     public Long getId() { return id; }
     public ZonedDateTime getDataPedido() { return dataPedido; }
     public ZonedDateTime getDataAgendamento() { return dataAgendamento; }
     public String getStatus() { return status; }
     public TipoPedido getTipo() { return tipo; }
-    public Long getClienteId() { return clienteId; } // GETTER ADICIONADO
+    public Long getClienteId() { return clienteId; }
     public String getClienteNome() { return clienteNome; }
     public String getEndereco() { return endereco; }
     public String getFormaPagamento() { return formaPagamento; }

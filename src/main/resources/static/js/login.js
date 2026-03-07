@@ -1,4 +1,3 @@
-// src/main/resources/static/js/login.js
 document.addEventListener('DOMContentLoaded', function() {
     const loginForm = document.getElementById('loginForm');
 
