@@ -1,22 +1,16 @@
 package com.PedAi.PedAi.Controller;
 
 import com.PedAi.PedAi.Model.Produto;
-import com.PedAi.PedAi.DTO.ImagemDTO;
-import com.PedAi.PedAi.DTO.ProdutoListDTO;
-import com.PedAi.PedAi.DTO.ProdutoSearchDTO;
-import com.PedAi.PedAi.DTO.ProdutoCardapioDTO;
-import com.PedAi.PedAi.repository.ProdutoRepository;
+import com.PedAi.PedAi.DTO.*;
 import com.PedAi.PedAi.services.ProdutoService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
-import java.util.Base64;
+
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/produtos")
@@ -25,65 +19,30 @@ public class ProdutoController {
     @Autowired
     private ProdutoService produtoService;
 
-    @Autowired
-    private ProdutoRepository repository;
-
     @GetMapping
-    @Transactional(readOnly = true)
-    public List<ProdutoListDTO> getAll() {
-        return repository.findAllForAdminList().stream()
-                .map(ProdutoListDTO::new)
-                .collect(Collectors.toList());
+    public ResponseEntity<List<ProdutoListDTO>> getAll() {
+        return ResponseEntity.ok(produtoService.getAll());
     }
 
     @GetMapping("/cardapio")
-    @Transactional(readOnly = true)
-    public List<ProdutoCardapioDTO> getProdutosParaCardapio() {
-        List<Produto> produtos = repository.findProdutosForCardapio();
-        for (Produto p : produtos) {
-            if (p.isKit()) {
-                p.getGruposKit().forEach(grupo -> grupo.getOpcoes().size());
-            }
-        }
-        return produtos.stream()
-                .map(ProdutoCardapioDTO::new)
-                .collect(Collectors.toList());
+    public ResponseEntity<List<ProdutoCardapioDTO>> getProdutosParaCardapio() {
+        return ResponseEntity.ok(produtoService.getProdutosParaCardapio());
     }
 
     @GetMapping("/{id}")
-    @Transactional(readOnly = true)
     public ResponseEntity<Produto> getById(@PathVariable Long id) {
-        return repository.findById(id)
-                .map(produto -> {
-                    if (produto.isKit()) {
-                        produto.getGruposKit().forEach(grupo -> grupo.getOpcoes().size());
-                    }
-                    return ResponseEntity.ok(produto);
-                })
-                .orElse(ResponseEntity.notFound().build());
+        Optional<Produto> produto = produtoService.getById(id);
+        return produto.map(ResponseEntity::ok)
+                      .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping
-    @Transactional
     public ResponseEntity<?> create(@RequestBody Produto produto) {
-
-        if (produto.getNome() == null || produto.getNome().trim().isEmpty()) {
-            return ResponseEntity.badRequest().body("O nome do produto é obrigatório.");
-        }
         try {
-            if (produto.isKit() && produto.getGruposKit() != null) {
-                produto.getGruposKit().forEach(grupo -> {
-                    grupo.setProdutoKit(produto);
-                    grupo.getOpcoes().forEach(opcao -> {
-                        opcao.setGrupo(grupo);
-                        if (opcao.getProduto() != null && opcao.getProduto().getId() != null) {
-                            repository.findById(opcao.getProduto().getId()).ifPresent(opcao::setProduto);
-                        }
-                    });
-                });
-            }
-            Produto savedProduto = repository.save(produto);
+            Produto savedProduto = produtoService.create(produto);
             return ResponseEntity.status(HttpStatus.CREATED).body(savedProduto);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Erro ao salvar produto: " + e.getMessage());
@@ -91,86 +50,44 @@ public class ProdutoController {
     }
 
     @PostMapping("/{id}/imagem")
-    @Transactional
     public ResponseEntity<?> uploadImagem(@PathVariable Long id, @RequestBody ImagemDTO imagemDTO) {
-        if (imagemDTO.getImagemBase64() == null || imagemDTO.getImagemTipo() == null) {
-            return ResponseEntity.badRequest().body("Dados da imagem inválidos.");
+        try {
+            produtoService.uploadImagem(id, imagemDTO);
+            return ResponseEntity.ok().body(java.util.Map.of("message", "Imagem salva com sucesso."));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (RuntimeException e) { 
+            return ResponseEntity.notFound().build();
         }
-
-        return repository.findById(id).map(produto -> {
-            try {
-                String base64Data = imagemDTO.getImagemBase64().substring(imagemDTO.getImagemBase64().indexOf(",") + 1);
-                byte[] imagemBytes = Base64.getDecoder().decode(base64Data);
-
-                produto.setImagemDados(imagemBytes);
-                produto.setImagemTipo(imagemDTO.getImagemTipo());
-                repository.save(produto);
-                return ResponseEntity.ok().body(java.util.Map.of("message", "Imagem salva com sucesso."));
-            } catch (IllegalArgumentException e) {
-                return ResponseEntity.badRequest().body("Formato de imagem Base64 inválido.");
-            }
-        }).orElse(ResponseEntity.notFound().build());
     }
 
     @PutMapping("/{id}")
-    @Transactional
     public ResponseEntity<?> update(@PathVariable Long id, @RequestBody Produto produtoDetails) {
-        return repository.findById(id).map(produtoExistente -> {
-            produtoExistente.setNome(produtoDetails.getNome());
-            produtoExistente.setPreco(produtoDetails.getPreco());
-            produtoExistente.setCategoria(produtoDetails.getCategoria());
-            produtoExistente.setQtdeMax(produtoDetails.getQtdeMax());
-            produtoExistente.setCodPdv(produtoDetails.getCodPdv());
-            produtoExistente.setDescricao(produtoDetails.getDescricao());
-            produtoExistente.setOrdemVisualizacao(produtoDetails.getOrdemVisualizacao());
-            produtoExistente.setMateriaPrima(produtoDetails.isMateriaPrima());
-            produtoExistente.setIsComplemento(produtoDetails.isComplemento());
-            produtoExistente.setPermiteComplementos(produtoDetails.isPermiteComplementos());
-            produtoExistente.setKit(produtoDetails.isKit());
-            produtoExistente.setVendidoIndividualmente(produtoDetails.isVendidoIndividualmente());
-
-            produtoExistente.getGruposKit().clear();
-            if (produtoDetails.isKit() && produtoDetails.getGruposKit() != null) {
-                produtoDetails.getGruposKit().forEach(grupoNovo -> {
-                    grupoNovo.setProdutoKit(produtoExistente);
-                    grupoNovo.getOpcoes().forEach(opcaoNova -> {
-                        opcaoNova.setGrupo(grupoNovo);
-                        if (opcaoNova.getProduto() != null && opcaoNova.getProduto().getId() != null) {
-                            repository.findById(opcaoNova.getProduto().getId()).ifPresent(opcaoNova::setProduto);
-                        }
-                    });
-                    produtoExistente.getGruposKit().add(grupoNovo);
-                });
-            }
-            produtoExistente.getReceita().clear();
-            if (produtoDetails.getReceita() != null && !produtoDetails.getReceita().isEmpty()) {
-                produtoExistente.getReceita().addAll(produtoDetails.getReceita());
-            }
-
-            Produto updatedProduto = repository.save(produtoExistente);
+        try {
+            Produto updatedProduto = produtoService.update(id, produtoDetails);
             return ResponseEntity.ok(updatedProduto);
-        }).orElse(ResponseEntity.notFound().build());
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @DeleteMapping("/{id}")
-    @Transactional
     public ResponseEntity<Void> delete(@PathVariable Long id) {
-        if (!repository.existsById(id)) {
+        try {
+            produtoService.delete(id);
+            return ResponseEntity.noContent().build();
+        } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();
         }
-        repository.deleteById(id);
-        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/categorias")
     public ResponseEntity<List<String>> getCategorias() {
-        return ResponseEntity.ok(repository.findDistinctCategorias());
+        return ResponseEntity.ok(produtoService.getCategorias());
     }
 
     @GetMapping("/search")
-    public List<ProdutoSearchDTO> searchProdutos(@RequestParam("q") String termo) {
-        return repository.searchByNomeOrCodigoPdv(termo).stream()
-                .map(ProdutoSearchDTO::new)
-                .collect(Collectors.toList());
+    public ResponseEntity<List<ProdutoSearchDTO>> searchProdutos(@RequestParam("q") String termo) {
+        return ResponseEntity.ok(produtoService.searchProdutos(termo));
     }
 }

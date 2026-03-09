@@ -16,7 +16,7 @@ function toggleSidebar() {
         } else {
             body.classList.remove('sidebar-mobile-open');
         }
-    }.
+    }
     if (content) {
         content.classList.toggle('collapsed');
     }
