@@ -147,7 +147,14 @@ public class ProdutoService {
 
     @Transactional(readOnly = true)
     public List<ProdutoSearchDTO> searchProdutos(String termo) {
-        return repository.searchByNomeOrCodigoPdv(termo).stream()
+        if (termo == null || termo.trim().isEmpty()) {
+            return List.of();
+        }
+        
+        // Aplicação dos curingas % para permitir a busca parcial
+        String termoBusca = "%" + termo.trim().toLowerCase() + "%";
+        
+        return repository.searchByNomeOrCodigoPdv(termoBusca).stream()
                 .map(ProdutoSearchDTO::new)
                 .collect(Collectors.toList());
     }

@@ -18,6 +18,12 @@ public interface ProdutoRepository extends JpaRepository<Produto, Long> {
     @Query("SELECT DISTINCT p.categoria FROM Produto p WHERE p.categoria IS NOT NULL AND p.categoria != '' ORDER BY p.categoria ASC")
     List<String> findDistinctCategorias();
 
-    @Query("SELECT p FROM Produto p WHERE LOWER(p.nome) LIKE LOWER(concat('%', :termo, '%')) OR CAST(p.codPdv AS string) LIKE concat('%', :termo, '%')")
-    List<Produto> searchByNomeOrCodigoPdv(@Param("termo") String termo);
+    /*
+     * @Query("SELECT p FROM Produto p WHERE LOWER(p.nome) LIKE LOWER(concat('%', :termo, '%')) OR CAST(p.codPdv AS string) LIKE concat('%', :termo, '%')"
+     * )
+     * List<Produto> searchByNomeOrCodigoPdv(@Param("termo") String termo);
+     */
+
+    @Query("SELECT p FROM Produto p WHERE LOWER(p.nome) LIKE :termoBusca OR CAST(p.codPdv AS string) LIKE :termoBusca")
+    List<Produto> searchByNomeOrCodigoPdv(@Param("termoBusca") String termoBusca);
 }

@@ -85,9 +85,11 @@ function adicionarItem() {
             dataType: 'json',
             delay: 250,
             data: (params) => ({ q: params.term }),
-            processResults: (data) => ({ results: data }),
+            processResults: function (data) {
+                return { results: data };
+            },
             cache: true,
-             transport: async function (params, success, failure) {
+            transport: async function (params, success, failure) {
                 try {
                     const response = await fetchWithAuth(params.url + '?q=' + (params.data.q || ''));
                     if (!response.ok) {
@@ -95,7 +97,7 @@ function adicionarItem() {
                         return;
                     }
                     const data = await response.json();
-                    success({ results: data });
+                    success(data);
                 } catch (error) {
                     failure();
                 }
