@@ -46,3 +46,26 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 });
+
+document.addEventListener('submit', function (e) {
+    const form = e.target;
+    const btn = form.querySelector('button[type="submit"]');
+
+    if (btn) {
+        if (btn.disabled) {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            return false;
+        }
+
+        const originalHtml = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Processando...';
+
+        
+        setTimeout(() => {
+            btn.disabled = false;
+            btn.innerHTML = originalHtml;
+        }, 3000);
+    }
+}, true);
