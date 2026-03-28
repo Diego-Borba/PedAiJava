@@ -43,6 +43,9 @@ public class Pedido {
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
     
+    @Column(columnDefinition = "TEXT")
+    private String observacao;
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     public ZonedDateTime getDataPedido() { return dataPedido; }
@@ -61,4 +64,6 @@ public class Pedido {
     public void setDataAgendamento(ZonedDateTime dataAgendamento) { this.dataAgendamento = dataAgendamento; }
     public String getFormaPagamento() { return formaPagamento; }
     public void setFormaPagamento(String formaPagamento) { this.formaPagamento = formaPagamento; }
+    public String getObservacao() { return observacao; }
+    public void setObservacao(String observacao) { this.observacao = observacao; }
 }

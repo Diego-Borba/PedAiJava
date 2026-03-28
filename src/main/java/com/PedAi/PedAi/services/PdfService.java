@@ -65,6 +65,12 @@ public class PdfService {
             document.add(Chunk.NEWLINE);
         }
 
+        if (pedido.getObservacao() != null && !pedido.getObservacao().trim().isEmpty()) {
+            Font fontObs = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12);
+            document.add(new Paragraph("Observações: " + pedido.getObservacao(), fontObs));
+            document.add(Chunk.NEWLINE);
+        }
+
         PdfPTable table = new PdfPTable(3);
         table.setWidthPercentage(100);
         table.setWidths(new float[] { 1.5f, 7f, 2.5f });

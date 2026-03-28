@@ -42,6 +42,7 @@ public class SecurityConfigurations {
                         .requestMatchers("/h2-console/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/vendas/{id}").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/vendas/{id}").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/pedidos/*/pdf", "/api/pedidos/*/comprovante").permitAll()
                         .anyRequest().hasRole("ADMIN"))
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();

@@ -20,6 +20,7 @@ public class PedidoAdminDTO {
     private String formaPagamento;
     private BigDecimal total;
     private List<String> itens;
+    private String observacao;
 
     public PedidoAdminDTO(Pedido pedido) {
         this.id = pedido.getId();
@@ -29,6 +30,7 @@ public class PedidoAdminDTO {
         this.tipo = pedido.getTipo();
         this.formaPagamento = pedido.getFormaPagamento();
         this.total = pedido.getTotal();
+        this.observacao = pedido.getObservacao();
         
         if (pedido.getCliente() != null) {
             this.clienteId = pedido.getCliente().getId();
@@ -60,4 +62,6 @@ public class PedidoAdminDTO {
     public String getFormaPagamento() { return formaPagamento; }
     public BigDecimal getTotal() { return total; }
     public List<String> getItens() { return itens; }
+    public String getObservacao() { return observacao; }
+    public void setObservacao(String observacao) { this.observacao = observacao; }
 }

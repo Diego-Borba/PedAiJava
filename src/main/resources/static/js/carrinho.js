@@ -127,7 +127,13 @@ function updateCartSummary(totalGeral) {
                 Total do Pedido:
                 <span class="total-value" style="color: #ff5722;">R$ ${totalGeral.toFixed(2)}</span>
             </li>
+            <hr>
+            <div class="mb-3">
+            <label class="form-label fw-bold text-muted"><i class="bi bi-chat-text"></i> Observações do Pedido</label>
+                <textarea class="form-control" id="carrinhoObservacao" rows="2" placeholder="Ex: Entregar na portaria, troco para R$ 50..."></textarea>
+            </div>
         </ul>`;
+
 }
 
 function handleChangeQuantity(cartId, newQuantity) {
@@ -383,7 +389,8 @@ async function finalizeOrder() {
         formaPagamento: formaPagamentoSelecionada.value,
         tipo: tipoPedido,
         enderecoEntrega: tipoPedido === 'ENTREGA' ? loggedInCustomerData.endereco : null,
-        dataAgendamento: dataAgendamento
+        dataAgendamento: dataAgendamento,
+        observacao: document.getElementById('carrinhoObservacao') ? document.getElementById('carrinhoObservacao').value : "",
     };
 
     Swal.fire({ title: 'Confirmando seu pedido...', text: 'Aguarde um momento.', allowOutsideClick: false, didOpen: () => Swal.showLoading() });

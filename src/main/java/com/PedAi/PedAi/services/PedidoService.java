@@ -51,6 +51,7 @@ public class PedidoService {
 
         pedido.setEnderecoEntrega(pedidoDTO.getEnderecoEntrega());
         pedido.setFormaPagamento(pedidoDTO.getFormaPagamento());
+        pedido.setObservacao(pedidoDTO.getObservacao());
         pedido.setTipo(pedidoDTO.getTipo() != null ? pedidoDTO.getTipo() : TipoPedido.ENTREGA);
         if (pedido.getTipo() == TipoPedido.ENCOMENDA) {
             pedido.setDataAgendamento(pedidoDTO.getDataAgendamento());
